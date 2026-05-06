@@ -162,16 +162,18 @@ For the shell itself, see "Source of truth" above.
   ranges — bumping a version is a deliberate act, not a side effect).
   Update these in lockstep when spm-ts upgrades:
 
-  | Package                     | Version  | Source                       |
-  | --------------------------- | -------- | ---------------------------- |
-  | `tailwindcss`               | `3.4.14` | spm-ts/package.json          |
-  | `postcss`                   | `8.5.6`  | spm-ts/package.json          |
-  | `autoprefixer`              | `10.4.20`| spm-ts/package.json          |
-  | `sass`                      | `1.85.1` | spm-ts/package.json          |
-  | `@tailwindcss/forms`        | `0.5.3`  | spm-ts/package.json          |
-  | `@tailwindcss/typography`   | `0.5.7`  | spm-ts/package.json          |
-  | `@tailwindcss/aspect-ratio` | `0.4.2`  | spm-ts/package.json          |
-  | `postcss-nesting`           | `10.2.0` | spm-ts/package.json          |
+  | Package                     | Version    | Source                     |
+  | --------------------------- | ---------- | -------------------------- |
+  | `tailwindcss`               | `3.4.14`   | spm-ts/package.json        |
+  | `postcss`                   | `8.5.6`    | spm-ts/package.json        |
+  | `autoprefixer`              | `10.4.20`  | spm-ts/package.json        |
+  | `sass`                      | `1.85.1`   | spm-ts/package.json        |
+  | `@tailwindcss/forms`        | `0.5.3`    | spm-ts/package.json        |
+  | `@tailwindcss/typography`   | `0.5.7`    | spm-ts/package.json        |
+  | `@tailwindcss/aspect-ratio` | `0.4.2`    | spm-ts/package.json        |
+  | `postcss-nesting`           | `10.2.0`   | spm-ts/package.json        |
+  | `vite-svg-loader`           | `5.1.0`    | spm-ts/package.json        |
+  | `vue-i18n`                  | `^11.1.1`  | spm-ts/package.json        |
 
 - **One deliberate divergence from spm-ts:** spm-ts uses
   `"vite": "npm:rolldown-vite@latest"` (an experimental Rust-based
@@ -193,6 +195,102 @@ For the shell itself, see "Source of truth" above.
   `src/assets/spm-shell/` is how we keep visual fidelity.
 - Use the `@/` alias for in-repo imports:
   `import Foo from '@/pages/Foo.vue'`.
+
+## Stubs layer (`src/shells/ShellV1/_stubs/`)
+
+When vendoring a shell component, its upstream imports almost always
+hit four modules that don't exist in this repo: `@/store`,
+`@/models/event-bus`, `@/models`, and `'../../../localization'`. Don't
+delete those imports. Don't inline-replace the values. Don't rewrite the
+setup body to avoid them.
+
+**Re-route the imports to `_stubs/` instead.** Each stub has the same
+export shape as upstream, only the runtime is hardcoded for an English-
+speaking agency-admin viewing the previewed page:
+
+| Stub                      | Replaces                          |
+| ------------------------- | --------------------------------- |
+| `_stubs/i18n.ts`          | `'../../../localization'`         |
+| `_stubs/event-bus.ts`     | `'@/models/event-bus'`            |
+| `_stubs/store.ts`         | `'@/store'`                       |
+| `_stubs/models.ts`        | `'@/models'`                      |
+
+A vendored component therefore looks like upstream **except** its imports:
+
+```ts
+// upstream:
+import { useStore } from '@/store'
+// here:
+import { useStore } from '../_stubs/store'
+```
+
+Each replacement must be commented in the vendored file with the
+upstream line it replaces, so future re-vendoring is mechanical.
+
+**Adding new keys/state to stubs:**
+- New i18n key → append to `messages.en_US` in `_stubs/i18n.ts`.
+- New `state.foo.bar` access → add it to the `state` object in
+  `_stubs/store.ts` with a comment pointing at the upstream module
+  the value originally came from.
+- New `getters['ns/key']` → append to `getters` in `_stubs/store.ts`.
+- New model → add a class with the upstream constructor signature.
+
+If a vendored component reaches for a stub field that isn't there yet,
+**add it deliberately** — don't silently `??` it away to undefined.
+
+## Type checking — divergence from upstream
+
+This repo runs `vue-tsc --noEmit && vite build`. **spm-ts runs
+`vite build` only** (no vue-tsc), which means upstream source has type
+holes that compile fine for them but fail vue-tsc here. Examples seen
+in slice 2.1:
+
+- `setup(_)` — implicit any on the props parameter.
+- `i18n.global.t(key)` assigned directly to a `string` local
+  (newer vue-i18n returns `string | undefined`).
+- A computed reads `loc.city` when `loc` is `Location | undefined`
+  (dead code, but vue-tsc still checks it).
+
+When vendoring, keep the runtime byte-identical. Apply the **smallest
+typing fix** that satisfies vue-tsc and leaves a code comment pointing
+at the upstream looseness:
+
+- `setup(_: Readonly<{ propA?: string }>)` — explicit param type.
+- `i18n.global.t('key') as string` — cast at the call site.
+- `loc!.city` — non-null assertion when upstream's intent is "this is
+  always defined here, but TS can't prove it".
+
+**Don't** weaken the project's tsconfig (`strict: true` stays). Don't
+remove `vue-tsc` from the build script. The whole point of running it
+is catching real bugs upstream wasn't checking for.
+
+A related divergence: `src/shims.d.ts` types `'*.svg'` as
+`DefineComponent` (its actual runtime under vite-svg-loader). spm-ts'
+`shims-vue.d.ts` types it as `string`, which is wrong but invisible
+to them since they don't run vue-tsc. Don't copy spm-ts's shim
+verbatim — that bug surfaces immediately here.
+
+## Deferred-by-design components
+
+Some upstream shell components are too tightly coupled to backend
+services / virtual scrollers / search infrastructure to vendor in
+the time budget for a slice. The pattern is:
+
+1. Vendor a **placeholder file** at the upstream path with the same
+   props signature as upstream (so its parent's `<MyDropdown :foo="..."/>`
+   call stays byte-identical).
+2. Render a loud, dashed-border notice that names the upstream file
+   and lists what's deferred and why.
+3. Document graduation steps (what to vendor, what to stub, what to
+   replace) in the placeholder's comment block.
+
+Examples currently in this state:
+- `src/shells/ShellV1/sidebar/LocationSwitcher.vue` — the dropdown
+  the location pill opens. Pulls UISearchInput, vue3-virtual-scroll-list,
+  LocationsService, and 5+ store dispatches.
+
+When a stakeholder review specifically needs the deferred surface
+working, replace the placeholder with the full vendor.
 
 ## Copy
 
