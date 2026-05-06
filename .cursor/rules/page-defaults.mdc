@@ -1,0 +1,105 @@
+---
+description: Defaults for new design previews in this repo
+alwaysApply: true
+---
+
+# Page defaults — ghl-design-previews
+
+These rules govern how new pages, components, and assets are added to
+this repo. They exist so previews stay consistent and so adding a new
+mockup is a 30-second job, not a 30-minute one.
+
+## Shell
+
+- **New page requests default to wrapping `<ShellV1>`.** Override only
+  when the user explicitly says "V2", "ShellV2", or "no shell".
+  - `<ShellV1>` lives at `src/shells/ShellV1/index.vue` and renders
+    sidebar + topbar matching production spm-ts.
+  - Pass `active="<nav-key>"` if the page corresponds to a sidebar
+    item — this lights up the correct nav row visually.
+- `<ShellV2>` is a placeholder until Phase 2 ships. Don't try to flesh
+  it out without an explicit task to do so.
+- "No shell" pages (e.g. the index landing) render their own surface
+  full-bleed without a shell wrapper.
+
+## Files & routing
+
+- Pages live in `src/pages/` with **PascalCase** filenames
+  (e.g. `AddOnsPage.vue`, `PageTabs.vue`).
+- Routes are added to `src/routes.ts` with **kebab-case** paths
+  (`/add-ons`, `/page-tabs`). Use lazy imports
+  (`() => import('@/pages/Foo.vue')`) so each preview is its own
+  chunk.
+- Each new route gets a `meta.title` and `meta.summary` — the index
+  page reads these to render the preview list. Set `meta.shell`
+  to `'V1'` or `'V2'` so the index card shows the right pill.
+
+## Tokens & styling
+
+- **Always use HighRise tokens from `src/tokens.css`.** Never hardcode
+  hex values. The only literal colors allowed in scoped styles are:
+  - `#ffffff` (the only literal white we use)
+  - `rgba(...)` shadow tints (`rgba(16, 24, 40, 0.x)` etc. — HR
+    doesn't expose RGB channels for shadow tinting)
+- The token names match production HR exactly: `--gray-50`,
+  `--primary-600`, `--success-200`, `--warning-500`, etc. If you
+  need a token that isn't in `tokens.css`, ask before inventing one.
+- `--shell-*` tokens (`--shell-sidebar-bg`, `--shell-collapse-btn-bg`,
+  etc.) are legacy spm-ts shell colors — only used inside
+  `src/shells/`. New pages should never reference them.
+- For any token / component question, the source of truth is
+  `HIGHRISE_DS.md` at the repo root.
+
+## HighRise stubs
+
+- HR primitives live at `src/components/highrise/` (`HLTabs`,
+  `HLTabPane`, `HLButton`, `HLTag`). Import via the barrel:
+  `import { HLTabs, HLTabPane } from '@/components/highrise'`.
+- These are **stubs** — they render the HR visual treatment with HR
+  tokens but only support the props the migrated pages actually use.
+- If a page needs an HR primitive that isn't here yet, **ask first**.
+  Adding a stub is fine; reaching for a third-party component library
+  or copying half of `@platform-ui/highrise` into the repo is not.
+
+## Icons
+
+- Font Awesome 5.8.1 is loaded via CDN in `index.html` so icon names
+  match the spm-ts production set exactly. Use
+  `<i class="fas fa-..."/>` for solid icons. Avoid newer FA 6 icons
+  even if they look similar — names sometimes drift between versions.
+
+## Dependencies
+
+- The runtime stack is fixed: **Vue 3, Vite, vue-router, TypeScript,
+  Font Awesome 5.8.1 (CDN)**. Tailwind is loaded via CDN in
+  `index.html` for the legacy shell ports — don't add it to npm.
+- **Don't add npm dependencies without asking.** That includes UI
+  libraries, icon packs, animation libs, utility libs.
+
+## Imports & boundaries
+
+- This repo is **standalone**. Don't import from `spm-ts/`,
+  `@platform-ui/*`, `@gohighlevel/*`, or any other private package.
+- Use the `@/` alias for in-repo imports: `import Foo from '@/pages/Foo.vue'`.
+
+## Copy
+
+- Outcome-driven, WHY → WHAT → HOW (tagline tells the buyer why,
+  title tells them what, benefits tell them how). Each benefit ties
+  to an outcome, not a spec.
+- Use parallel structure across bullets in the same list.
+- No jargon, no acronyms without first-mention definition (use
+  `<abbr title="...">` for inline expansion).
+- Sentence case for UI labels, not Title Case.
+
+## Source-of-truth & reverse-sync
+
+- Each preview's source-of-truth is recorded in `README.md` and in
+  the route's `meta.summary`. Examples:
+  - `AddOnsPage.vue` → source-of-truth = `spm-ts`. Designs in this
+    repo are downstream — production code stays canonical.
+  - `PageTabs.vue` → source-of-truth = this repo. Phase 2 mockup,
+    not yet in production.
+- When porting from spm-ts, change **only** the imports and the
+  shell wrapper. Do not edit copy, structure, or styles unless the
+  user explicitly asks.

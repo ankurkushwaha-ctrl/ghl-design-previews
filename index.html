@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GHL Design Previews</title>
+
+    <!-- Inter font, matches HighRise tokens.css -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!--
+      Font Awesome 5.8.1 — pinned to match what spm-ts uses so icon names
+      (e.g. "fas fa-mobile-alt") resolve identically across both repos.
+    -->
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+      integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
+      crossorigin="anonymous"
+    />
+
+    <!--
+      Tailwind Play CDN — design-preview only. Production spm-ts uses
+      compiled Tailwind; we use the CDN here to avoid an npm dep and
+      get pixel-fidelity for utility classes used by the shell ports.
+    -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Match spm-ts's Tailwind classic gray ramp + curious-blue accent
+      // (these are NOT HighRise tokens — they're legacy shell colors
+      // used by the prod sidebar/topbar; isolated here so the rest of
+      // the app stays HR-token-clean).
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'curious-blue': {
+                500: '#188bf6',
+                600: '#0871d3',
+              },
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
