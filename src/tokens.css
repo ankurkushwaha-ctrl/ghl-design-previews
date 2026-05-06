@@ -379,28 +379,6 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   Legacy spm-ts shell colors (NOT HighRise tokens)
-
-   These hex values come straight from spm-ts global stylesheets
-   (assets/pmd/css/styles.sidebar.scss). The prod sidebar predates the
-   HR migration and uses Tailwind-classic gray-800/gray-900 plus a
-   handful of accent values. Isolated here so:
-     1. Pages and new components still use HR tokens only.
-     2. When the shell migrates to HR (Phase 2/3), there's one file
-        to update.
-   ═══════════════════════════════════════════════════════════════════ */
-:root {
-  --shell-sidebar-bg:        #2d3748;  /* sidebar dark navy */
-  --shell-sidebar-active:    #1a202c;  /* nav item hover/active */
-  --shell-sidebar-pill-bg:   #4a5568;  /* search/quick-action pill bg */
-  --shell-back-btn-bg:       #4a566a;  /* back-button surface */
-  --shell-collapse-btn-bg:   #065f46;  /* collapse FAB bg */
-  --shell-collapse-btn-fg:   #34d399;  /* collapse FAB icon */
-  --shell-changelog-btn-bg:  #45967f;  /* topbar changelog button */
-  --shell-help-btn-bg:       #188bf6;  /* topbar help button (legacy HL blue) */
-}
-
-/* ═══════════════════════════════════════════════════════════════════
    Base body styles (mirrors HR text defaults so pages feel "production")
    ═══════════════════════════════════════════════════════════════════ */
 html { color-scheme: light; }

@@ -9,14 +9,45 @@ These rules govern how new pages, components, and assets are added to
 this repo. They exist so previews stay consistent and so adding a new
 mockup is a 30-second job, not a 30-minute one.
 
+## Source of truth (read this first, every time)
+
+This repo is downstream of `spm-ts`. There are two kinds of work:
+
+1. **Page content** (e.g. `AddOnsPage.vue`) — copy verbatim from the
+   matching `spm-ts/src/pmd/pages/...` file. Only the imports and the
+   shell wrapper change. Don't edit copy, structure, or styles unless
+   the user explicitly asks.
+2. **The shell** (sidebar + topbar) — vendor verbatim from spm-ts.
+   Don't infer, don't translate, don't re-derive in HR tokens. The
+   spm-ts shell predates the HR design system and uses its own
+   global stylesheets + Tailwind utility classes. Trying to express
+   it in HR tokens will produce a plausible-looking but visibly-off
+   port. This has happened. Don't repeat it.
+
+   **The canonical files for ShellV1:**
+   - `spm-ts/src/pmd/components/sidebar/SideBar.vue` — sidebar template
+   - `spm-ts/src/pmd/components/sidebar/UIMenuItems.vue` — nav-row template
+   - `spm-ts/src/pmd/components/sidebar/LocationSwitcherContainer.vue` — location pill
+   - `spm-ts/src/pmd/components/sidebar/QuickActions.vue` — search + quick-actions row
+   - `spm-ts/src/pmd/components/TopBar.vue` — topbar template
+   - `spm-ts/src/assets/pmd/css/styles.sidebar.scss` — the visual rules
+   - `spm-ts/src/assets/pmd/css/styles.sidebar.light.scss` — light theme overrides
+   - `spm-ts/src/util/navigation.ts` lines 10780–11650 — the agency-mode nav array
+   - `spm-ts/src/assets/pmd/img/{agency,location}-marker.svg` — location-pill icons
+
+   These files live in the user's local `~/Desktop/Projects/spm-ts/`
+   working copy. If they're missing, **stop and ask**. Do not make up
+   class names, colors, paddings, or nav items from screenshots.
+
 ## Shell
 
 - **New page requests default to wrapping `<ShellV1>`.** Override only
   when the user explicitly says "V2", "ShellV2", or "no shell".
   - `<ShellV1>` lives at `src/shells/ShellV1/index.vue` and renders
     sidebar + topbar matching production spm-ts.
-  - Pass `active="<nav-key>"` if the page corresponds to a sidebar
-    item — this lights up the correct nav row visually.
+  - Pass `active="<nav-meta-key>"` (matching the `meta` field in the
+    spm-ts nav array — e.g. `agency-marketplace` for Add-Ons) so the
+    correct row is highlighted.
 - `<ShellV2>` is a placeholder until Phase 2 ships. Don't try to flesh
   it out without an explicit task to do so.
 - "No shell" pages (e.g. the index landing) render their own surface
@@ -34,20 +65,21 @@ mockup is a 30-second job, not a 30-minute one.
   page reads these to render the preview list. Set `meta.shell`
   to `'V1'` or `'V2'` so the index card shows the right pill.
 
-## Tokens & styling
+## Tokens & styling — **page content only**
 
-- **Always use HighRise tokens from `src/tokens.css`.** Never hardcode
-  hex values. The only literal colors allowed in scoped styles are:
+This section governs styles **inside the page slot of `<ShellV1>`**.
+For the shell itself, see "Source of truth" above.
+
+- Use HighRise tokens from `src/tokens.css` for page content. Names
+  match production HR exactly: `--gray-50`, `--primary-600`,
+  `--success-200`, `--warning-500`, etc.
+- Don't hardcode hex values in page styles. Literals allowed:
   - `#ffffff` (the only literal white we use)
-  - `rgba(...)` shadow tints (`rgba(16, 24, 40, 0.x)` etc. — HR
-    doesn't expose RGB channels for shadow tinting)
-- The token names match production HR exactly: `--gray-50`,
-  `--primary-600`, `--success-200`, `--warning-500`, etc. If you
-  need a token that isn't in `tokens.css`, ask before inventing one.
-- `--shell-*` tokens (`--shell-sidebar-bg`, `--shell-collapse-btn-bg`,
-  etc.) are legacy spm-ts shell colors — only used inside
-  `src/shells/`. New pages should never reference them.
-- For any token / component question, the source of truth is
+  - `rgba(...)` shadow tints (`rgba(16, 24, 40, 0.x)` — HR doesn't
+    expose RGB channels for shadow tinting).
+- If a page needs a token that isn't in `tokens.css`, ask before
+  inventing one.
+- For HR component / token questions, the source of truth is
   `HIGHRISE_DS.md` at the repo root.
 
 ## HighRise stubs
@@ -63,24 +95,37 @@ mockup is a 30-second job, not a 30-minute one.
 
 ## Icons
 
-- Font Awesome 5.8.1 is loaded via CDN in `index.html` so icon names
-  match the spm-ts production set exactly. Use
-  `<i class="fas fa-..."/>` for solid icons. Avoid newer FA 6 icons
-  even if they look similar — names sometimes drift between versions.
+- **Page-content icons:** Font Awesome 5.8.1 (loaded via CDN in
+  `index.html` to match what spm-ts ships). Use
+  `<i class="fas fa-..."/>` with FA 5 names. Avoid FA 6 — names
+  sometimes drift between versions.
+- **Shell nav icons:** prod uses a mix of CDN-hosted SVG URLs
+  (`https://cdn.msgsndr.com/sidebar-v2/...svg`) and Font Awesome 5
+  unicode glyphs rendered via prod's `sm-button` CSS-variable trick.
+  Both come straight from `spm-ts/src/util/navigation.ts`. Don't
+  swap an SVG URL for a similar-looking FA name (or vice versa) —
+  that's how previous ports drifted.
 
 ## Dependencies
 
 - The runtime stack is fixed: **Vue 3, Vite, vue-router, TypeScript,
-  Font Awesome 5.8.1 (CDN)**. Tailwind is loaded via CDN in
-  `index.html` for the legacy shell ports — don't add it to npm.
-- **Don't add npm dependencies without asking.** That includes UI
-  libraries, icon packs, animation libs, utility libs.
+  Font Awesome 5.8.1 (CDN), Tailwind Play CDN**.
+- `sass` is added as a build-time devDependency to compile the
+  vendored spm-ts SCSS — no runtime cost.
+- **Don't add other npm dependencies without asking.** That includes
+  UI libraries, icon packs, animation libs, utility libs.
 
 ## Imports & boundaries
 
-- This repo is **standalone**. Don't import from `spm-ts/`,
-  `@platform-ui/*`, `@gohighlevel/*`, or any other private package.
-- Use the `@/` alias for in-repo imports: `import Foo from '@/pages/Foo.vue'`.
+- **No runtime imports** from `spm-ts/`, `@platform-ui/*`,
+  `@gohighlevel/*`, or any other private package. The deployed bundle
+  must be standalone.
+- **Build-time vendoring is the supported path** for the shell.
+  Specifically: copying SCSS from `spm-ts/src/assets/pmd/css/` and
+  SVG icons from `spm-ts/src/assets/pmd/img/` into
+  `src/assets/spm-shell/` is how we keep visual fidelity.
+- Use the `@/` alias for in-repo imports:
+  `import Foo from '@/pages/Foo.vue'`.
 
 ## Copy
 
