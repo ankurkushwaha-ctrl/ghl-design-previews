@@ -294,3 +294,90 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.hl_header--controls {
+  display: flex;
+  align-items: center;
+}
+
+.hl_header--controls > * + * {
+  margin-left: 10px;
+}
+
+.btn-circle {
+  width: 45px;
+  height: 45px;
+  line-height: 47px;
+  padding: 0;
+  text-align: center;
+  border-radius: 50px;
+  min-width: auto;
+  font-size: 1rem;
+}
+
+.btn.btn-primary {
+  background-color: rgba(24, 139, 246, 0.1);
+  border-color: rgba(24, 139, 246, 0.1);
+  color: #188bf6;
+}
+
+.btn.btn-yellow {
+  background-color: rgba(255, 188, 0, 0.1);
+  border-color: rgba(255, 188, 0, 0.1);
+  color: #ffbc00;
+}
+
+.hl_header--recent-activities {
+  position: relative;
+}
+
+.hl_header--recent-activities.-notification:before {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffbc00;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+
+.hl_header--avatar {
+  display: block;
+  max-width: 44px;
+  height: 44px;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  border-radius: 50%;
+}
+
+.avatar_img {
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  border-radius: 50%;
+  color: #fff;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.avatar_img > img {
+  max-width: 44px;
+  max-height: 44px;
+  border-radius: 50%;
+}
+
+.avatar_img.--gray {
+  background-color: #afb8bc;
+}
+</style>
