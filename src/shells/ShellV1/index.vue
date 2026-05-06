@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import SideBar from './sidebar/SideBar.vue';
+import TopBar from './topbar/TopBar.vue';
 
 interface Props {
   active?: string;
@@ -11,9 +12,12 @@ withDefaults(defineProps<Props>(), { active: '' });
 <template>
   <div class="sidebar-v2-agency shell-v1">
     <SideBar :active="active" />
-    <main class="shell-v1__content hl_wrapper">
-      <slot />
-    </main>
+    <section class="shell-v1__content">
+      <TopBar />
+      <main class="hl_wrapper shell-v1__main">
+        <slot />
+      </main>
+    </section>
   </div>
 </template>
 
@@ -25,8 +29,15 @@ withDefaults(defineProps<Props>(), { active: '' });
 
   .shell-v1__content {
     flex: 1;
-    padding: 0;
     min-width: 0;
+    min-height: 100vh;
     background: var(--gray-50);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .shell-v1__main {
+    flex: 1;
+    padding: 0;
   }
 </style>

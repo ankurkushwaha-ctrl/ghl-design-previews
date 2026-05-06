@@ -112,6 +112,25 @@ const messages = {
         // also the heading inside the dropdown.
         title: 'Quick actions',
       },
+
+      topBar: {
+        // [inferred] runtime source in prod is localization API.
+        loggedInAs: 'Logged in as',
+        switchToMyAccount: 'Switch to my account',
+        reportTranslationIssue: 'Report translation issue',
+        askAIAssistant: 'Ask AI Assistant',
+        askAI: 'Ask AI',
+        viewChangelog: 'View changelog',
+        notifications: 'Notifications',
+        viewNotifications: 'View notifications',
+        accessHelpSupport: 'Access help & support',
+        needHelp: 'Need help?',
+        support: 'Support',
+        openProfileMenu: 'Open profile menu',
+        loginAsAnotherUser: 'Login as another user',
+        loginAs: 'Login as',
+        signout: 'Sign out',
+      },
     },
     pmd: {
       // [verified] spm-ts/src/locales/en.json:4009
