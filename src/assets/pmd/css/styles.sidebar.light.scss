@@ -1,0 +1,161 @@
+body[data-theme='default'] {
+  .sidebar-v2-location, .sidebar-v2-agency { 
+    .hl_header {
+      .btn.btn-yellow.hl_header--recent-activities {
+        background-color: #ff6600;
+        border-color: #ff6600;
+        color: #ffffff;
+      }
+    }
+
+    #sidebar-v2 {
+
+      .default-bg-color, &.default-bg-color {
+        background: #FFFFFF;
+      }
+
+      .hl_nav-header, .hl_nav-header-without-footer, .hl_nav-settings {
+        nav {
+          a {
+            @apply text-black opacity-70;
+
+            img {
+              filter: invert(0.7);
+
+              &.launchpad {
+                filter: invert(0);
+              }
+            }
+
+            &.divider {
+              @apply text-gray-500;
+              
+              p {
+                @apply border-gray-500;
+                
+                span {
+                  @apply text-gray-500;
+                }
+              }
+            }
+            
+            &:hover, &.active {
+              @apply opacity-100 bg-gray-100 text-black;
+
+              img {
+                filter: invert(1);
+
+                &.launchpad {
+                  filter: invert(0);
+                }
+              }
+
+              &.divider {
+                @apply text-gray-500;
+                background: transparent;
+              } 
+            }
+            
+            .nav-title, .nav-fa-icon {
+              @apply text-black hover:text-black;
+            }
+          }
+        }
+      }
+
+      #backButtonv2 {
+        @apply bg-gray-300 text-gray-700;
+      }
+
+      .menu-title {
+        @apply text-black;
+      }
+
+      #quickActions, #globalSearchOpener {
+        @apply bg-gray-100  text-gray-600;
+        
+        .search-icon, .search-placeholder {
+          @apply text-gray-600;
+        }
+
+        .search-shortcut {
+          @apply bg-gray-300 text-black;
+        }
+      }
+
+      #location-switcher-sidbar-v2 {
+        @apply bg-gray-200 lg:bg-gray-200 xl:bg-gray-200;
+
+        .hl_switcher-loc-name {
+          @apply text-gray-800;
+          max-width:7.5rem;
+          margin-top:0.2rem; 
+          display:inline-block;
+        }
+  
+        .hl_switcher-loc-city {
+          @apply text-gray-800;
+          margin-top:-0.3rem; 
+          max-width:7.5rem; 
+          display:block;
+          opacity: 0.55;
+        }
+        .hl_location_icon{
+            max-height:32px;
+            padding:none;
+            filter: invert(0.75);
+            transform:scale(0.80);
+        }
+        
+        .switcher-caret-holder {
+          @apply text-gray-900;
+
+          &.default-bg-color {
+            @apply bg-gray-300;
+          }
+        }
+
+        .hl_v2-location_switcher {
+          @apply absolute bg-white;
+          box-shadow: rgba(100, 100, 111, 0.2) 3px -8px 15px 0px;
+          border-bottom: 1px solid #b9b6b6;
+
+          .search-area {
+            @apply text-black placeholder-gray-500;
+          }
+
+          .hl_v2_tip-arrow {
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-right: 10px solid #fff;
+            border-bottom: 10px solid transparent;
+            top: 5px;
+            left: -6px;
+            position: absolute;
+
+            input {
+              color: black;
+            }
+          }
+
+          #switcher-agency-switch div{
+            border-bottom: 1px solid #E5E7EB;
+          }
+
+          .hl_account {
+            border: 1.5px solid #E5E7EB;
+            &.active {
+              border: 1.5px solid #A5B4FC;
+            }
+          }
+
+          .hl_swicher-heading {
+            @apply text-gray-400;
+          }
+        }
+      }
+
+    }
+  }
+}

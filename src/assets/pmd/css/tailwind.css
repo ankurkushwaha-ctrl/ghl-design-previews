@@ -1,0 +1,63 @@
+@tailwind base;
+
+h1 {
+    display: block;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  h2 {
+    display: block;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  h3 {
+    display: block;
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  h4 {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  h5 {
+    display: block;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  h6 {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+input[class^='n-']:focus,
+input[class^='hr-']:focus {
+  --tw-ring-color: transparent !important;
+  --tw-ring-offset-color: transparent !important;
+  --tw-ring-offset-shadow: 0 0 transparent !important;
+  --tw-ring-offset-width: 0 !important;
+  --tw-ring-shadow: 0 0 transparent !important;
+  --tw-shadow: 0 0 transparent !important;
+}

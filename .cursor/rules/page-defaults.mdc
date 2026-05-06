@@ -9,7 +9,40 @@ These rules govern how new pages, components, and assets are added to
 this repo. They exist so previews stay consistent and so adding a new
 mockup is a 30-second job, not a 30-minute one.
 
-## Source of truth (read this first, every time)
+## First principle: copy from upstream, don't invent
+
+**Every artifact in this repo has an upstream code repo.** Pages
+come from `spm-ts`. Shells come from `spm-ts`. HighRise primitives
+come from `@platform-ui/highrise`. Tailwind config, PostCSS config,
+and build wiring follow `spm-ts`'s conventions. Tokens come from
+HR's compiled `style.css`.
+
+**Copy verbatim.** Don't infer from a screenshot. Don't translate
+"what looks similar." Don't re-derive in HR tokens because they
+feel cleaner. Don't fix typos. Don't simplify weird prod patterns.
+Match what ships, even when it's ugly.
+
+**If the upstream is missing something — stop and ask.** Examples
+of "missing":
+- A nav item appears in a screenshot but isn't in `spm-ts/src/util/navigation.ts`
+- An HR primitive prop is needed but isn't in our local stub
+- A Tailwind plugin in `spm-ts`'s config has no Vite equivalent
+- An asset path resolves to a private CDN we can't reach
+- A component imports a Vuex store / i18n key the preview doesn't have
+
+Surface the gap. Don't fill it with invented values, plausible
+defaults, or "modern" alternatives.
+
+**Why this exists:** a previous pass fabricated the entire ShellV1
+sidebar and topbar from screenshots. It looked plausible and was
+completely wrong. Worse, the result was useless to dev — class
+names didn't match prod, so dev couldn't have lifted the markup
+back into `spm-ts`. Fidelity work was double-discarded. This rule
+keeps the previews in lockstep with what dev actually ships, so
+both stakeholders see the truth **and** dev can reuse what we
+build.
+
+## Where things come from
 
 This repo is downstream of `spm-ts`. There are two kinds of work:
 
@@ -18,11 +51,9 @@ This repo is downstream of `spm-ts`. There are two kinds of work:
    shell wrapper change. Don't edit copy, structure, or styles unless
    the user explicitly asks.
 2. **The shell** (sidebar + topbar) — vendor verbatim from spm-ts.
-   Don't infer, don't translate, don't re-derive in HR tokens. The
-   spm-ts shell predates the HR design system and uses its own
-   global stylesheets + Tailwind utility classes. Trying to express
-   it in HR tokens will produce a plausible-looking but visibly-off
-   port. This has happened. Don't repeat it.
+   The spm-ts shell predates the HR design system and uses its own
+   global stylesheets + Tailwind utility classes (`@apply` directives
+   in `styles.sidebar.scss`).
 
    **The canonical files for ShellV1:**
    - `spm-ts/src/pmd/components/sidebar/SideBar.vue` — sidebar template
@@ -52,6 +83,23 @@ This repo is downstream of `spm-ts`. There are two kinds of work:
   it out without an explicit task to do so.
 - "No shell" pages (e.g. the index landing) render their own surface
   full-bleed without a shell wrapper.
+- **The shell requires `<body data-theme="default-dark-v1">`** in
+  `index.html`. Many sidebar/topbar dark-theme rules vendored from
+  spm-ts's `PMDApp.vue` style block are scoped to that attribute.
+  Without it, the rules don't apply and the shell silently degrades.
+  Don't remove the attribute without understanding what breaks.
+- **Two style blocks in `src/App.vue` are vendored verbatim from
+  `spm-ts/src/pmd/PMDApp.vue`'s `<style>` blocks** (lines 722–944
+  upstream). They define `.pmd-app .hl_wrapper` padding, the `:root`
+  CSS-variable block the shell depends on, and the
+  `body[data-theme='default-dark-v1']` rules. Edit upstream first,
+  then re-vendor — don't hand-edit ours in isolation.
+- **Three legacy stylesheets are deliberately not vendored**:
+  `styles.css` (29,287 lines), `styles.patch.css` (3,432 lines),
+  `styles.patch.scss` (41 lines). All three are V1-sidebar-era global
+  CSS with zero `sidebar-v2` selectors. We're previewing V2 only.
+  If a future preview needs V1 chrome, vendor them then — don't
+  silently re-skip on a subsequent port.
 
 ## Files & routing
 
@@ -108,10 +156,29 @@ For the shell itself, see "Source of truth" above.
 
 ## Dependencies
 
-- The runtime stack is fixed: **Vue 3, Vite, vue-router, TypeScript,
-  Font Awesome 5.8.1 (CDN), Tailwind Play CDN**.
-- `sass` is added as a build-time devDependency to compile the
-  vendored spm-ts SCSS — no runtime cost.
+- Runtime stack is fixed: **Vue 3, Vite, vue-router, TypeScript,
+  Font Awesome 5.8.1 (CDN)**.
+- **Build-time deps mirror spm-ts at pinned versions** (no `^` caret
+  ranges — bumping a version is a deliberate act, not a side effect).
+  Update these in lockstep when spm-ts upgrades:
+
+  | Package                     | Version  | Source                       |
+  | --------------------------- | -------- | ---------------------------- |
+  | `tailwindcss`               | `3.4.14` | spm-ts/package.json          |
+  | `postcss`                   | `8.5.6`  | spm-ts/package.json          |
+  | `autoprefixer`              | `10.4.20`| spm-ts/package.json          |
+  | `sass`                      | `1.85.1` | spm-ts/package.json          |
+  | `@tailwindcss/forms`        | `0.5.3`  | spm-ts/package.json          |
+  | `@tailwindcss/typography`   | `0.5.7`  | spm-ts/package.json          |
+  | `@tailwindcss/aspect-ratio` | `0.4.2`  | spm-ts/package.json          |
+  | `postcss-nesting`           | `10.2.0` | spm-ts/package.json          |
+
+- **One deliberate divergence from spm-ts:** spm-ts uses
+  `"vite": "npm:rolldown-vite@latest"` (an experimental Rust-based
+  Vite fork). We stay on regular `vite@6.x`. Reason: rolldown-vite is
+  alpha, unstable, and changes nothing about the styling pipeline.
+  If a future spm-ts capability requires rolldown specifically, we
+  revisit then.
 - **Don't add other npm dependencies without asking.** That includes
   UI libraries, icon packs, animation libs, utility libs.
 

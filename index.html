@@ -24,33 +24,14 @@
       integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
       crossorigin="anonymous"
     />
-
-    <!--
-      Tailwind Play CDN — design-preview only. Production spm-ts uses
-      compiled Tailwind; we use the CDN here to avoid an npm dep and
-      get pixel-fidelity for utility classes used by the shell ports.
-    -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      // Match spm-ts's Tailwind classic gray ramp + curious-blue accent
-      // (these are NOT HighRise tokens — they're legacy shell colors
-      // used by the prod sidebar/topbar; isolated here so the rest of
-      // the app stays HR-token-clean).
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'curious-blue': {
-                500: '#188bf6',
-                600: '#0871d3',
-              },
-            },
-          },
-        },
-      };
-    </script>
   </head>
-  <body>
+  <!--
+    `data-theme="default-dark-v1"` mirrors the attribute spm-ts sets on
+    <body> in prod. Many sidebar/topbar dark-theme rules in the vendored
+    PMDApp.vue style block are scoped to body[data-theme='default-dark-v1'],
+    so without this attribute those rules don't apply.
+  -->
+  <body data-theme="default-dark-v1">
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
