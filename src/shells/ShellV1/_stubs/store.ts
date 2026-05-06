@@ -27,6 +27,13 @@ import { reactive, readonly } from 'vue';
 
 interface PreviewStoreState {
   manualCollapseSidebar: boolean;
+  // Minimal company payload for SideBar.vue logo area (upstream: store.state.company.company).
+  company: {
+    company: {
+      id: string;
+      logo_url?: string;
+    };
+  };
   // From spm-ts/src/store/location.ts: the currently-active sub-account.
   // For an agency-level view this is undefined.
   locations: {
@@ -37,17 +44,25 @@ interface PreviewStoreState {
   // controls when those slices land.
   user: {
     user: {
-      id: 'preview-user',
-      type: 'agency';
-      name: 'Preview User';
-      email: 'preview@example.com';
-      pinnedLocations: [];
+      id: string;
+      type: 'agency' | 'account';
+      name: string;
+      email: string;
+      /** Initials avatar wash — reference top bar (lavender). */
+      profileColor?: string;
+      pinnedLocations: string[];
     };
   };
 }
 
 const state: PreviewStoreState = reactive({
   manualCollapseSidebar: false,
+  company: {
+    company: {
+      id: 'preview-company',
+      logo_url: undefined,
+    },
+  },
   locations: {
     currentLocation: undefined,
   },
@@ -57,6 +72,7 @@ const state: PreviewStoreState = reactive({
       type: 'agency',
       name: 'Preview User',
       email: 'preview@example.com',
+      profileColor: '#c4b5fd',
       pinnedLocations: [],
     },
   },
@@ -75,10 +91,11 @@ const getters = {
   // upstream: spm-ts/src/store/location.ts → getRecentVisitedLocations
   getRecentVisitedLocations: [] as unknown[],
 
-  // Namespaced company info. The shell only references this in setup() returns
-  // it doesn't read in templates, so an empty object suffices.
+  // Namespaced company info — SideBar reads logo_url for agency branding.
   // upstream: spm-ts/src/store/company.ts → company/get
-  'company/get': {},
+  get 'company/get'() {
+    return state.company.company;
+  },
 
   // Permission gates default to true so any feature-flagged nav row renders.
   // upstream: spm-ts/src/store/permissions/* → hasPermission, hasFeature, etc.

@@ -10,7 +10,7 @@
    * Tab labels come from each <HLTabPane>'s `tab` prop. We collect
    * panes via a shared injected registry keyed by `name`.
    */
-  import { computed, provide, ref, useSlots, type VNode } from 'vue';
+  import { Fragment, computed, provide, ref, useSlots, type VNode } from 'vue';
 
   type TabKey = string | number;
 
@@ -27,11 +27,24 @@
 
   const slots = useSlots();
 
-  // Panes are read off the slot vnodes' props on every render. Keeps
-  // it dead simple — no reactive registry, no inject/provide of pane
-  // metadata. Each render: walk slot children, pick out HLTabPane vnodes.
+  // Panes are read off slot vnodes' props on every render. With `v-for`
+  // the slot can contain Fragment wrappers, so we flatten recursively
+  // before picking HLTabPane nodes.
+  const flattenVNodes = (nodes: VNode[]): VNode[] => {
+    const out: VNode[] = [];
+    for (const node of nodes) {
+      if (!node) continue;
+      if (node.type === Fragment && Array.isArray(node.children)) {
+        out.push(...flattenVNodes(node.children as VNode[]));
+        continue;
+      }
+      out.push(node);
+    }
+    return out;
+  };
+
   const panes = computed(() => {
-    const children = (slots.default?.() ?? []) as VNode[];
+    const children = flattenVNodes((slots.default?.() ?? []) as VNode[]);
     return children
       .filter((vnode) => vnode && typeof vnode.type === 'object')
       .map((vnode) => ({

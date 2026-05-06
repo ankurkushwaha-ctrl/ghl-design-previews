@@ -30,11 +30,13 @@
 
         <div class="dropdown bootstrap-select hl_header--picker fit-width show"></div>
         <div class="hl_header--controls">
-          <div v-if="!isNonActiveLocation && !showNextLeadButton" id="CalendarsFeatureDiscovery" />
-          <div v-if="!isNonActiveLocation && !showNextLeadButton" id="ContactsFeatureDiscovery" />
-          <div v-if="!isNonActiveLocation && !showNextLeadButton" id="PaymentsFeatureDiscovery" />
-          <div v-if="!isNonActiveLocation" id="whatsAppHeaderSlotShared" />
+          <!-- Preview: hide empty shell attachment points so controls pack like prod chrome. -->
+          <div v-if="false" id="CalendarsFeatureDiscovery" />
+          <div v-if="false" id="ContactsFeatureDiscovery" />
+          <div v-if="false" id="PaymentsFeatureDiscovery" />
+          <div v-if="false" id="whatsAppHeaderSlotShared" />
           <div
+            v-if="false"
             id="i18n-feedback"
             :aria-label="$t('common.topBar.reportTranslationIssue')"
             v-tooltip.hover.bottom
@@ -50,9 +52,8 @@
 
           <a
             id="hl_header--copilot-icon"
-            class="btn btn-circle btn-primary hl_header--copy-link !w-auto"
+            class="btn btn-circle btn-primary hl_header--copy-link !w-auto preview-ask-ai-trigger"
             href="javascript:void(0);"
-            style="background: #ffffff !important"
             @click="trackCopilotIconClick"
             :aria-label="$t('common.topBar.askAIAssistant')"
             role="button"
@@ -71,7 +72,7 @@
             >
               <a
                 href="javascript:void(0);"
-                class="btn btn-circle btn-changelog"
+                class="btn btn-circle btn-changelog preview-topbar-changelog"
                 id="canny_logs-toggle"
                 role="button"
                 :aria-label="$t('common.topBar.viewChangelog')"
@@ -79,14 +80,14 @@
                 v-tooltip.hover.bottom
                 :title="$t('common.topBar.viewChangelog')"
               >
-                <i class="fa fa-bullhorn"></i>
+                <i class="fas fa-bullhorn"></i>
                 <span class="sr-only">{{ $t('common.topBar.viewChangelog') }}</span>
               </a>
             </div>
 
             <a
               href="javascript:void(0);"
-              class="flex justify-center items-center btn btn-circle btn-yellow hl_header--recent-activities"
+              class="flex justify-center items-center btn btn-circle hl_header--recent-activities preview-topbar-bell"
               :class="{
                 '-notification': hasUnreadNotifications,
               }"
@@ -191,6 +192,12 @@
           </template>
         </div>
       </div>
+
+      <UITopMenuItemsPreview
+        v-if="previewTopMenuNav.name"
+        :navigation="previewTopMenuNav"
+        :location-id="currentLocationId"
+      />
     </header>
   </div>
 </template>
@@ -198,6 +205,9 @@
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue';
 import { useStore } from '../_stubs/store';
+import { agencyNavigation } from '../_stubs/navigation';
+import type { V2RouteConfig } from '../_stubs/types';
+import UITopMenuItemsPreview from './UITopMenuItemsPreview.vue';
 import {
   NotificationBanner,
   I18nFeedback,
@@ -213,12 +223,14 @@ type PreviewUser = {
   email: string;
   type?: string;
   profilePhoto?: string;
+  /** Initials circle wash — stubbed from store user.user.profileColor */
   profileColor?: string;
   initials?: string;
 };
 
 export default defineComponent({
   components: {
+    UITopMenuItemsPreview,
     NotificationBanner,
     I18nFeedback,
     DialerModalV2,
@@ -229,6 +241,8 @@ export default defineComponent({
   },
   props: {
     locationId: { type: String, default: '' },
+    /** Sidebar meta for the current preview page — drives the top menu title row (spm-ts: menuTabs / active section). */
+    active: { type: String, default: '' },
   },
   setup(props) {
     const store = useStore();
@@ -246,7 +260,7 @@ export default defineComponent({
       return {
         ...u,
         initials,
-        profileColor: '#0c2d3f',
+        profileColor: (u.profileColor as string | undefined) ?? '#c4b5fd',
       };
     });
 
@@ -254,12 +268,21 @@ export default defineComponent({
     const collapseSideBar = computed<boolean>(() => Boolean((store.getters as any).getManualCollapseSidebar));
     const currentLocationId = computed<string>(() => props.locationId || 'preview-location');
 
+    const previewTopMenuNav = computed((): Partial<V2RouteConfig> => {
+      if (!props.active) {
+        return {};
+      }
+      const match = agencyNavigation.find(n => n.meta === props.active);
+      return match ?? {};
+    });
+
     const isUserTypeAgency = computed<boolean>(() => (user.value?.type || 'agency') === 'agency');
     const isCompanyCustomerTypeAgency = computed<boolean>(() => true);
 
     return {
       user,
       company,
+      previewTopMenuNav,
       collapseSideBar,
       currentLocationId,
       isUserTypeAgency,
@@ -269,10 +292,10 @@ export default defineComponent({
       disableAction: false,
       isUserSwitched: false,
       showNextLeadButton: false,
-      hasUnreadNotifications: false,
+      hasUnreadNotifications: true,
       isDev: false,
       canUseScreenRecorder: false,
-      isCopilotEnabled: false,
+      isCopilotEnabled: true,
       isOnAskAiRoute: false,
       walletBalance: 0,
       isWalletPillVisible: false,
@@ -301,8 +324,30 @@ export default defineComponent({
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  height: 50px;
-  padding: 0 15px;
+  height: 40px;
+  padding: 4px 16px;
+}
+
+/* Compact the topmenu-nav row beneath the controls strip — upstream uses
+ * `pb-2 md:pb-3` + line-height: 1.6rem which together push the header
+ * region to ~90px. Bumped specificity with `.hl_header` ancestor to win
+ * against `.sidebar-v2-agency .hl_header .topmenu-nav ...`. */
+:deep(.hl_header .topmenu-nav) {
+  padding: 0 16px !important;
+  align-items: center !important;
+  min-height: 28px;
+}
+
+:deep(.hl_header .topmenu-nav .topmenu-navtitle) {
+  padding: 4px 8px !important;
+  margin: 0 !important;
+  font-size: 0.9rem !important;
+  line-height: 1.25rem !important;
+}
+
+:deep(.hl_header .topmenu-nav .topmenu-navitem) {
+  padding: 4px 8px !important;
+  line-height: 1.25rem !important;
 }
 
 .hl_header--picker {
@@ -319,18 +364,18 @@ export default defineComponent({
 }
 
 .hl_header--controls > * + * {
-  margin-left: 10px;
+  margin-left: 8px;
 }
 
 .btn-circle {
-  width: 45px;
-  height: 45px;
-  line-height: 47px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
   padding: 0;
   text-align: center;
   border-radius: 50px;
   min-width: auto;
-  font-size: 1rem;
+  font-size: 0.85rem;
 }
 
 .btn.btn-primary {
@@ -345,6 +390,46 @@ export default defineComponent({
   color: #ffbc00;
 }
 
+.preview-ask-ai-trigger {
+  background: transparent !important;
+  border: none;
+  width: auto;
+  min-width: auto;
+  height: 28px;
+  line-height: 28px;
+  padding: 0;
+}
+
+/* Teal megaphone + red badge (design-preview parity). */
+.preview-topbar-changelog {
+  position: relative;
+  background-color: #2dd4bf !important;
+  border-color: #2dd4bf !important;
+  color: #ffffff !important;
+}
+
+.preview-topbar-changelog::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+/* Orange bell */
+.preview-topbar-bell {
+  background-color: #f97316 !important;
+  border-color: #f97316 !important;
+}
+
+.preview-topbar-bell i {
+  color: #ffffff !important;
+}
+
 .hl_header--recent-activities {
   position: relative;
 }
@@ -355,16 +440,17 @@ export default defineComponent({
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ffbc00;
+  background: #ef4444;
   position: absolute;
   top: 2px;
   right: 2px;
+  box-shadow: 0 0 0 2px #ffffff;
 }
 
 .hl_header--avatar {
   display: block;
-  max-width: 44px;
-  height: 44px;
+  max-width: 30px;
+  height: 30px;
 }
 
 .hl_header--dropdown .dropdown-menu {
@@ -374,15 +460,15 @@ export default defineComponent({
 .avatar {
   display: inline-flex;
   align-items: center;
-  height: 44px;
+  height: 30px;
   border-radius: 50%;
 }
 
 .avatar_img {
-  min-width: 44px;
-  width: 44px;
-  height: 44px;
-  line-height: 44px;
+  min-width: 30px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
   border-radius: 50%;
   color: #fff;
   text-align: center;
@@ -393,8 +479,8 @@ export default defineComponent({
 }
 
 .avatar_img > img {
-  max-width: 44px;
-  max-height: 44px;
+  max-width: 30px;
+  max-height: 30px;
   border-radius: 50%;
 }
 

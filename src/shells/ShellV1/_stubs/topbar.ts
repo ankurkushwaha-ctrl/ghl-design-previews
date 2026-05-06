@@ -11,7 +11,24 @@ export const I18nFeedback = noOp('I18nFeedback');
 export const DialerModalV2 = noOp('DialerModalV2');
 export const ScreenRecorder = noOp('ScreenRecorder');
 export const UserSwitcher = noOp('UserSwitcher');
-export const CopilotPrimaryIcon = noOp('CopilotPrimaryIcon');
+export const CopilotPrimaryIcon = defineComponent({
+  name: 'CopilotPrimaryIcon',
+  setup() {
+    return () =>
+      h(
+        'span',
+        {
+          'aria-hidden': 'true',
+          style:
+            'display:inline-flex;align-items:center;gap:6px;padding:3px 12px;height:26px;border-radius:999px;background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 55%,#6366f1 100%);color:#fff;font-size:12px;font-weight:600;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,0.18);',
+        },
+        [
+          h('span', { style: 'font-size:11px;opacity:0.95;' }, '✦'),
+          h('span', null, 'Ask AI'),
+        ]
+      );
+  },
+});
 
 export const TopBarWalletPill = defineComponent({
   name: 'TopBarWalletPill',
@@ -33,37 +50,5 @@ export const TopBarWalletPill = defineComponent({
             '$'
           )
         : h('div', { style: 'display:none' });
-  },
-});
-
-export const UITopMenuItems = defineComponent({
-  name: 'UITopMenuItems',
-  props: {
-    navigation: { type: Object, required: false },
-    locationId: { type: String, required: false },
-    user: { type: Object, required: false },
-  },
-  setup() {
-    return () =>
-      h('div', { class: 'preview-top-menu-stub' }, [
-        h(
-          'button',
-          {
-            class: 'preview-top-menu-stub__btn preview-top-menu-stub__btn--yellow',
-            'aria-label': 'top menu quick action',
-            type: 'button',
-          },
-          '↑'
-        ),
-        h(
-          'button',
-          {
-            class: 'preview-top-menu-stub__btn preview-top-menu-stub__btn--green',
-            'aria-label': 'top menu quick action',
-            type: 'button',
-          },
-          '↑'
-        ),
-      ]);
   },
 });

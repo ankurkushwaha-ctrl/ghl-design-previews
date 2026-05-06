@@ -13,7 +13,7 @@ withDefaults(defineProps<Props>(), { active: '' });
   <div class="sidebar-v2-agency shell-v1">
     <SideBar :active="active" />
     <section class="shell-v1__content">
-      <TopBar />
+      <TopBar :active="active" />
       <main class="hl_wrapper shell-v1__main">
         <slot />
       </main>

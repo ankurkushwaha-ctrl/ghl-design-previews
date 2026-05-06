@@ -35,19 +35,6 @@ import type { V2RouteConfig } from './types';
 
 export const agencyNavigation: V2RouteConfig[] = [
   {
-    name: 'Summer of AI',
-    enabled: true,
-    items: [],
-    type: 'header',
-    meta: 'ai-employee-promo',
-    tooltip: 'common.sidebar.aiEmployeePromo',
-    permissions: { all: [], any: [] },
-    userScopes: { all: [], any: [] },
-    icon: 'https://cdn.msgsndr.com/sidebar-v2/aiIcon.svg',
-    children: [],
-    route: { name: 'aiEmployeePromoRoutes.default', params: [] },
-  },
-  {
     name: 'common.sidebar.askAI',
     enabled: true,
     items: [],
@@ -60,22 +47,8 @@ export const agencyNavigation: V2RouteConfig[] = [
     children: [],
     route: { name: 'agencyAskAiRoutes.default', params: [] },
   },
-  // ...agencyNavigationConfig (= [agencyLaunchpadConfig])
   {
-    name: 'common.sidebar.agencyLaunchpad',
-    enabled: true,
-    items: [],
-    type: 'header',
-    meta: 'agency-launchpad',
-    tooltip: 'common.sidebar.agencyLaunchpad',
-    permissions: { all: [], any: [] },
-    userScopes: { all: [], any: ['agency/launchpad.write'] },
-    icon: 'https://cdn.filesafe.space/sidebar-v2/icon_launchpad.svg',
-    children: [],
-    route: { name: 'agencyLaunchpadRoutes.default', params: [] },
-  },
-  {
-    name: 'common.sidebar.agencyDashboard',
+    name: 'Agency Dashboard',
     enabled: true,
     items: [],
     type: 'header',
@@ -97,7 +70,7 @@ export const agencyNavigation: V2RouteConfig[] = [
     permissions: { all: [], any: [] },
     userScopes: { all: [], any: [] },
     icon: {
-      value: { color: 'var(-black)', fontFamily: 'Font Awesome 5 Free', name: 'chart-bar', unicode: 'f080' },
+      value: { color: 'var(--black)', fontFamily: 'Font Awesome 5 Free', name: 'chart-bar', unicode: 'f080' },
     },
     children: [],
     route: { name: 'saasRoutes.default', params: [] },
@@ -191,7 +164,7 @@ export const agencyNavigation: V2RouteConfig[] = [
     permissions: { all: [], any: [] },
     userScopes: { all: [], any: [] },
     icon: {
-      value: { color: 'var(-black)', fontFamily: 'Font Awesome 5 Free', name: 'fas fa-users', unicode: 'f0c0' },
+      value: { color: 'var(--black)', fontFamily: 'Font Awesome 5 Free', name: 'fas fa-users', unicode: 'f0c0' },
     },
     children: [],
     route: { name: 'affiliatePortalRoutes.default', params: [] },
@@ -206,7 +179,7 @@ export const agencyNavigation: V2RouteConfig[] = [
     permissions: { all: [], any: [] },
     userScopes: { all: [], any: [] },
     icon: {
-      value: { color: 'var(-black)', fontFamily: 'Font Awesome 5 Free', name: 'shapes', unicode: 'f61f' },
+      value: { color: 'var(--black)', fontFamily: 'Font Awesome 5 Free', name: 'shapes', unicode: 'f61f' },
     },
     children: [],
     route: { name: 'templateLibraryAdminRoutes.default', params: [] },
@@ -235,7 +208,7 @@ export const agencyNavigation: V2RouteConfig[] = [
     permissions: { all: [], any: [] },
     userScopes: { all: [], any: [] },
     icon: {
-      value: { color: 'var(-black)', fontFamily: 'Font Awesome 5 Free', name: 'graduation-cap', unicode: 'f19d' },
+      value: { color: 'var(--black)', fontFamily: 'Font Awesome 5 Free', name: 'graduation-cap', unicode: 'f19d' },
     },
     children: [],
     route: { name: 'universityRoutes.default', params: [] },
@@ -303,7 +276,7 @@ export const agencyNavigation: V2RouteConfig[] = [
     permissions: { all: [], any: [] },
     userScopes: { all: [], any: [] },
     icon: {
-      value: { color: 'var(-black)', fontFamily: 'Font Awesome 5 Free', name: 'desktop', unicode: 'f108' },
+      value: { color: 'var(--black)', fontFamily: 'Font Awesome 5 Free', name: 'desktop', unicode: 'f108' },
     },
     children: [],
     route: { name: 'desktopWhitelabelAppRoutes.default', params: [] },
@@ -323,18 +296,19 @@ export const agencyNavigation: V2RouteConfig[] = [
     route: { name: 'integrationRoutes.default', params: [] },
   },
   {
-    name: 'Holiday Promos',
+    name: 'Success Stats',
     enabled: true,
     items: [],
     type: 'header',
-    meta: 'holiday-promos',
-    tooltip: 'Holiday Promos',
+    meta: 'agency-success-stats',
+    tooltip: 'Success Stats',
     permissions: { all: [], any: [] },
     userScopes: { all: [], any: [] },
-    icon: 'https://cdn.msgsndr.com/sidebar-v2/gift-01.svg',
+    icon: {
+      value: { color: 'var(--black)', fontFamily: 'Font Awesome 5 Free', name: 'chart-line', unicode: 'f201' },
+    },
     children: [],
-    route: { name: 'holiday-promos', params: [] },
-    badge: { enable: true, title: 'common.sidebar.new' },
+    route: { name: 'agencySuccessStatsRoutes.default', params: [] },
   },
   // Settings — footer item.
   // Upstream `items` array (~880 lines of sub-routes) dropped — visible only
