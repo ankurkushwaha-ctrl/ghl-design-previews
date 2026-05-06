@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import { router } from './routes';
+import { i18n } from './shells/ShellV1/_stubs/i18n';
 
 // Mirrors spm-ts/src/bootstrap.ts: Tailwind directives are mounted globally
 // from the entry. The file itself is vendored verbatim (under the same
@@ -14,4 +15,7 @@ import './assets/pmd/css/tailwind.css';
 // kept explicit for predictability.
 import './tokens.css';
 
-createApp(App).use(router).mount('#app');
+// vue-i18n is registered as a plugin so vendored shell templates can use
+// `$t('key')` exactly the way they do in spm-ts. Same instance is exported
+// from the stub for `i18n.global.t(key)` calls inside <script>.
+createApp(App).use(router).use(i18n).mount('#app');

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import svgLoader from 'vite-svg-loader';
 import tailwindcss from 'tailwindcss';
 
 // `URL.pathname` gives us the absolute path to /src for alias resolution
@@ -7,7 +8,28 @@ import tailwindcss from 'tailwindcss';
 const srcPath = new URL('./src', import.meta.url).pathname;
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    // Mirrors spm-ts/vite.config.ts: turns `import Icon from 'foo.svg'` into
+    // a Vue component instead of a URL string. The svgo overrides below
+    // are byte-identical to spm-ts so SVGs preserve viewBox + element ids
+    // when used as inline components.
+    svgLoader({
+      svgoConfig: {
+        plugins: [
+          {
+            name: 'preset-default',
+            params: {
+              overrides: {
+                removeViewBox: false,
+                cleanupIds: false,
+              },
+            },
+          },
+        ],
+      },
+    }),
+  ],
   resolve: {
     alias: {
       '@': srcPath,
