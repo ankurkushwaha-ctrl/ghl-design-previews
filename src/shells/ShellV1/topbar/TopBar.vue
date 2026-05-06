@@ -319,6 +319,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.hl_header {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  position: relative;
+  z-index: 10;
+}
+
 .hl_header .container-fluid {
   width: 100%;
   display: flex;
