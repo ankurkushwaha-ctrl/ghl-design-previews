@@ -296,9 +296,26 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.hl_header .container-fluid {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 50px;
+  padding: 0 15px;
+}
+
+.hl_header--picker {
+  visibility: hidden;
+  width: 0;
+  margin: 0;
+  padding: 0;
+}
+
 .hl_header--controls {
   display: flex;
   align-items: center;
+  margin-left: auto;
 }
 
 .hl_header--controls > * + * {
@@ -348,6 +365,10 @@ export default defineComponent({
   display: block;
   max-width: 44px;
   height: 44px;
+}
+
+.hl_header--dropdown .dropdown-menu {
+  display: none;
 }
 
 .avatar {
