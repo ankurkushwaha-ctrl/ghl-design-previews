@@ -26,6 +26,7 @@
 import { reactive, readonly } from 'vue';
 
 interface PreviewStoreState {
+  manualCollapseSidebar: boolean;
   // From spm-ts/src/store/location.ts: the currently-active sub-account.
   // For an agency-level view this is undefined.
   locations: {
@@ -46,6 +47,7 @@ interface PreviewStoreState {
 }
 
 const state: PreviewStoreState = reactive({
+  manualCollapseSidebar: false,
   locations: {
     currentLocation: undefined,
   },
@@ -63,9 +65,11 @@ const state: PreviewStoreState = reactive({
 // Vuex `getters` are accessed as `store.getters.foo` or `store.getters['ns/foo']`.
 // We expose them as a plain object — the same access pattern works.
 const getters = {
-  // Sidebar: true when the user has manually collapsed it. Default expanded.
+  // Sidebar: true when the user has manually collapsed it.
   // upstream: spm-ts/src/store/index.ts → getManualCollapseSidebar
-  getManualCollapseSidebar: false,
+  get getManualCollapseSidebar() {
+    return state.manualCollapseSidebar;
+  },
 
   // Recent locations from localStorage. Empty in this preview.
   // upstream: spm-ts/src/store/location.ts → getRecentVisitedLocations
@@ -88,7 +92,11 @@ const store = {
   // components await these in onMounted hooks but don't read the result
   // in any code path that affects rendering for our scope.
   dispatch: async (_action: string, _payload?: unknown) => undefined,
-  commit: (_mutation: string, _payload?: unknown) => undefined,
+  commit: (mutation: string, payload?: unknown) => {
+    if (mutation === 'setManualCollapseSidebar' && typeof payload === 'boolean') {
+      state.manualCollapseSidebar = payload;
+    }
+  },
 };
 
 export function useStore() {

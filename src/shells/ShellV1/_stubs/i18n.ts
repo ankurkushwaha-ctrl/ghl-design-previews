@@ -48,6 +48,41 @@ const messages = {
       search_icon: 'search icon',
       // [verified] spm-ts/src/locales/en.json:1532
       quick_actions_icon: 'Quick actions icon',
+      // [inferred] alt text on the agency logo image.
+      agency_logo: 'Agency logo',
+      // [inferred] alt text on the Launchpad nav icon.
+      launchpad_icon: 'Launchpad icon',
+
+      // [inferred] visible labels on every sidebar nav item. Sourced from
+      // the i18n keys upstream uses in spm-ts/src/util/navigation.ts; the
+      // dictionary lives in the runtime localization API which we don't
+      // hit here. If any label looks wrong, paste the canonical string
+      // from a live prod screenshot.
+      sidebar: {
+        aiEmployeePromo: 'Summer of AI',
+        askAI: 'Ask AI',
+        agencyLaunchpad: 'Launchpad',
+        agencyDashboard: 'Dashboard',
+        saaSConfigurator: 'SaaS Configurator',
+        prospecting: 'Prospecting',
+        subAccounts: 'Sub-Accounts',
+        accountSnapshots: 'Account Snapshots',
+        reselling: 'Reselling',
+        addOns: 'Add-Ons',
+        affiliatePortal: 'Affiliate Portal',
+        templateLibrary: 'Template Library',
+        partners: 'Partners',
+        university: 'University',
+        saaSEducation: 'SaaS Education',
+        ghlSwag: 'GHL Swag',
+        ideas: 'Ideas',
+        mobileApp: 'Mobile App',
+        desktopApp: 'Desktop App',
+        appMarketplace: 'App Marketplace',
+        settings: 'Settings',
+        new: 'NEW',
+        goBack: 'Go back',
+      },
 
       locationSwitcher: {
         // [inferred] used as the agency-mode placeholder text.

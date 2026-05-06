@@ -319,7 +319,7 @@
 </script>
 
 <template>
-  <ShellV1 active="addons">
+  <ShellV1 active="agency-marketplace">
     <!--
       Wrapped in <ShellV1> instead of inline <SideBarV2>/<TopBar>.
       The prod file also rendered <KickoffWidget /> at the end —
