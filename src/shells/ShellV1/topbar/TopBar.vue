@@ -331,8 +331,8 @@ export default defineComponent({
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  height: 40px;
-  padding: 4px 16px;
+  height: 52px;
+  padding: 8px 24px;
 }
 
 /* Compact the topmenu-nav row beneath the controls strip — upstream uses
