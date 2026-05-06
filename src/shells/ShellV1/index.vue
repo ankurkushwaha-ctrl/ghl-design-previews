@@ -40,4 +40,13 @@ withDefaults(defineProps<Props>(), { active: '' });
     flex: 1;
     padding: 0;
   }
+
+  /*
+   * In the real app .hl_wrapper has pt-12 (48px) to clear the fixed topbar.
+   * In this shell the topbar is a flex sibling, so content already sits below
+   * it naturally — zero out the offset so there's no double gap.
+   */
+  :deep(.hl_wrapper) {
+    padding-top: 0 !important;
+  }
 </style>
