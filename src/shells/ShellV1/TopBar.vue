@@ -2,37 +2,43 @@
   /*
    * ShellV1 TopBar — visual port of spm-ts/src/pmd/components/TopBar.vue.
    *
-   * Like the sidebar, this is the visual layer only. The real top bar
-   * has notification banners, A2P/billing warnings, dialer, screen
-   * recorder, calendar/contact feature-discovery slots, wallet pill,
-   * Canny changelog, copilot drawer, help drawer, profile dropdown,
-   * etc. — all of which would require a Vuex store, the Pendo SDK,
-   * and a stack of platform packages we deliberately don't pull in.
+   * Visual-layer port. Steady-state the user sees on the agency Add-Ons
+   * page. Order of right-aligned controls matches prod:
+   *   1. Red `</>` dev/debugger button     (prod: v-if="isDev")
+   *   2. Ask AI / Copilot pill              (prod: CopilotPrimaryIcon SVG)
+   *   3. Changelog (green megaphone)        (prod: btn-changelog)
+   *   4. Notifications (yellow bell)        (prod: btn-yellow + red dot)
+   *   5. Help (blue ?)                      (prod: hl_header--help-icon)
+   *   6. Avatar with initials               (prod: profile dropdown)
    *
-   * What we render here is the "steady state" most stakeholders see:
-   *   - subtle bottom shadow (matches prod)
-   *   - 50px tall, right-aligned controls
-   *   - changelog (megaphone), notifications (bell with red dot),
-   *     help (?), Ask AI (Copilot icon stand-in), avatar with initials
-   *
-   * The "Ask AI" icon in prod is a custom svg (CopilotPrimaryIcon).
-   * Here we use a sparkles + "Ask AI" wordmark to communicate the
-   * same surface without bundling the asset.
+   * Stubbed (not rendered) compared to prod:
+   *   - NotificationBanner, user-switched banner
+   *   - Location dropdown (hidden in prod template too)
+   *   - HIPAA badge (only when location.hipaa_compliance)
+   *   - Calendar/Contacts/Payments feature discovery slots
+   *   - WhatsApp slot, I18nFeedback, TopBarWalletPill
+   *   - DialerModalV2, ScreenRecorder, profile dropdown menu
+   * These either depend on Vuex state or surface contextually — not
+   * useful for static design previews.
    */
 
   interface Props {
-    /** Override the avatar initials. Used to mirror the signed-in user. */
+    /** Override the avatar initials. */
     avatarInitials?: string;
     /** Override the avatar background color. */
     avatarColor?: string;
-    /** Whether to show the small red unread-notifications dot. */
+    /** Show the red unread-notifications dot on the bell. */
     hasUnread?: boolean;
+    /** Show the red dev `</>` button. Defaults to true so previews
+        match the reference screenshot of the design team's account. */
+    showDevButton?: boolean;
   }
 
   withDefaults(defineProps<Props>(), {
     avatarInitials: 'AK',
-    avatarColor: '#7839ee', // var(--violet-600) — feels brand-y, distinct from icon tiles
+    avatarColor: 'var(--violet-600)',
     hasUnread: true,
+    showDevButton: true,
   });
 </script>
 
@@ -40,20 +46,44 @@
   <header class="shell-topbar hl_header">
     <div class="shell-topbar__inner container-fluid">
       <div class="shell-topbar__controls hl_header--controls">
-        <!-- Ask AI / Copilot pill. Stand-in for CopilotPrimaryIcon.
-             In prod this is a custom SVG — here a sparkle + label
-             that reads like the same surface. -->
+        <!-- Red `</>` dev/debugger toggle. Prod renders this only when
+             isDev is true; the design team's Chrome account in the
+             reference screenshot has it on, so we mirror that. -->
+        <button
+          v-if="showDevButton"
+          type="button"
+          class="shell-topbar__btn shell-topbar__btn--dev"
+          aria-label="Toggle frontend debugger"
+          title="Toggle frontend debugger"
+        >
+          <i class="fa fa-code" aria-hidden="true" />
+        </button>
+
+        <!-- Ask AI / Copilot pill. Stand-in for prod's CopilotPrimaryIcon
+             SVG (83×32). Inline sparkle + "Ask AI" wordmark reads as the
+             same surface without bundling the asset. -->
         <button
           type="button"
           class="shell-topbar__askai"
           aria-label="Ask AI"
         >
-          <i class="fas fa-magic" aria-hidden="true" />
+          <svg
+            class="shell-topbar__askai-icon"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M8 0 L9.4 5.4 L14.8 6.8 L9.4 8.2 L8 13.6 L6.6 8.2 L1.2 6.8 L6.6 5.4 Z"
+              fill="currentColor"
+            />
+            <circle cx="13" cy="2.5" r="1.2" fill="currentColor" />
+            <circle cx="2.5" cy="12" r="0.8" fill="currentColor" />
+          </svg>
           <span>Ask AI</span>
         </button>
 
-        <!-- Changelog (megaphone) — agency-side only in prod. We always
-             show it because previews are agency-side. -->
+        <!-- Changelog (megaphone) — agency-side only in prod. -->
         <button
           type="button"
           class="shell-topbar__btn shell-topbar__btn--changelog"
@@ -110,7 +140,6 @@
     height: 50px;
     z-index: 30;
     background: #ffffff;
-    /* Same shadow as prod. */
     box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.11);
     font-family: var(--hr-font-family-base);
   }
@@ -146,9 +175,11 @@
     cursor: pointer;
     transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
   }
-  .shell-topbar__askai i {
+  .shell-topbar__askai-icon {
+    width: 14px;
+    height: 14px;
     color: var(--violet-500);
-    font-size: 12px;
+    flex-shrink: 0;
   }
   .shell-topbar__askai:hover {
     border-color: var(--gray-300);
@@ -159,7 +190,7 @@
     outline-offset: 2px;
   }
 
-  /* ── Circle buttons (changelog / bell / help) ─────────────────────── */
+  /* ── Circle buttons (dev / changelog / bell / help) ───────────────── */
   .shell-topbar__btn {
     appearance: none;
     border: 0;
@@ -181,11 +212,13 @@
     outline-offset: 2px;
   }
 
-  .shell-topbar__btn--changelog {
-    background: var(--shell-changelog-btn-bg);
-  }
+  /* Red dev button — matches prod's `style="background: red !important"`. */
+  .shell-topbar__btn--dev { background: var(--error-500); }
+
+  .shell-topbar__btn--changelog { background: var(--shell-changelog-btn-bg); }
+
   .shell-topbar__btn--notifications {
-    /* Yellow circle in prod (.btn-yellow class) — matches HR warning ramp. */
+    /* Yellow circle in prod (.btn-yellow class). */
     background: var(--warning-500);
   }
   .shell-topbar__btn--notifications.shell-topbar__btn--has-unread::after {
@@ -196,17 +229,14 @@
     width: 8px;
     height: 8px;
     border-radius: 999px;
-    background: var(--error-500, #f04438);
+    background: var(--error-500);
     box-shadow: 0 0 0 2px #ffffff;
   }
-  .shell-topbar__btn--help {
-    background: var(--shell-help-btn-bg);
-  }
+
+  .shell-topbar__btn--help { background: var(--shell-help-btn-bg); }
 
   /* ── Avatar ───────────────────────────────────────────────────────── */
-  .shell-topbar__avatar-wrap {
-    margin-left: 4px;
-  }
+  .shell-topbar__avatar-wrap { margin-left: 4px; }
   .shell-topbar__avatar {
     appearance: none;
     border: 0;

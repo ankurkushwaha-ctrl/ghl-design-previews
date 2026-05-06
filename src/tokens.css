@@ -403,6 +403,7 @@
 /* ═══════════════════════════════════════════════════════════════════
    Base body styles (mirrors HR text defaults so pages feel "production")
    ═══════════════════════════════════════════════════════════════════ */
+html { color-scheme: light; }
 body {
   margin: 0;
   font-family: var(--hr-font-family-base);
