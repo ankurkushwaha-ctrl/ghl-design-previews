@@ -9,12 +9,14 @@
    *
    * Currently mounted:
    *   - 2.1: LocationSwitcherContainer (the location pill)
+   *   - 2.2: QuickActions (search bar + lightning-bolt button)
    *
    * The wrapper class `.sidebar-v2-agency` is the SCSS scope selector under
    * which styles.sidebar.scss writes all sidebar rules. Without it, the
    * vendored component renders unstyled.
    */
   import LocationSwitcherContainer from '@/shells/ShellV1/sidebar/LocationSwitcherContainer.vue';
+  import QuickActions from '@/shells/ShellV1/sidebar/QuickActions.vue';
 </script>
 
 <template>
@@ -49,6 +51,25 @@
       <div class="shell-parts-preview__stage">
         <nav class="shell-parts-preview__sidebar sidebar-v2-agency">
           <LocationSwitcherContainer />
+        </nav>
+      </div>
+    </section>
+
+    <section class="shell-parts-preview__slice">
+      <header class="shell-parts-preview__header">
+        <h2 class="shell-parts-preview__heading">2.2 — QuickActions</h2>
+        <p class="shell-parts-preview__sub">
+          Vendored from
+          <code>spm-ts/src/pmd/components/sidebar/QuickActions.vue</code>.
+          Renders the global-search opener (with keyboard-shortcut pill)
+          and the lightning-bolt button. Click the lightning-bolt to
+          toggle the deferred dropdown placeholder.
+        </p>
+      </header>
+
+      <div class="shell-parts-preview__stage">
+        <nav class="shell-parts-preview__sidebar sidebar-v2-agency">
+          <QuickActions />
         </nav>
       </div>
     </section>

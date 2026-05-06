@@ -13,6 +13,13 @@
  *     import { Location, User } from '../_stubs/models'
  */
 
+// Permissions object — both Location and User carry one. Keys are
+// feature flags (`contacts_enabled`, `opportunities_enabled`, etc.)
+// mapped to booleans. Upstream types this loosely as `any`; we keep it
+// loose here too because the actual key set is product-wide and not
+// stable enough to enumerate.
+type PermissionsMap = Record<string, boolean>;
+
 // Mirrors a subset of spm-ts Location fields. Only the keys that vendored
 // shell templates read are listed — extend this as new components are ported
 // and reveal additional Location fields they reference.
@@ -24,6 +31,10 @@ export class Location {
   city?: string;
   state?: string;
   email?: string;
+  // Read by QuickActions.vue's `hasSearchPermission` computed. Path is
+  // dead for our agency-mode scope (`location.value` is undefined), but
+  // vue-tsc still type-checks the access — so the field has to exist.
+  permissions?: PermissionsMap;
 
   constructor(data: Partial<Location> = {}) {
     Object.assign(this, data);
@@ -37,6 +48,10 @@ export class User {
   name?: string;
   email?: string;
   pinnedLocations?: string[];
+  // Same reason as Location.permissions above — referenced by
+  // QuickActions's permission gate, dead in our scope but typed for
+  // vue-tsc.
+  permissions?: PermissionsMap;
 
   constructor(data: Partial<User> = {}) {
     Object.assign(this, data);
