@@ -35,3 +35,35 @@ export const TopBarWalletPill = defineComponent({
         : h('div', { style: 'display:none' });
   },
 });
+
+export const UITopMenuItems = defineComponent({
+  name: 'UITopMenuItems',
+  props: {
+    navigation: { type: Object, required: false },
+    locationId: { type: String, required: false },
+    user: { type: Object, required: false },
+  },
+  setup() {
+    return () =>
+      h('div', { class: 'preview-top-menu-stub' }, [
+        h(
+          'button',
+          {
+            class: 'preview-top-menu-stub__btn preview-top-menu-stub__btn--yellow',
+            'aria-label': 'top menu quick action',
+            type: 'button',
+          },
+          '↑'
+        ),
+        h(
+          'button',
+          {
+            class: 'preview-top-menu-stub__btn preview-top-menu-stub__btn--green',
+            'aria-label': 'top menu quick action',
+            type: 'button',
+          },
+          '↑'
+        ),
+      ]);
+  },
+});

@@ -191,6 +191,7 @@
           </template>
         </div>
       </div>
+      <UITopMenuItems v-if="v2SideBarNavigation.name" :locationId="currentLocationId" :user="user || undefined" :navigation="v2SideBarNavigation" />
     </header>
   </div>
 </template>
@@ -206,6 +207,7 @@ import {
   UserSwitcher,
   CopilotPrimaryIcon,
   TopBarWalletPill,
+  UITopMenuItems,
 } from '../_stubs/topbar';
 
 type PreviewUser = {
@@ -226,6 +228,7 @@ export default defineComponent({
     UserSwitcher,
     CopilotPrimaryIcon,
     TopBarWalletPill,
+    UITopMenuItems,
   },
   props: {
     locationId: { type: String, default: '' },
@@ -264,6 +267,7 @@ export default defineComponent({
       currentLocationId,
       isUserTypeAgency,
       isCompanyCustomerTypeAgency,
+      v2SideBarNavigation: { name: 'preview-top-menu' },
       getVersion: 'v1',
       isNonActiveLocation: false,
       disableAction: false,
@@ -294,3 +298,34 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.preview-top-menu-stub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 8px 10px;
+}
+
+.preview-top-menu-stub__btn {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 0;
+  line-height: 1;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-top-menu-stub__btn--yellow {
+  background: #f5a524;
+}
+
+.preview-top-menu-stub__btn--green {
+  background: #22c55e;
+}
+</style>
