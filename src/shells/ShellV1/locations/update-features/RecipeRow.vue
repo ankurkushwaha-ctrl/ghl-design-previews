@@ -202,7 +202,7 @@ const hasDetail = computed(() =>
 
 .recipe-row__impact {
   margin-top: 2px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 17px;
   color: var(--gray-500, #667085);
@@ -225,7 +225,7 @@ const hasDetail = computed(() =>
 }
 
 .recipe-row__chevron {
-  font-size: 9px;
+  font-size: 11px;
   transition: transform 0.15s ease;
 }
 
@@ -249,7 +249,7 @@ const hasDetail = computed(() =>
 }
 
 .recipe-row__detail-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--gray-500, #667085);
 }
@@ -264,7 +264,7 @@ const hasDetail = computed(() =>
   display: inline-block;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 16px;
 }

@@ -197,7 +197,7 @@ function featureIdsInGroup(groupName: string): string[] {
 }
 
 .recipe-list__count {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--gray-700, #344054);
 }
@@ -209,7 +209,7 @@ function featureIdsInGroup(groupName: string): string[] {
 }
 
 .recipe-list__flip-link {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 16px;
   color: var(--gray-700, #344054);
@@ -248,7 +248,7 @@ function featureIdsInGroup(groupName: string): string[] {
   align-items: center;
   justify-content: space-between;
   padding: 6px 16px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--gray-600, #475467);
   text-transform: uppercase;
@@ -263,7 +263,7 @@ function featureIdsInGroup(groupName: string): string[] {
 }
 
 .recipe-list__remove-group {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 16px;
   text-transform: none;

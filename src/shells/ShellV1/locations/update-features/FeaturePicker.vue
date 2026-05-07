@@ -338,7 +338,7 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   border-radius: 4px;
   background: transparent;
   color: var(--gray-400, #98a2b3);
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -351,7 +351,7 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   flex: 0 0 auto;
   height: 32px;
   padding: 0 12px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--primary-700, #004eeb);
   background: transparent;
@@ -410,7 +410,7 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
 }
 
 .picker__group-name {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--gray-600, #475467);
   text-transform: uppercase;
@@ -427,7 +427,7 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   border-radius: 4px;
   border: 1.5px solid var(--gray-300, #d0d5dd);
   background: var(--base-white, #ffffff);
-  font-size: 10px;
+  font-size: 12px;
   color: transparent;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -451,7 +451,7 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
 
 .picker__sub-group {
   padding: 4px 4px 2px 12px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
   color: var(--gray-500, #667085);
 }
@@ -526,7 +526,7 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   border-radius: 6px;
   background: var(--gray-900, #101828);
   color: #ffffff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 14px;
   white-space: nowrap;
@@ -559,7 +559,7 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   border-radius: 4px;
   border: 1.5px solid var(--gray-300, #d0d5dd);
   background: var(--base-white, #ffffff);
-  font-size: 9px;
+  font-size: 11px;
   color: transparent;
   transition: all 0.12s ease;
 }

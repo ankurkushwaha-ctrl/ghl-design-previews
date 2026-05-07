@@ -116,7 +116,7 @@ const { t } = useI18n()
 
 /* ── Label ────────────────────────────────────────────────── */
 .action-chip__label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1;
   color: var(--gray-700, #344054);

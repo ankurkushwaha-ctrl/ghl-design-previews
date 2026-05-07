@@ -456,7 +456,7 @@ function close() {
 }
 
 .uf-modal__select-btn {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 16px;
   color: var(--gray-700, #344054);
@@ -502,7 +502,7 @@ function close() {
 /* ─── Shared separator dot ────────────────────────────────────────────── */
 .uf-modal__bulk-sep {
   color: var(--gray-300, #d0d5dd);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* ─── Footer ─────────────────────────────────────────────────────────── */
