@@ -15,15 +15,16 @@
   per brief.
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ActionChip from './ActionChip.vue'
-import type { Feature, Impact, RecipeEntry } from './types'
+import type { Feature, FeatureAccountDetail, Impact, RecipeEntry } from './types'
 
 const props = defineProps<{
   entry: RecipeEntry
   feature: Feature
   impact: Impact
+  accountDetail?: FeatureAccountDetail
 }>()
 
 const emit = defineEmits<{
@@ -76,6 +77,20 @@ const impactLine = computed(() => {
 const removeAria = computed(() =>
   t('agency.bulkActions.updateFeatures.removeRowAria', { name: props.feature.name }),
 )
+
+const expanded = ref(false)
+
+const affectedAccounts = computed(() => {
+  if (!props.accountDetail) return { willChange: [] as string[], alreadyDone: [] as string[] }
+  if (props.entry.action === 'enable') {
+    return { willChange: props.accountDetail.disabled, alreadyDone: props.accountDetail.enabled }
+  }
+  return { willChange: props.accountDetail.enabled, alreadyDone: props.accountDetail.disabled }
+})
+
+const hasDetail = computed(() =>
+  props.accountDetail != null && props.impact.total > 0,
+)
 </script>
 
 <template>
@@ -85,7 +100,20 @@ const removeAria = computed(() =>
   >
     <div class="recipe-row__info">
       <div class="recipe-row__name">{{ feature.name }}</div>
-      <div class="recipe-row__impact">{{ impactLine }}</div>
+      <button
+        v-if="hasDetail"
+        type="button"
+        class="recipe-row__impact recipe-row__impact--clickable"
+        @click="expanded = !expanded"
+      >
+        {{ impactLine }}
+        <i
+          class="fas fa-chevron-down recipe-row__chevron"
+          :class="{ 'recipe-row__chevron--open': expanded }"
+          aria-hidden="true"
+        />
+      </button>
+      <div v-else class="recipe-row__impact">{{ impactLine }}</div>
     </div>
 
     <div class="recipe-row__actions">
@@ -99,6 +127,38 @@ const removeAria = computed(() =>
         <i class="fas fa-times" aria-hidden="true" />
       </button>
     </div>
+
+    <!-- Expandable account detail -->
+    <div v-if="expanded && hasDetail" class="recipe-row__detail">
+      <div v-if="affectedAccounts.willChange.length > 0" class="recipe-row__detail-group">
+        <span class="recipe-row__detail-label">
+          Will be {{ entry.action === 'enable' ? 'enabled' : 'disabled' }} on:
+        </span>
+        <div class="recipe-row__tags">
+          <span
+            v-for="name in affectedAccounts.willChange"
+            :key="name"
+            class="recipe-row__tag recipe-row__tag--change"
+          >
+            {{ name }}
+          </span>
+        </div>
+      </div>
+      <div v-if="affectedAccounts.alreadyDone.length > 0" class="recipe-row__detail-group">
+        <span class="recipe-row__detail-label">
+          Already {{ entry.action === 'enable' ? 'enabled' : 'disabled' }} on:
+        </span>
+        <div class="recipe-row__tags">
+          <span
+            v-for="name in affectedAccounts.alreadyDone"
+            :key="name"
+            class="recipe-row__tag recipe-row__tag--done"
+          >
+            {{ name }}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -110,6 +170,7 @@ const removeAria = computed(() =>
   gap: 12px;
   padding: 10px 16px;
   transition: opacity 0.15s ease;
+  flex-wrap: wrap;
 }
 
 .recipe-row + .recipe-row {
@@ -144,6 +205,77 @@ const removeAria = computed(() =>
   font-size: 12px;
   font-weight: 400;
   line-height: 17px;
+  color: var(--gray-500, #667085);
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font-family: inherit;
+}
+
+.recipe-row__impact--clickable {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.recipe-row__impact--clickable:hover {
+  color: var(--primary-600, #155eef);
+}
+
+.recipe-row__chevron {
+  font-size: 9px;
+  transition: transform 0.15s ease;
+}
+
+.recipe-row__chevron--open {
+  transform: rotate(180deg);
+}
+
+/* ─── Expandable detail panel ───────────────────────────────────────── */
+.recipe-row__detail {
+  width: 100%;
+  padding: 8px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recipe-row__detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recipe-row__detail-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gray-500, #667085);
+}
+
+.recipe-row__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.recipe-row__tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.recipe-row__tag--change {
+  background: var(--primary-50, #eff4ff);
+  color: var(--primary-700, #004eeb);
+}
+
+.recipe-row__tag--done {
+  background: var(--gray-100, #f2f4f7);
   color: var(--gray-500, #667085);
 }
 

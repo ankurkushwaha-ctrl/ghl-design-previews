@@ -17,6 +17,7 @@ import RecipeRow from './RecipeRow.vue'
 import { computeImpact } from './recipe'
 import type {
   CurrentStateBySubAccount,
+  DetailedFeatureState,
   Feature,
   FeatureAction,
   Recipe,
@@ -27,6 +28,7 @@ const props = defineProps<{
   features: Map<string, Feature>
   selectedCount: number
   currentState: CurrentStateBySubAccount
+  detailedState: DetailedFeatureState
   groupForFeature: Map<string, string>
 }>()
 
@@ -39,7 +41,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const showFlipAll = computed(() => props.recipe.length >= 3)
+const showFlipAll = computed(() => props.recipe.length >= 1)
 
 /**
  * Pre-compute impact for every row so the row component doesn't have
@@ -150,6 +152,7 @@ function featureIdsInGroup(groupName: string): string[] {
           :entry="item.entry"
           :feature="item.feature ?? { id: item.entry.featureId, name: item.entry.featureId }"
           :impact="item.impact"
+          :account-detail="detailedState.get(item.entry.featureId)"
           @flip="emit('flip', item.entry.featureId)"
           @remove="emit('remove', item.entry.featureId)"
         />
@@ -164,6 +167,7 @@ function featureIdsInGroup(groupName: string): string[] {
         :entry="row.entry"
         :feature="row.feature ?? { id: row.entry.featureId, name: row.entry.featureId }"
         :impact="row.impact"
+        :account-detail="detailedState.get(row.entry.featureId)"
         @flip="emit('flip', row.entry.featureId)"
         @remove="emit('remove', row.entry.featureId)"
       />
@@ -173,10 +177,14 @@ function featureIdsInGroup(groupName: string): string[] {
 
 <style scoped>
 .recipe-list {
-  background: #ffffff;
+  background: var(--base-white, #ffffff);
   border: 1px solid var(--gray-200, #eaecf0);
   border-radius: 8px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 0;
 }
 
 .recipe-list__header {
@@ -185,7 +193,7 @@ function featureIdsInGroup(groupName: string): string[] {
   justify-content: space-between;
   padding: 8px 16px;
   background: var(--gray-50, #f9fafb);
-  border-bottom: 0.5px solid var(--gray-200, #eaecf0);
+  border-bottom: 1px solid var(--gray-200, #eaecf0);
 }
 
 .recipe-list__count {
@@ -201,46 +209,53 @@ function featureIdsInGroup(groupName: string): string[] {
 }
 
 .recipe-list__flip-link {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  color: var(--primary-700, #004eeb);
-  background: transparent;
-  border: none;
-  padding: 0;
+  line-height: 16px;
+  color: var(--gray-700, #344054);
+  background: var(--base-white, #ffffff);
+  border: 1px solid var(--gray-300, #d0d5dd);
+  border-radius: 6px;
+  padding: 2px 8px;
   cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 .recipe-list__flip-link:hover {
-  color: var(--primary-800, #0040c1);
-  text-decoration: underline;
+  background: var(--gray-50, #f9fafb);
+  border-color: var(--gray-400, #98a2b3);
 }
 
 .recipe-list__flip-link:focus-visible {
   outline: 2px solid var(--primary-500, #2970ff);
   outline-offset: 2px;
-  border-radius: 2px;
 }
 
 .recipe-list__flip-divider {
-  color: var(--gray-300, #d0d5dd);
+  display: none;
 }
 
 .recipe-list__rows {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1 1 0;
 }
 
 .recipe-list__group-label {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 16px 2px;
+  padding: 6px 16px;
   font-size: 11px;
-  font-weight: 500;
-  color: var(--gray-500, #667085);
+  font-weight: 600;
+  color: var(--gray-600, #475467);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  border-top: 0.5px solid var(--gray-200, #eaecf0);
+  background: var(--gray-100, #f2f4f7);
+  border-top: 1px solid var(--gray-200, #eaecf0);
+  border-bottom: 1px solid var(--gray-200, #eaecf0);
 }
 
 .recipe-list__group-label--first {
@@ -250,23 +265,26 @@ function featureIdsInGroup(groupName: string): string[] {
 .recipe-list__remove-group {
   font-size: 11px;
   font-weight: 500;
+  line-height: 16px;
   text-transform: none;
   letter-spacing: normal;
-  color: var(--gray-400, #98a2b3);
-  background: transparent;
-  border: none;
-  padding: 0;
+  color: var(--gray-700, #344054);
+  background: var(--base-white, #ffffff);
+  border: 1px solid var(--gray-300, #d0d5dd);
+  border-radius: 6px;
+  padding: 2px 8px;
   cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 .recipe-list__remove-group:hover {
-  color: var(--error-600, #d92d20);
-  text-decoration: underline;
+  background: var(--error-50, #fef3f2);
+  border-color: var(--error-300, #fda29b);
+  color: var(--error-700, #b42318);
 }
 
 .recipe-list__remove-group:focus-visible {
   outline: 2px solid var(--primary-500, #2970ff);
   outline-offset: 2px;
-  border-radius: 2px;
 }
 </style>

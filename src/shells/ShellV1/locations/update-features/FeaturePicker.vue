@@ -1,29 +1,26 @@
 <!--
   FeaturePicker.vue
   ────────────────────────────────────────────────────────────────────────────
-  Popover-style panel that opens in place of the "+ Add a feature" button.
+  Always-visible inline panel with search + grouped feature list.
+
+  Each feature row has a checkbox on the right:
+    ✓ checked  = feature is in the recipe
+    ☐ unchecked = feature is not in the recipe
+
+  Clicking a row toggles the feature in/out of the recipe. No "Done"
+  button, no open/close state — the picker is always present in the
+  modal body, with the recipe list below it.
 
   Layout (top to bottom):
-    1. Bulk-add row:    [+ Enable all/remaining N]  [+ Disable all/remaining N]
-                        (hidden when every feature is already in the recipe)
-    2. Divider:         ── or pick individually ──
-    3. Search row:      [Search features…]              [+ Add N matching]
-                        ("+ Add N matching" only when query is present AND ≥2 matches)
-    4. Grouped list:    GROUP NAME (uppercase secondary)
+    1. Search row:      [🔍 Search features…]     [+ Add N matching]
+    2. Grouped list:    GROUP NAME (uppercase secondary)  [+ Add group]
                           Sub-group label (indented secondary)
-                            Leaf · already added (disabled when already in recipe)
+                            ☐/✓  Leaf name          [X of Y on]
                           ...
-    5. Done button:     bottom-right
-
-  Click a leaf → emit 'add' with featureId, picker closes (parent decides).
-
-  No nested modal — this is a panel inside the modal body. Picker scrolls
-  internally; the body region scrolls separately.
 -->
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { HLButton } from '@/components/highrise'
 
 import type { CurrentStateBySubAccount, FeatureGroup, Recipe } from './types'
 
@@ -36,10 +33,10 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'add', featureId: string): void
+  (e: 'toggle', featureId: string): void
   (e: 'add-matching', featureIds: string[]): void
   (e: 'add-group', featureIds: string[]): void
-  (e: 'done'): void
+  (e: 'remove-group', featureIds: string[]): void
 }>()
 
 const { t } = useI18n()
@@ -59,17 +56,11 @@ watch(
 
 const addedIds = computed(() => new Set(props.recipe.map((e) => e.featureId)))
 
-/** How many of the selected sub-accounts currently have a given feature ON. */
 function currentOnCount(featureId: string): number {
   return props.currentState.get(featureId) ?? 0
 }
 
-/* ──────────────────────────────────────────────────────────────────────
- * Search + filtered groups
- * Filter matches across leaf name, group name, and sub-group name.
- * Empty groups are dropped from render so the user doesn't see ghost
- * headers when their query narrows the catalog.
- * ────────────────────────────────────────────────────────────────────── */
+/* ── Search + filtered groups ─────────────────────────────────────────── */
 const normalizedQuery = computed(() => query.value.trim().toLowerCase())
 
 function leafMatches(featureName: string, groupName: string, subGroup: string | undefined): boolean {
@@ -93,11 +84,6 @@ const filteredGroups = computed(() => {
     .filter((g) => g.features.length > 0)
 })
 
-/**
- * For sub-grouped groups (CRM): regroup the leaves by subGroup so the
- * picker can render an indented sub-heading per group. Returns
- * { subGroup: string | null, features: Feature[] }[].
- */
 function bySubGroup(group: { features: typeof props.catalog[number]['features'] }) {
   const map = new Map<string | null, typeof group.features>()
   for (const f of group.features) {
@@ -112,14 +98,7 @@ function bySubGroup(group: { features: typeof props.catalog[number]['features'] 
   }))
 }
 
-/* ──────────────────────────────────────────────────────────────────────
- * "+ Add N matching" button — only when query is present AND ≥2 matches
- * AND those matches include at least one un-added feature.
- *
- * Why ≥2: a single-match query is faster to add by clicking the leaf
- * directly. The bulk-narrow affordance only earns its weight when the
- * user has multiple matches.
- * ────────────────────────────────────────────────────────────────────── */
+/* ── "+ Add N matching" button ────────────────────────────────────────── */
 const matchingUnaddedIds = computed(() => {
   if (!normalizedQuery.value) return []
   return filteredGroups.value
@@ -130,31 +109,40 @@ const matchingUnaddedIds = computed(() => {
 
 const showAddMatching = computed(() => matchingUnaddedIds.value.length >= 2)
 
-/* ──────────────────────────────────────────────────────────────────────
- * Empty results
- * ────────────────────────────────────────────────────────────────────── */
 const noResults = computed(
   () => normalizedQuery.value !== '' && filteredGroups.value.length === 0,
 )
 
-function onLeafClick(featureId: string) {
-  if (addedIds.value.has(featureId)) return
-  emit('add', featureId)
+function onRowClick(featureId: string) {
+  emit('toggle', featureId)
 }
 
-function unaddedInGroup(group: { features: typeof props.catalog[number]['features'] }): string[] {
-  return group.features.filter((f) => !addedIds.value.has(f.id)).map((f) => f.id)
+function addedCountInGroup(group: { features: typeof props.catalog[number]['features'] }): number {
+  return group.features.filter((f) => addedIds.value.has(f.id)).length
 }
 
-function onAddGroup(group: { features: typeof props.catalog[number]['features'] }) {
-  const ids = unaddedInGroup(group)
-  if (ids.length > 0) emit('add-group', ids)
+function groupCheckState(group: { features: typeof props.catalog[number]['features'] }): 'all' | 'some' | 'none' {
+  const added = addedCountInGroup(group)
+  if (added === 0) return 'none'
+  if (added === group.features.length) return 'all'
+  return 'some'
+}
+
+function onToggleGroup(group: { features: typeof props.catalog[number]['features'] }) {
+  const state = groupCheckState(group)
+  const allIds = group.features.map((f) => f.id)
+  if (state === 'all') {
+    emit('remove-group', allIds)
+  } else {
+    const unadded = group.features.filter((f) => !addedIds.value.has(f.id)).map((f) => f.id)
+    if (unadded.length > 0) emit('add-group', unadded)
+  }
 }
 </script>
 
 <template>
   <div class="picker">
-    <!-- Search + add-matching row -->
+    <!-- Search row -->
     <div class="picker__search-row">
       <div class="picker__search-input">
         <div class="picker__input-wrap">
@@ -192,7 +180,7 @@ function onAddGroup(group: { features: typeof props.catalog[number]['features'] 
       </button>
     </div>
 
-    <!-- 4. Feature list -->
+    <!-- Feature list -->
     <div class="picker__list" role="listbox" aria-label="Available features">
       <div
         v-if="noResults"
@@ -211,16 +199,18 @@ function onAddGroup(group: { features: typeof props.catalog[number]['features'] 
         :key="group.id"
         class="picker__group"
       >
-        <div class="picker__group-header">
+        <div class="picker__group-header" @click="onToggleGroup(group)">
           <span class="picker__group-name">{{ group.name }}</span>
-          <button
-            v-if="unaddedInGroup(group).length > 0"
-            type="button"
-            class="picker__add-group"
-            @click="onAddGroup(group)"
+          <span
+            class="picker__group-check"
+            :class="{
+              'picker__group-check--on': groupCheckState(group) === 'all',
+              'picker__group-check--partial': groupCheckState(group) === 'some',
+            }"
           >
-            {{ t('agency.bulkActions.updateFeatures.pickerAddGroup') }}
-          </button>
+            <i v-if="groupCheckState(group) === 'all'" class="fas fa-check" aria-hidden="true" />
+            <i v-else-if="groupCheckState(group) === 'some'" class="fas fa-minus" aria-hidden="true" />
+          </span>
         </div>
         <div
           v-for="bucket in bySubGroup(group)"
@@ -241,40 +231,35 @@ function onAddGroup(group: { features: typeof props.catalog[number]['features'] 
               class="picker__leaf"
               :class="{
                 'picker__leaf--indented': !!bucket.subGroup,
-                'picker__leaf--disabled': addedIds.has(f.id),
+                'picker__leaf--checked': addedIds.has(f.id),
               }"
-              :disabled="addedIds.has(f.id)"
-              @click="onLeafClick(f.id)"
+              role="option"
+              :aria-selected="addedIds.has(f.id)"
+              @click="onRowClick(f.id)"
             >
               <span class="picker__leaf-name">{{ f.name }}</span>
               <span
-                v-if="addedIds.has(f.id)"
-                class="picker__leaf-tag"
-              >
-                · {{ t('agency.bulkActions.updateFeatures.alreadyAdded') }}
-              </span>
-              <span
-                v-else
-                class="picker__leaf-badge"
-              >
-                {{
-                  t('agency.bulkActions.updateFeatures.pickerCurrentState', {
-                    count: currentOnCount(f.id),
-                    total: selectedCount,
-                  })
-                }}
+                v-if="!addedIds.has(f.id)"
+                class="picker__leaf-dot"
+                :class="{
+                  'picker__leaf-dot--on': currentOnCount(f.id) === selectedCount,
+                  'picker__leaf-dot--mixed': currentOnCount(f.id) > 0 && currentOnCount(f.id) < selectedCount,
+                  'picker__leaf-dot--off': currentOnCount(f.id) === 0,
+                }"
+                :data-tip="currentOnCount(f.id) === selectedCount
+                  ? 'Enabled on all'
+                  : currentOnCount(f.id) === 0
+                    ? 'Disabled on all'
+                    : `${currentOnCount(f.id)}/${selectedCount} enabled`"
+              />
+              <!-- Checkbox indicator -->
+              <span class="picker__check" :class="{ 'picker__check--on': addedIds.has(f.id) }">
+                <i v-if="addedIds.has(f.id)" class="fas fa-check" aria-hidden="true" />
               </span>
             </button>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- 5. Done -->
-    <div class="picker__footer">
-      <HLButton variant="secondary" size="sm" @click="emit('done')">
-        {{ t('agency.bulkActions.updateFeatures.pickerDone') }}
-      </HLButton>
     </div>
   </div>
 </template>
@@ -283,21 +268,20 @@ function onAddGroup(group: { features: typeof props.catalog[number]['features'] 
 .picker {
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--base-white, #ffffff);
   border: 1px solid var(--gray-200, #eaecf0);
   border-radius: 8px;
   overflow: hidden;
-  /* Bound the picker so its internal list scrolls instead of stretching
-     the modal. The list itself has overflow-y inside this bound. */
-  max-height: 420px;
+  max-height: 280px;
+  flex: 0 1 280px;
 }
 
-/* ─── Search + add-matching ──────────────────────────────────────────── */
+/* ─── Search row ─────────────────────────────────────────────────────── */
 .picker__search-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 12px 8px;
+  padding: 10px 12px 8px;
 }
 
 .picker__search-input {
@@ -401,43 +385,64 @@ function onAddGroup(group: { features: typeof props.catalog[number]['features'] 
 }
 
 .picker__group + .picker__group {
-  margin-top: 12px;
+  margin-top: 8px;
+}
+
+.picker__group {
+  border: 1px solid var(--gray-200, #eaecf0);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .picker__group-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 4px 4px;
+  padding: 6px 8px;
+  background: var(--gray-50, #f9fafb);
+  border-bottom: 0.5px solid var(--gray-100, #f2f4f7);
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.picker__group-header:hover {
+  background: var(--gray-100, #f2f4f7);
 }
 
 .picker__group-name {
   font-size: 11px;
-  font-weight: 500;
-  color: var(--gray-500, #667085);
+  font-weight: 600;
+  color: var(--gray-600, #475467);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
-.picker__add-group {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--primary-700, #004eeb);
-  background: transparent;
-  border: none;
-  padding: 0;
+.picker__group-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--gray-300, #d0d5dd);
+  background: var(--base-white, #ffffff);
+  font-size: 10px;
+  color: transparent;
   cursor: pointer;
+  transition: all 0.12s ease;
 }
 
-.picker__add-group:hover {
-  color: var(--primary-800, #0040c1);
-  text-decoration: underline;
+.picker__group-check--on {
+  border-color: var(--primary-600, #155eef);
+  background: var(--primary-600, #155eef);
+  color: #ffffff;
 }
 
-.picker__add-group:focus-visible {
-  outline: 2px solid var(--primary-500, #2970ff);
-  outline-offset: 2px;
-  border-radius: 2px;
+.picker__group-check--partial {
+  border-color: var(--primary-600, #155eef);
+  background: var(--primary-600, #155eef);
+  color: #ffffff;
 }
 
 .picker__bucket + .picker__bucket {
@@ -463,7 +468,8 @@ function onAddGroup(group: { features: typeof props.catalog[number]['features'] 
   padding: 6px 8px;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-bottom: 0.5px solid var(--gray-100, #f2f4f7);
+  border-radius: 0;
   text-align: left;
   font-size: 13px;
   font-weight: 400;
@@ -472,12 +478,24 @@ function onAddGroup(group: { features: typeof props.catalog[number]['features'] 
   transition: background 0.12s ease;
 }
 
+.picker__leaf:last-child {
+  border-bottom: none;
+}
+
 .picker__leaf--indented {
   padding-left: 24px;
 }
 
-.picker__leaf:hover:not(.picker__leaf--disabled) {
+.picker__leaf:hover {
   background: var(--gray-50, #f9fafb);
+}
+
+.picker__leaf--checked {
+  background: var(--primary-25, #f5f8ff);
+}
+
+.picker__leaf--checked:hover {
+  background: var(--primary-50, #eff4ff);
 }
 
 .picker__leaf:focus-visible {
@@ -485,38 +503,70 @@ function onAddGroup(group: { features: typeof props.catalog[number]['features'] 
   outline-offset: -2px;
 }
 
-.picker__leaf--disabled {
-  color: var(--gray-400, #98a2b3);
-  cursor: not-allowed;
-}
-
 .picker__leaf-name {
   flex: 1 1 auto;
 }
 
-.picker__leaf-tag {
-  flex: 0 0 auto;
-  font-size: 11px;
-  color: var(--gray-400, #98a2b3);
+.picker__leaf-dot {
+  position: relative;
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gray-300, #d0d5dd);
 }
 
-.picker__leaf-badge {
-  flex: 0 0 auto;
+.picker__leaf-dot::after {
+  content: attr(data-tip);
+  position: absolute;
+  right: calc(100% + 6px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--gray-900, #101828);
+  color: #ffffff;
   font-size: 11px;
   font-weight: 500;
-  color: var(--gray-400, #98a2b3);
-  background: var(--gray-100, #f2f4f7);
-  padding: 1px 6px;
+  line-height: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+.picker__leaf-dot:hover::after {
+  opacity: 1;
+}
+.picker__leaf-dot--on {
+  background: var(--success-500, #12b76a);
+}
+.picker__leaf-dot--mixed {
+  background: var(--warning-400, #fdb022);
+}
+.picker__leaf-dot--off {
+  background: var(--gray-300, #d0d5dd);
+}
+
+/* ─── Checkbox indicator ─────────────────────────────────────────────── */
+.picker__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
   border-radius: 4px;
+  border: 1.5px solid var(--gray-300, #d0d5dd);
+  background: var(--base-white, #ffffff);
+  font-size: 9px;
+  color: transparent;
+  transition: all 0.12s ease;
 }
 
-/* ─── Footer ─────────────────────────────────────────────────────────── */
-.picker__footer {
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 12px;
-  border-top: 0.5px solid var(--gray-200, #eaecf0);
-  background: #ffffff;
+.picker__check--on {
+  border-color: var(--primary-600, #155eef);
+  background: var(--primary-600, #155eef);
+  color: #ffffff;
 }
-
 </style>

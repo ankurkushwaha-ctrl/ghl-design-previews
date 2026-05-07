@@ -174,10 +174,11 @@ const messages = {
        */
       bulkActions: {
         updateFeatures: {
-          title: 'Adjust feature access',
+          title: 'Update feature access',
           subtitleLead: 'For {count} selected sub-accounts. ',
-          subtitleBoldClause: 'Anything not listed below stays exactly as it is',
-          subtitleTrail: ' — each sub-account keeps its current setting for those features.',
+          subtitleBoldClause: 'Only the features you select below will change',
+          subtitleTrail: ' — everything else stays as-is on each sub-account.',
+          subtitleNextStep: ' Choose features here, then set enable or disable on the next step.',
 
           emptyState: 'No changes yet. Add a feature to enable or disable.',
           emptyStateHint: 'Features you don\'t include will keep their current settings on each sub-account.',
@@ -199,23 +200,23 @@ const messages = {
           rowImpactChange: 'Affects {x} of {total} sub-accounts ({y} already {state})',
           rowImpactChangeNoParen: 'Affects {x} of {total} sub-accounts',
           rowImpactNoOp: 'Already {state} across all {total} sub-accounts — no change',
-          stateOn: 'on',
-          stateOff: 'off',
+          stateOn: 'enabled',
+          stateOff: 'disabled',
           removeRowAria: 'Remove {name} from changes',
           chipAria: 'Click to flip enable / disable',
 
           listHeaderCount: '{count} features in this list',
-          flipAllEnable: 'Set all to enable',
-          flipAllDisable: 'Set all to disable',
+          flipAllEnable: 'Enable all',
+          flipAllDisable: 'Disable all',
 
           untouchedPartial:
-            '{x} changes pending across {y} sub-accounts. {z} other features will not be touched — each sub-account keeps whatever it currently has.',
+            '{x} changes will apply across {y} sub-accounts. The other {z} features remain unchanged — each sub-account keeps its current settings.',
           untouchedFull:
-            'All {total} features are configured below — every sub-account will be brought to this exact configuration. {x} changes will be applied across {y} sub-accounts.',
+            'All {total} features are included — every sub-account will match this exact configuration. {x} changes across {y} sub-accounts.',
 
           footerFeatureCount: '{count} features',
-          footerNoChanges: 'No changes pending',
-          footerNoOp: 'Listed features are already at their target state — nothing will change',
+          footerNoChanges: 'Select features to get started',
+          footerNoOp: 'All features already match — no changes needed',
           footerReady: 'Ready to apply {count} changes',
 
           confirmTitle: 'Apply these changes?',

@@ -58,7 +58,7 @@ export interface Impact {
 }
 
 /** Modal view-state machine. `idle` is the closed state owned by the parent. */
-export type ViewState = 'edit' | 'confirm' | 'applying' | 'applied';
+export type ViewState = 'select' | 'configure' | 'applying' | 'applied';
 
 /**
  * Per-feature current state across all selected sub-accounts.
@@ -70,6 +70,17 @@ export type ViewState = 'edit' | 'confirm' | 'applying' | 'applied';
  * mutation payload — see recipe.ts.
  */
 export type CurrentStateBySubAccount = Map<string, number>;
+
+/**
+ * Per-feature detailed state: which sub-account names have it enabled
+ * vs disabled. Used by RecipeRow to show expandable account-level detail.
+ */
+export interface FeatureAccountDetail {
+  enabled: string[];
+  disabled: string[];
+}
+
+export type DetailedFeatureState = Map<string, FeatureAccountDetail>;
 
 /**
  * Mutation payload sent to the backend. Contains ONLY the recipe entries

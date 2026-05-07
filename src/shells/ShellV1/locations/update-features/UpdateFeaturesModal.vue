@@ -1,25 +1,12 @@
 <!--
   UpdateFeaturesModal.vue
   ────────────────────────────────────────────────────────────────────────────
-  Top-level orchestrator for the "Update Features" bulk-action modal
-  (Option A — recipe-style patch).
+  Top-level orchestrator for the "Update Features" bulk-action modal.
 
-  State machine: edit → confirm → applying → applied → (close)
+  2-step wizard: select → configure → applying → applied → (close)
 
-  The modal is a fixed-height overlay (~640px max, ~460px min) with three
-  regions in a column flex layout:
-    - Header (pinned)   — title, close ×, subtitle
-    - Body  (scrollable) — recipe list / picker / step views
-    - Footer (pinned)   — pending-changes summary, Cancel / Apply
-
-  Patch contract enforcement lives in recipe.ts::recipeToPayload — this
-  file calls it at the transition to `applying` and the payload shape
-  guarantees only recipe entries are sent.
-
-  Esc key: closes from any state (HLModal handles Esc internally).
-
-  Focus: HLModal auto-focuses the dialog on open. After Apply success,
-  AppliedStep auto-focuses its Done button.
+  Step 1 (select):    Pick which features to touch (full-height picker).
+  Step 2 (configure): Set each selected feature to enable/disable, then apply.
 -->
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
@@ -29,7 +16,6 @@ import { HLModal, HLButton, HLTag } from '@/components/highrise'
 import FeaturePicker from './FeaturePicker.vue'
 import RecipeList from './RecipeList.vue'
 import UntouchedCallout from './UntouchedCallout.vue'
-import ConfirmStep from './ConfirmStep.vue'
 import ApplyingStep from './ApplyingStep.vue'
 import AppliedStep from './AppliedStep.vue'
 
@@ -47,12 +33,14 @@ import {
 import {
   ALL_FEATURES,
   buildMockCurrentState,
+  buildMockDetailedState,
   FEATURE_CATALOG,
   TOTAL_FEATURE_COUNT,
 } from './feature-catalog'
 
 import type {
   CurrentStateBySubAccount,
+  DetailedFeatureState,
   Feature,
   FeatureAction,
   Recipe,
@@ -78,15 +66,9 @@ const { t } = useI18n()
 /* ──────────────────────────────────────────────────────────────────────
  * State
  * ────────────────────────────────────────────────────────────────────── */
-const viewState = ref<ViewState>('edit')
+const viewState = ref<ViewState>('select')
 const recipe = ref<Recipe>([])
-const pickerOpen = ref(false)
 
-/**
- * Snapshot of summary numbers taken at the moment the user clicks Apply.
- * Used by ApplyingStep and AppliedStep so the numbers don't re-derive
- * after the recipe is cleared.
- */
 const appliedSnapshot = ref({
   totalChanges: 0,
   untouched: 0,
@@ -98,9 +80,8 @@ watch(
   () => props.show,
   (isOpen) => {
     if (isOpen) {
-      viewState.value = 'edit'
+      viewState.value = 'select'
       recipe.value = []
-      pickerOpen.value = false
     }
   },
 )
@@ -113,6 +94,11 @@ const selectedCount = computed(() => props.selectedSubAccountIds.length)
 /** Deterministic mock per-sub-account current state. */
 const currentState = computed<CurrentStateBySubAccount>(() =>
   buildMockCurrentState(selectedCount.value),
+)
+
+/** Detailed per-feature account names for the expandable detail in RecipeRow. */
+const detailedState = computed<DetailedFeatureState>(() =>
+  buildMockDetailedState(selectedCount.value),
 )
 
 /** Flat feature id → Feature map for child components. */
@@ -173,8 +159,13 @@ const applyDisabled = computed(() =>
 /* ──────────────────────────────────────────────────────────────────────
  * Recipe mutations
  * ────────────────────────────────────────────────────────────────────── */
-function onAdd(featureId: string) {
-  recipe.value = addEntry(recipe.value, featureId)
+function onToggle(featureId: string) {
+  const existing = recipe.value.find((e) => e.featureId === featureId)
+  if (existing) {
+    recipe.value = removeEntry(recipe.value, featureId)
+  } else {
+    recipe.value = addEntry(recipe.value, featureId)
+  }
 }
 
 function onRemove(featureId: string) {
@@ -189,10 +180,13 @@ function onSetAll(action: FeatureAction) {
   recipe.value = setAllAction(recipe.value, action)
 }
 
-function onBulkAdd(action: FeatureAction) {
+function onSelectAll() {
   const allIds = ALL_FEATURES.map((f) => f.id)
-  recipe.value = bulkAdd(recipe.value, allIds, action)
-  pickerOpen.value = false
+  recipe.value = bulkAdd(recipe.value, allIds, 'enable')
+}
+
+function onRemoveAll() {
+  recipe.value = []
 }
 
 function onAddMatching(featureIds: string[]) {
@@ -201,7 +195,6 @@ function onAddMatching(featureIds: string[]) {
     r = addEntry(r, id)
   }
   recipe.value = r
-  pickerOpen.value = false
 }
 
 function onRemoveGroup(featureIds: string[]) {
@@ -215,13 +208,13 @@ function onRemoveGroup(featureIds: string[]) {
 /* ──────────────────────────────────────────────────────────────────────
  * View-state transitions
  * ────────────────────────────────────────────────────────────────────── */
-function goToConfirm() {
-  if (applyDisabled.value) return
-  viewState.value = 'confirm'
+function goToConfigure() {
+  if (recipe.value.length === 0) return
+  viewState.value = 'configure'
 }
 
-function goBackToEdit() {
-  viewState.value = 'edit'
+function goBackToSelect() {
+  viewState.value = 'select'
 }
 
 function startApplying() {
@@ -262,124 +255,87 @@ function close() {
   <HLModal
     :show="show"
     :width="720"
-    :mask-closable="viewState === 'edit' || viewState === 'applied'"
+    :mask-closable="viewState === 'select' || viewState === 'applied'"
     :title="t('agency.bulkActions.updateFeatures.title')"
     @update:show="(v: boolean) => emit('update:show', v)"
   >
     <div class="uf-modal">
-      <!-- ─── Subtitle (always visible in edit / confirm header area) ──── -->
-      <div v-if="viewState === 'edit'" class="uf-modal__subtitle">
-        {{ t('agency.bulkActions.updateFeatures.subtitleLead', { count: selectedCount }) }}
-        <strong>{{ t('agency.bulkActions.updateFeatures.subtitleBoldClause') }}</strong>
-        {{ t('agency.bulkActions.updateFeatures.subtitleTrail') }}
-      </div>
+      <!-- ───── STEP 1: SELECT FEATURES ────────────────────────────── -->
+      <div v-if="viewState === 'select'" class="uf-modal__body">
+        <div class="uf-modal__subtitle">
+          {{ t('agency.bulkActions.updateFeatures.subtitleLead', { count: selectedCount }) }}
+          <strong>{{ t('agency.bulkActions.updateFeatures.subtitleBoldClause') }}</strong>
+          {{ t('agency.bulkActions.updateFeatures.subtitleTrail') }}
+          {{ t('agency.bulkActions.updateFeatures.subtitleNextStep') }}
+        </div>
 
-      <!-- ───────────── EDIT VIEW ───────────────────────────────────── -->
-      <div v-if="viewState === 'edit'" class="uf-modal__body">
-        <!-- Add button -->
-        <div v-if="!pickerOpen" class="uf-modal__add-row">
+        <div class="uf-modal__select-actions">
           <button
             type="button"
-            class="uf-modal__add-btn"
-            @click="pickerOpen = true"
+            class="uf-modal__select-btn"
+            :disabled="recipe.length === TOTAL_FEATURE_COUNT"
+            @click="onSelectAll"
           >
-            {{ t('agency.bulkActions.updateFeatures.addFeature') }}
+            Select all
+          </button>
+          <button
+            type="button"
+            class="uf-modal__select-btn uf-modal__select-btn--remove"
+            :disabled="recipe.length === 0"
+            @click="onRemoveAll"
+          >
+            Remove all
           </button>
         </div>
 
         <FeaturePicker
-          v-if="pickerOpen"
+          class="uf-modal__picker-full"
           :catalog="FEATURE_CATALOG"
           :recipe="recipe"
           :total-feature-count="TOTAL_FEATURE_COUNT"
           :current-state="currentState"
           :selected-count="selectedCount"
-          @add="onAdd"
+          @toggle="onToggle"
           @add-matching="onAddMatching"
           @add-group="onAddMatching"
-          @done="pickerOpen = false"
-        />
-
-        <!-- Empty state -->
-        <div
-          v-if="recipe.length === 0 && !pickerOpen"
-          class="uf-modal__empty"
-        >
-          <i class="fas fa-layer-group uf-modal__empty-icon" aria-hidden="true" />
-          <p class="uf-modal__empty-title">
-            {{ t('agency.bulkActions.updateFeatures.emptyState') }}
-          </p>
-          <p class="uf-modal__empty-hint">
-            {{ t('agency.bulkActions.updateFeatures.emptyStateHint') }}
-          </p>
-          <div class="uf-modal__empty-actions">
-            <button
-              type="button"
-              class="uf-modal__empty-action uf-modal__empty-action--enable"
-              @click="onBulkAdd('enable')"
-            >
-              <i class="fas fa-toggle-on" aria-hidden="true" />
-              Enable all features
-            </button>
-            <button
-              type="button"
-              class="uf-modal__empty-action uf-modal__empty-action--disable"
-              @click="onBulkAdd('disable')"
-            >
-              <i class="fas fa-toggle-off" aria-hidden="true" />
-              Disable all features
-            </button>
-          </div>
-        </div>
-
-        <!-- Recipe list -->
-        <RecipeList
-          v-if="recipe.length > 0"
-          :recipe="recipe"
-          :features="featureMap"
-          :selected-count="selectedCount"
-          :current-state="currentState"
-          :group-for-feature="groupForFeature"
-          @flip="onFlip"
-          @remove="onRemove"
           @remove-group="onRemoveGroup"
-          @set-all="onSetAll"
-        />
-
-        <!-- Untouched callout -->
-        <UntouchedCallout
-          v-if="recipe.length > 0"
-          :total-changes="totalChanges"
-          :selected-count="selectedCount"
-          :untouched-count="untouchedCount"
-          :total-feature-count="TOTAL_FEATURE_COUNT"
-          :is-full-coverage="fullCoverage"
         />
       </div>
 
-      <!-- ───────────── CONFIRM VIEW ────────────────────────────────── -->
-      <ConfirmStep
-        v-if="viewState === 'confirm'"
-        :recipe="recipe"
-        :features="featureMap"
-        :selected-count="selectedCount"
-        :current-state="currentState"
-        :total-changes="totalChanges"
-        :untouched-count="untouchedCount"
-        :total-feature-count="TOTAL_FEATURE_COUNT"
-        :is-full-coverage="fullCoverage"
-        @back="goBackToEdit"
-        @apply="startApplying"
-      />
+      <!-- ───── STEP 2: CONFIGURE ACTIONS ──────────────────────────── -->
+      <div v-if="viewState === 'configure'" class="uf-modal__body">
+        <div class="uf-modal__recipe-full">
+          <RecipeList
+            :recipe="recipe"
+            :features="featureMap"
+            :selected-count="selectedCount"
+            :current-state="currentState"
+            :detailed-state="detailedState"
+            :group-for-feature="groupForFeature"
+            @flip="onFlip"
+            @remove="onRemove"
+            @remove-group="onRemoveGroup"
+            @set-all="onSetAll"
+          />
 
-      <!-- ───────────── APPLYING VIEW ───────────────────────────────── -->
+          <UntouchedCallout
+            :total-changes="totalChanges"
+            :selected-count="selectedCount"
+            :untouched-count="untouchedCount"
+            :total-feature-count="TOTAL_FEATURE_COUNT"
+            :is-full-coverage="fullCoverage"
+          />
+        </div>
+      </div>
+
+      <!-- ───── APPLYING ───────────────────────────────────────────── -->
       <ApplyingStep
         v-if="viewState === 'applying'"
         :total-changes="appliedSnapshot.totalChanges"
         :selected-count="selectedCount"
       />
 
-      <!-- ───────────── APPLIED VIEW ────────────────────────────────── -->
+      <!-- ───── APPLIED ────────────────────────────────────────────── -->
       <AppliedStep
         v-if="viewState === 'applied'"
         :total-changes="appliedSnapshot.totalChanges"
@@ -391,14 +347,16 @@ function close() {
       />
     </div>
 
-    <!-- ─── Footer (edit view only) ──────────────────────────────────── -->
-    <template v-if="viewState === 'edit'" #footer>
+    <!-- ─── Footer: Step 1 (select) ──────────────────────────────────── -->
+    <template v-if="viewState === 'select'" #footer>
       <div class="uf-footer">
         <div class="uf-footer__left">
-          <HLTag v-if="recipe.length > 0" size="sm">
-            {{ t('agency.bulkActions.updateFeatures.footerFeatureCount', { count: recipe.length }) }}
-          </HLTag>
-          <span class="uf-footer__summary">{{ footerSummary }}</span>
+          <span class="uf-footer__summary">
+            {{ recipe.length === 0
+              ? t('agency.bulkActions.updateFeatures.footerNoChanges')
+              : `${recipe.length} ${recipe.length === 1 ? 'feature' : 'features'} selected`
+            }}
+          </span>
         </div>
         <div class="uf-footer__actions">
           <HLButton variant="secondary" size="sm" @click="close">
@@ -406,10 +364,31 @@ function close() {
           </HLButton>
           <HLButton
             size="sm"
-            :disabled="applyDisabled"
-            @click="goToConfirm"
+            :disabled="recipe.length === 0"
+            @click="goToConfigure"
           >
-            {{ t('agency.bulkActions.updateFeatures.apply') }}
+            Next
+          </HLButton>
+        </div>
+      </div>
+    </template>
+
+    <!-- ─── Footer: Step 2 (configure) ───────────────────────────────── -->
+    <template v-if="viewState === 'configure'" #footer>
+      <div class="uf-footer">
+        <div class="uf-footer__left">
+          <span class="uf-footer__summary">{{ footerSummary }}</span>
+        </div>
+        <div class="uf-footer__actions">
+          <HLButton variant="secondary" size="sm" @click="goBackToSelect">
+            Back
+          </HLButton>
+          <HLButton
+            size="sm"
+            :disabled="applyDisabled"
+            @click="startApplying"
+          >
+            Apply changes
           </HLButton>
         </div>
       </div>
@@ -422,16 +401,18 @@ function close() {
 .uf-modal {
   display: flex;
   flex-direction: column;
-  min-height: 420px;
-  max-height: calc(100vh - 200px);
+  height: calc(100vh - 240px);
+  min-height: 400px;
+  max-height: 600px;
 }
 
 .uf-modal__subtitle {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   font-size: 13px;
   font-weight: 400;
   line-height: 18px;
   color: var(--gray-600, #475467);
+  flex: 0 0 auto;
 }
 
 .uf-modal__subtitle strong {
@@ -441,120 +422,77 @@ function close() {
 
 .uf-modal__body {
   flex: 1 1 auto;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  /* Prevent scroll-top jumps across re-renders */
-  scroll-behavior: smooth;
+  min-height: 0;
 }
 
-/* ─── Add-a-feature button (dashed outline per brief) ────────────────── */
-.uf-modal__add-row {
+/* Step 1: picker fills the remaining space — overrides FeaturePicker's
+   scoped max-height: 280px and flex: 0 1 280px */
+.uf-modal__picker-full {
+  flex: 1 1 auto !important;
+  max-height: none !important;
+}
+
+/* Step 1: select all / remove all bar */
+.uf-modal__select-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
   flex: 0 0 auto;
-}
-
-.uf-modal__add-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 42px;
-  border: 1.5px dashed var(--gray-300, #d0d5dd);
-  border-radius: 8px;
-  background: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--primary-700, #004eeb);
-  cursor: pointer;
-  transition: border-color 0.12s ease, background 0.12s ease;
-}
-
-.uf-modal__add-btn:hover {
-  border-color: var(--primary-300, #84adff);
-  background: var(--primary-25, #f5f8ff);
-}
-
-.uf-modal__add-btn:focus-visible {
-  outline: 2px solid var(--primary-500, #2970ff);
-  outline-offset: 2px;
-}
-
-/* ─── Empty state ────────────────────────────────────────────────────── */
-.uf-modal__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 24px;
-  text-align: center;
-  gap: 4px;
-}
-
-.uf-modal__empty-icon {
-  font-size: 28px;
-  color: var(--gray-300, #d0d5dd);
   margin-bottom: 8px;
 }
 
-.uf-modal__empty-title {
-  margin: 0;
-  font-size: 13px;
+.uf-modal__select-btn {
+  font-size: 11px;
   font-weight: 500;
+  line-height: 16px;
   color: var(--gray-700, #344054);
-}
-
-.uf-modal__empty-hint {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--gray-500, #667085);
-  max-width: 320px;
-  line-height: 17px;
-}
-
-.uf-modal__empty-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.uf-modal__empty-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 14px;
+  background: var(--base-white, #ffffff);
+  border: 1px solid var(--gray-300, #d0d5dd);
   border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  padding: 2px 8px;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease;
 }
-
-.uf-modal__empty-action:focus-visible {
+.uf-modal__select-btn:hover {
+  background: var(--gray-50, #f9fafb);
+  border-color: var(--gray-400, #98a2b3);
+}
+.uf-modal__select-btn--remove {
+  color: var(--gray-700, #344054);
+}
+.uf-modal__select-btn--remove:hover {
+  background: var(--gray-50, #f9fafb);
+  border-color: var(--gray-400, #98a2b3);
+}
+.uf-modal__select-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: var(--base-white, #ffffff);
+  border-color: var(--gray-200, #eaecf0);
+}
+.uf-modal__select-btn:focus-visible {
   outline: 2px solid var(--primary-500, #2970ff);
   outline-offset: 2px;
 }
 
-.uf-modal__empty-action--enable {
-  background: var(--success-50, #ecfdf3);
-  color: var(--success-700, #027a48);
-  border: 1px solid var(--success-200, #a6f4c5);
+/* Step 2: recipe fills the remaining space */
+.uf-modal__recipe-full {
+  flex: 1 1 0;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.uf-modal__empty-action--enable:hover {
-  background: var(--success-100, #d1fadf);
-}
-
-.uf-modal__empty-action--disable {
-  background: var(--warning-50, #fffaeb);
-  color: var(--warning-700, #b54708);
-  border: 1px solid var(--warning-200, #fedf89);
-}
-
-.uf-modal__empty-action--disable:hover {
-  background: var(--warning-100, #fef0c7);
+/* ─── Shared separator dot ────────────────────────────────────────────── */
+.uf-modal__bulk-sep {
+  color: var(--gray-300, #d0d5dd);
+  font-size: 12px;
 }
 
 /* ─── Footer ─────────────────────────────────────────────────────────── */

@@ -21,7 +21,7 @@
  * the FEATURE_CATALOG / TOTAL_FEATURE_COUNT exports byte-identical in
  * shape and the rest of the modal stays unchanged.
  */
-import type { Feature, FeatureGroup, CurrentStateBySubAccount } from './types';
+import type { Feature, FeatureGroup, CurrentStateBySubAccount, DetailedFeatureState } from './types';
 
 export const FEATURE_CATALOG: FeatureGroup[] = [
   {
@@ -243,6 +243,37 @@ export function buildMockCurrentState(
   for (const f of ALL_FEATURES) {
     const alreadyOn = Math.round((selectedCount * popularityFor(f.id)) / 100);
     map.set(f.id, alreadyOn);
+  }
+  return map;
+}
+
+const MOCK_ACCOUNT_NAMES = [
+  'Acme Corp', 'Bright Dental', 'CityFit Gym', 'DreamScape Realty',
+  'Elite Auto', 'FreshBite Cafe', 'GreenLeaf Spa', 'Horizon HVAC',
+  'InstaClean Co', 'JetSet Travel', 'KeyStone Law', 'LuxNails Studio',
+  'MapleCrest Homes', 'NextGen Solar', 'Oakwood Plumbing', 'PrimeCut Barber',
+  'QuickFix IT', 'RiverRun Fitness', 'SilverLine Insurance', 'TopNotch Roofing',
+];
+
+function mockAccountNamesForCount(count: number): string[] {
+  const names: string[] = [];
+  for (let i = 0; i < count; i++) {
+    names.push(MOCK_ACCOUNT_NAMES[i % MOCK_ACCOUNT_NAMES.length]);
+  }
+  return names;
+}
+
+export function buildMockDetailedState(
+  selectedCount: number,
+): DetailedFeatureState {
+  const allNames = mockAccountNamesForCount(selectedCount);
+  const map: DetailedFeatureState = new Map();
+  for (const f of ALL_FEATURES) {
+    const alreadyOn = Math.round((selectedCount * popularityFor(f.id)) / 100);
+    map.set(f.id, {
+      enabled: allNames.slice(0, alreadyOn),
+      disabled: allNames.slice(alreadyOn),
+    });
   }
   return map;
 }
