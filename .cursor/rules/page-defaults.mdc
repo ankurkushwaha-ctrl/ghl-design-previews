@@ -48,21 +48,40 @@ agent must operate as if another agent is already editing files.
 Failures to coordinate produce silent regressions on the deployed
 URL the designer depends on.
 
-### Slash commands kick off feature work
+### Slash commands kick off work
 
 The user starts a new chat and types one of these instead of
-pasting a long prompt. Each command auto-runs the pre-flight, sets
-the right branch, and tells you the constraints — read the command
-body when invoked, it's the first thing in your context.
+pasting a long prompt. Each command auto-runs the pre-flight,
+sets the right branch (when relevant), and tells you the
+constraints — read the command body when invoked, it's the
+first thing in your context.
+
+**Global commands** (live in `~/.cursor/commands/`, work in
+every repo on this machine):
 
 | Command | When to use |
 |---|---|
-| `/feature <name and description>` | Any new feature in this repo |
-| `/update-features [optional extra context]` | The pre-scoped Update Features bulk-action flow for Sub-Accounts |
+| `/feature <name and description>` | Any new piece of work in any project |
 | `/fix <description>` | Small low-risk fixes (typo, token swap, single-line bug) — no feature branch |
 
-Command files live in `.cursor/commands/`. Add a new one when a
-new recurring pattern emerges; copy `feature.md` as the template.
+**Project-local commands** (live in `.cursor/commands/` in this
+repo only, override globals with the same name):
+
+| Command | When to use |
+|---|---|
+| `/update-features [optional extra context]` | The pre-scoped Update Features bulk-action flow for Sub-Accounts |
+
+Global commands deliberately stay project-agnostic — they handle
+the universal flow (pre-flight, branch, done-means contract) and
+defer to whatever rule file exists in the active repo. **This
+rule file is what makes `/feature` know about the two-file page
+pattern, HighRise stubs, etc.** when invoked here. If you start a
+chat in a different project, `/feature` still works but follows
+that project's rules instead.
+
+Add a new project-local command when a recurring pattern emerges
+that isn't generic enough for the global set; copy
+`update-features.md` as the template.
 
 ### Pre-flight checklist (run at the start of every session)
 
