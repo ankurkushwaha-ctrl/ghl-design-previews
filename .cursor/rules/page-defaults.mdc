@@ -48,9 +48,26 @@ agent must operate as if another agent is already editing files.
 Failures to coordinate produce silent regressions on the deployed
 URL the designer depends on.
 
+### Slash commands kick off feature work
+
+The user starts a new chat and types one of these instead of
+pasting a long prompt. Each command auto-runs the pre-flight, sets
+the right branch, and tells you the constraints — read the command
+body when invoked, it's the first thing in your context.
+
+| Command | When to use |
+|---|---|
+| `/feature <name and description>` | Any new feature in this repo |
+| `/update-features [optional extra context]` | The pre-scoped Update Features bulk-action flow for Sub-Accounts |
+| `/fix <description>` | Small low-risk fixes (typo, token swap, single-line bug) — no feature branch |
+
+Command files live in `.cursor/commands/`. Add a new one when a
+new recurring pattern emerges; copy `feature.md` as the template.
+
 ### Pre-flight checklist (run at the start of every session)
 
-Before the first substantive edit:
+If you weren't invoked via a slash command, run this manually
+before the first substantive edit:
 
 1. `git status` — confirm a clean working tree. If dirty, surface
    the diff to the user before proceeding.
