@@ -329,27 +329,32 @@ function close() {
       </div>
 
       <!-- ───── APPLYING ───────────────────────────────────────────── -->
-      <ApplyingStep
-        v-if="viewState === 'applying'"
-        :total-changes="appliedSnapshot.totalChanges"
-        :selected-count="selectedCount"
-      />
+      <div v-if="viewState === 'applying'" class="uf-modal__centered">
+        <ApplyingStep
+          :total-changes="appliedSnapshot.totalChanges"
+          :selected-count="selectedCount"
+        />
+      </div>
 
       <!-- ───── APPLIED ────────────────────────────────────────────── -->
-      <AppliedStep
-        v-if="viewState === 'applied'"
-        :total-changes="appliedSnapshot.totalChanges"
-        :selected-count="selectedCount"
-        :untouched-count="appliedSnapshot.untouched"
-        :total-feature-count="TOTAL_FEATURE_COUNT"
-        :is-full-coverage="appliedSnapshot.fullCoverage"
-        @done="onDone"
-      />
+      <div v-if="viewState === 'applied'" class="uf-modal__centered">
+        <AppliedStep
+          :total-changes="appliedSnapshot.totalChanges"
+          :selected-count="selectedCount"
+          :untouched-count="appliedSnapshot.untouched"
+          :total-feature-count="TOTAL_FEATURE_COUNT"
+          :is-full-coverage="appliedSnapshot.fullCoverage"
+          @done="onDone"
+        />
+      </div>
     </div>
 
-    <!-- ─── Footer: Step 1 (select) ──────────────────────────────────── -->
-    <template v-if="viewState === 'select'" #footer>
-      <div class="uf-footer">
+    <!-- Footer only for select / configure — omitted entirely for
+         applying / applied so HLModal's $slots.footer is falsy and no
+         empty footer div (with border-top) steals vertical space. -->
+    <template v-if="viewState === 'select' || viewState === 'configure'" #footer>
+      <!-- Step 1 footer -->
+      <div v-if="viewState === 'select'" class="uf-footer">
         <div class="uf-footer__left">
           <span class="uf-footer__summary">
             {{ recipe.length === 0
@@ -371,11 +376,8 @@ function close() {
           </HLButton>
         </div>
       </div>
-    </template>
-
-    <!-- ─── Footer: Step 2 (configure) ───────────────────────────────── -->
-    <template v-if="viewState === 'configure'" #footer>
-      <div class="uf-footer">
+      <!-- Step 2 footer -->
+      <div v-else class="uf-footer">
         <div class="uf-footer__left">
           <span class="uf-footer__summary">{{ footerSummary }}</span>
         </div>
@@ -425,6 +427,14 @@ function close() {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+
+.uf-modal__centered {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 0;
 }
 

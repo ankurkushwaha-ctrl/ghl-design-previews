@@ -80,9 +80,8 @@ const bodyText = (() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   text-align: center;
-  padding: 48px 24px;
+  padding: 24px;
   gap: 12px;
 }
 
