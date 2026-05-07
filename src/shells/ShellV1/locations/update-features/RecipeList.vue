@@ -141,17 +141,18 @@ function featureIdsInGroup(groupName: string): string[] {
           <div class="recipe-list__group-actions">
             <button
               type="button"
-              class="recipe-list__group-btn"
+              class="recipe-list__group-link"
               @click="emit('set-group', featureIdsInGroup(item.group), 'enable')"
             >
-              Enable group
+              Enable all
             </button>
+            <span class="recipe-list__group-divider" aria-hidden="true">·</span>
             <button
               type="button"
-              class="recipe-list__group-btn"
+              class="recipe-list__group-link"
               @click="emit('set-group', featureIdsInGroup(item.group), 'disable')"
             >
-              Disable group
+              Disable all
             </button>
           </div>
         </div>
@@ -272,31 +273,38 @@ function featureIdsInGroup(groupName: string): string[] {
 
 .recipe-list__group-actions {
   display: inline-flex;
+  align-items: center;
   gap: 6px;
   text-transform: none;
   letter-spacing: normal;
 }
 
-.recipe-list__group-btn {
+.recipe-list__group-link {
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
-  color: var(--gray-700, #344054);
-  background: var(--base-white, #ffffff);
-  border: 1px solid var(--gray-300, #d0d5dd);
-  border-radius: 6px;
-  padding: 2px 8px;
+  color: var(--primary-600, #155eef);
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease;
+  transition: color 0.12s ease;
 }
 
-.recipe-list__group-btn:hover {
-  background: var(--gray-50, #f9fafb);
-  border-color: var(--gray-400, #98a2b3);
+.recipe-list__group-link:hover {
+  color: var(--primary-700, #004eeb);
+  text-decoration: underline;
 }
 
-.recipe-list__group-btn:focus-visible {
+.recipe-list__group-link:focus-visible {
   outline: 2px solid var(--primary-500, #2970ff);
   outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.recipe-list__group-divider {
+  color: var(--gray-400, #98a2b3);
+  font-size: 12px;
+  user-select: none;
 }
 </style>
