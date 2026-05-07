@@ -153,6 +153,96 @@ const messages = {
           title: 'Add Sub-Account',
         },
       },
+      /*
+       * Update Features bulk-action modal — Option A "recipe" design.
+       *
+       * Provenance: this surface does NOT exist in upstream
+       * (ghl-revex-frontend/apps/locations) yet — the bulk-actions
+       * dropdown there has no `update-features` entry. Keys live under
+       * `agency.bulkActions.updateFeatures.*` so a future port to
+       * upstream is byte-identical for translations.
+       *
+       * Copy is verbatim from the design brief's Copy Library. vue-i18n
+       * placeholders use `{count}/{x}/{y}/{z}/{total}` instead of the
+       * brief's `[N]/[X]/[Y]/[Z]/[Total]` bracket notation.
+       *
+       * The subtitle is split into two keys (`subtitleLead` +
+       * `subtitleBoldClause`) so the bold clause can be rendered with
+       * a real <strong> tag in the template — frontend.mdc forbids
+       * v-html without DOMPurify, and the repo has no <i18n-t>
+       * component precedent.
+       */
+      bulkActions: {
+        updateFeatures: {
+          title: 'Adjust feature access',
+          subtitleLead: 'For {count} selected sub-accounts. ',
+          subtitleBoldClause: 'Anything not listed below stays exactly as it is',
+          subtitleTrail: ' — each sub-account keeps its current setting for those features.',
+
+          emptyState: 'No changes yet. Add a feature to enable or disable.',
+          emptyStateHint: 'Features you don\'t include will keep their current settings on each sub-account.',
+          addFeature: '+ Add a feature',
+
+          bulkAddEnableAll: '+ Enable all {count} features',
+          bulkAddDisableAll: '+ Disable all {count} features',
+          bulkAddEnableRemaining: '+ Enable remaining {count} features',
+          bulkAddDisableRemaining: '+ Disable remaining {count} features',
+          pickerDivider: 'or pick individually',
+          searchPlaceholder: 'Search features…',
+          addMatching: '+ Add {count} matching',
+          pickerNoResults: 'No features match "{query}".',
+          alreadyAdded: 'already added',
+          pickerCurrentState: '{count}/{total} on',
+          pickerAddGroup: '+ Add group',
+          pickerDone: 'Done',
+
+          rowImpactChange: 'Affects {x} of {total} sub-accounts ({y} already {state})',
+          rowImpactChangeNoParen: 'Affects {x} of {total} sub-accounts',
+          rowImpactNoOp: 'Already {state} across all {total} sub-accounts — no change',
+          stateOn: 'on',
+          stateOff: 'off',
+          removeRowAria: 'Remove {name} from changes',
+          chipAria: 'Click to flip enable / disable',
+
+          listHeaderCount: '{count} features in this list',
+          flipAllEnable: 'Set all to enable',
+          flipAllDisable: 'Set all to disable',
+
+          untouchedPartial:
+            '{x} changes pending across {y} sub-accounts. {z} other features will not be touched — each sub-account keeps whatever it currently has.',
+          untouchedFull:
+            'All {total} features are configured below — every sub-account will be brought to this exact configuration. {x} changes will be applied across {y} sub-accounts.',
+
+          footerFeatureCount: '{count} features',
+          footerNoChanges: 'No changes pending',
+          footerNoOp: 'Listed features are already at their target state — nothing will change',
+          footerReady: 'Ready to apply {count} changes',
+
+          confirmTitle: 'Apply these changes?',
+          confirmSubtitlePartial:
+            '{x} changes across {y} sub-accounts. {z} other features will not be touched.',
+          confirmSubtitleFull:
+            'Bringing all {total} features to a uniform configuration across {y} sub-accounts. {x} feature toggles will change.',
+          confirmRowSummary: '{x} of {total}',
+          confirmRowBeforeAfter: '{before} → {after} of {total}',
+          confirmBack: 'Back',
+          confirmApply: 'Confirm and apply',
+
+          applyingTitle: 'Applying changes',
+          applyingBody: 'Updating {x} feature toggles across {y} sub-accounts.',
+
+          appliedTitle: 'Changes applied',
+          appliedBodyPartial:
+            '{x} feature changes across {y} sub-accounts. The other {z} features kept their existing settings on each sub-account.',
+          appliedBodyFull:
+            'All {total} features were configured uniformly across {y} sub-accounts. {x} feature toggles changed.',
+          appliedDone: 'Done',
+
+          cancel: 'Cancel',
+          apply: 'Apply',
+          closeAria: 'Close',
+        },
+      },
       // [verified] spm-ts/src/locales/en.json:467–522 — searchLocation only.
       locationApiKeys: {
         searchLocation: 'Search location',
