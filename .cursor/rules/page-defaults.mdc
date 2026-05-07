@@ -9,6 +9,130 @@ These rules govern how new pages, components, and assets are added to
 this repo. They exist so previews stay consistent and so adding a new
 mockup is a 30-second job, not a 30-minute one.
 
+## Project layout (where things live)
+
+Local working directories on the user's machine:
+
+```
+~/Desktop/Projects/
+├── ghl-design-previews/   ← this repo. ALL preview work lives here.
+├── upstream/              ← read-only reference clones (source of truth)
+│   ├── ghl-revex-frontend/
+│   └── spm-ts/
+└── archive/               ← legacy mockups awaiting migration or deletion
+```
+
+When this rule file says "vendor from spm-ts/..." or "look in
+ghl-revex-frontend/...", the actual path is
+`~/Desktop/Projects/upstream/<repo>/...`. Before vendoring, run
+`git pull` in the relevant `upstream/<repo>/` so you're working from
+current production code, not a stale clone.
+
+**One repo, one Vercel deploy.** Every preview lives in this repo
+under `src/shells/ShellV1/<feature>/` and gets a route in
+`src/routes.ts`. We do **not** create sibling folders like
+`~/Desktop/Projects/<feature>/` per feature — that fragments the shell,
+the design system, the conventions, and the deploy URL. New feature →
+new route + new subfolder under `src/shells/ShellV1/`, here.
+
+If the user proposes a new top-level folder for a feature
+(e.g. `~/Desktop/Projects/Sub-Accounts/Bulk Actions/.../`), push back:
+that's product taxonomy, not code structure. Code uses routes for
+hierarchy and stays in one repo.
+
+## Multi-agent safety
+
+The user runs multiple Cursor chats in parallel against this repo
+(e.g. one for Sub-Accounts work, one for Update Features). Every
+agent must operate as if another agent is already editing files.
+Failures to coordinate produce silent regressions on the deployed
+URL the designer depends on.
+
+### Pre-flight checklist (run at the start of every session)
+
+Before the first substantive edit:
+
+1. `git status` — confirm a clean working tree. If dirty, surface
+   the diff to the user before proceeding.
+2. `git fetch && git pull` — make sure your local main is current.
+3. `git log -5 --oneline` — see what other agents have shipped recently.
+4. If non-trivial work: `git checkout -b feat/<feature-slug>`.
+5. If you'll vendor from upstream:
+   `cd ~/Desktop/Projects/upstream/<repo> && git pull`.
+6. Read this rule file (`.cursor/rules/page-defaults.mdc`) end-to-end.
+
+### Branch protocol
+
+- **Main is always deployable.** Don't push broken code to main.
+- **Non-trivial work runs on a feature branch** named
+  `feat/<feature-slug>`. Trivial fixes (a typo, a token swap) can
+  land directly on main after the working tree is verified clean.
+- **Coordinate merges with the user.** When a branch is ready, ask
+  before merging — the user may want to review or stage multiple
+  branches together.
+
+### Co-owned files (touch with care)
+
+Multiple agents edit these. Append where possible, leave a one-line
+comment with date + feature name near your change so ownership is
+traceable:
+
+| File | Why it's shared |
+|---|---|
+| `src/routes.ts` | Every page registers here |
+| `src/shells/ShellV1/_stubs/i18n.ts` | Every feature adds keys here |
+| `src/shells/ShellV1/_stubs/store.ts` | New getters land here |
+| `src/shells/ShellV1/_stubs/navigation.ts` | Sidebar nav array |
+| `src/App.vue` | Global theme + `body data-theme` |
+| `package.json` / `package-lock.json` | Dependency tree |
+| `vite.config.ts` | Build pipeline |
+| `vercel.json` | Deploy config |
+| `index.html` | Document head, fonts, FA CDN |
+| `.cursor/rules/page-defaults.mdc` | These rules |
+
+### Protected paths (do NOT edit, delete, or `rm -rf`)
+
+- `~/Desktop/Projects/upstream/` — read-only reference clones.
+  Never `git push`, never edit files inside. `git pull` is allowed.
+- `~/Desktop/Projects/archive/` — legacy work awaiting migration.
+  Don't delete entries without explicit user direction.
+- `~/Desktop/Projects/Reselling-mockup/` and
+  `~/Desktop/Projects/SAAS/` — unrelated sibling preview projects.
+  Don't touch.
+
+### Things already done — don't redo
+
+- **Private npm registry auth** (`ar-login.sh`) was run once. `.npmrc`
+  is gitignored and contains live GCP tokens. Don't re-run unless
+  `npm install` fails with 401/403.
+- **`@gohighlevel/ghl-ui` and `@gohighlevel/ghl-icons`** are installed
+  at pinned versions. Don't bump without asking.
+- **Legacy Add-Ons static HTML** (`archive/ghl-addons-preview/`) was
+  deleted 2026-05-07. The Vue port lives at
+  `src/shells/ShellV1/add-ons/AddOnsPage.vue`.
+
+### Deploy discipline
+
+- **One Vercel project**, canonical at
+  `https://ghl-design-previews.vercel.app`. Don't create new ones.
+- **In-progress work goes to preview deploys** —
+  `vercel build && vercel --prebuilt` (no `--prod`).
+- **Production deploys (`--prod`) require explicit user instruction.**
+  A green build is not consent to ship.
+- Before any prod deploy, run
+  `git log main..feat/<other-active-features>` to confirm no other
+  branch has unmerged work that prod should include first.
+
+### When in doubt — stop and ask
+
+- A co-owned file has uncommitted changes you didn't make.
+- A command would touch `upstream/`, `archive/`, or a sibling project.
+- A dep needs to be added or bumped.
+- The user's instructions conflict with this rule file.
+
+Surfacing the conflict is always cheaper than recovering from a
+silent regression.
+
 ## First principle: copy from upstream, don't invent
 
 **Every artifact in this repo has an upstream code repo.** Pages
@@ -66,9 +190,10 @@ This repo is downstream of `spm-ts`. There are two kinds of work:
    - `spm-ts/src/util/navigation.ts` lines 10780–11650 — the agency-mode nav array
    - `spm-ts/src/assets/pmd/img/{agency,location}-marker.svg` — location-pill icons
 
-   These files live in the user's local `~/Desktop/Projects/spm-ts/`
-   working copy. If they're missing, **stop and ask**. Do not make up
-   class names, colors, paddings, or nav items from screenshots.
+   These files live in the user's local
+   `~/Desktop/Projects/upstream/spm-ts/` working copy. If they're
+   missing, **stop and ask**. Do not make up class names, colors,
+   paddings, or nav items from screenshots.
 
 ## Shell
 
@@ -103,15 +228,61 @@ This repo is downstream of `spm-ts`. There are two kinds of work:
 
 ## Files & routing
 
+### Two-file page pattern
+
+Every shelled page is **two files**:
+
+1. **Wrapper** at `src/pages/<X>Page.vue` — thin, mounts the shell:
+   ```vue
+   <script setup lang="ts">
+   import ShellV1 from '@/shells/ShellV1/index.vue'
+   import AddOnsPage from '@/shells/ShellV1/add-ons/AddOnsPage.vue'
+   </script>
+   <template>
+     <ShellV1 active="agency-marketplace">
+       <AddOnsPage />
+     </ShellV1>
+   </template>
+   ```
+2. **Inner content** at `src/shells/ShellV1/<feature>/<X>Page.vue` —
+   the vendored upstream component with `<SideBarV2>`, `<TopBar>`,
+   and any other chrome stripped (the shell wraps externally now).
+
+Reference implementations: `SubAccountsPage.vue` + `Locations.vue`,
+`AddOnsPage.vue` (wrapper) + `add-ons/AddOnsPage.vue` (inner).
+
+### Naming and routing rules
+
 - Pages live in `src/pages/` with **PascalCase** filenames
-  (e.g. `AddOnsPage.vue`, `PageTabs.vue`).
+  (e.g. `AddOnsPage.vue`, `PageTabs.vue`). Inner pages live in
+  `src/shells/ShellV1/<feature>/` with the same PascalCase name.
 - Routes are added to `src/routes.ts` with **kebab-case** paths
   (`/add-ons`, `/page-tabs`). Use lazy imports
   (`() => import('@/pages/Foo.vue')`) so each preview is its own
   chunk.
-- Each new route gets a `meta.title` and `meta.summary` — the index
-  page reads these to render the preview list. Set `meta.shell`
-  to `'V1'` or `'V2'` so the index card shows the right pill.
+- Each new route gets `meta.title`, `meta.summary`, and `meta.shell`
+  (`'V1'` or `'V2'`). The index page reads these.
+- **`active="<nav-meta-key>"`** must match the `meta` field in the
+  spm-ts nav array (e.g. `agency-marketplace` for Add-Ons,
+  `sub-accounts` for the locations list). Wrong key → wrong sidebar
+  row highlights. When in doubt, grep `upstream/spm-ts/src/util/navigation.ts`
+  for the page's title to find its meta key.
+
+### Action-key naming (bulk-actions, card menus, etc.)
+
+- Action keys (the strings emitted by dropdowns and consumed by
+  handlers) **mirror upstream enum values verbatim** when an upstream
+  enum exists. Example: the bulk-actions dropdown uses
+  `'enable-rebilling'`, `'enable-saas'`, `'pause-subaccount'`,
+  `'calendar-settings'` — all kebab-case, all matching
+  `BulkActionType` in
+  `upstream/ghl-revex-frontend/apps/locations/src/constants/index.ts`.
+- New keys (e.g. `'update-features'` for an in-flight feature) follow
+  the same kebab-case pattern so they slot into the upstream enum
+  byte-identically when the work merges.
+- This keeps the dispatch wiring portable: a future port to upstream
+  is a find-and-replace from local stub to real action, not a key
+  rename.
 
 ## Tokens & styling — **page content only**
 
@@ -140,6 +311,15 @@ For the shell itself, see "Source of truth" above.
 - If a page needs an HR primitive that isn't here yet, **ask first**.
   Adding a stub is fine; reaching for a third-party component library
   or copying half of `@platform-ui/highrise` into the repo is not.
+- **HR primitives come from this stubs layer first, not from
+  `@gohighlevel/ghl-ui`.** When porting an upstream component that
+  imports `@platform-ui/highrise`, rewrite the import to
+  `@/components/highrise` — the local stubs render the HR visual
+  treatment with HR tokens consistently across pages.
+- The Sub-Accounts page (`src/shells/ShellV1/locations/`) is a
+  documented exception that uses `@gohighlevel/ghl-ui` directly —
+  see "Architectural debt" below. Do not copy that pattern for new
+  pages without an explicit instruction.
 
 ## Icons
 
@@ -301,6 +481,16 @@ working, replace the placeholder with the full vendor.
 - No jargon, no acronyms without first-mention definition (use
   `<abbr title="...">` for inline expansion).
 - Sentence case for UI labels, not Title Case.
+- **If upstream has hardcoded English copy (no i18n keys), preserve
+  it hardcoded.** Don't invent `i18n` keys upstream doesn't have —
+  that creates phantom keys that break later upstream-sync diffs.
+  Example: `AddOnsPage.vue` upstream is fully hardcoded English with
+  a "Move to vue-i18n keys before merge to main" comment. We kept
+  it hardcoded. If/when upstream adds the keys, we re-vendor.
+- **If upstream uses i18n keys, mirror them in `_stubs/i18n.ts`
+  verbatim**, including the namespace (e.g. `agency.bulkActions.*`,
+  not a renamed local equivalent). Verbatim keys mean a future
+  port is byte-identical for translations too.
 
 ## Source-of-truth & reverse-sync
 
@@ -313,3 +503,32 @@ working, replace the placeholder with the full vendor.
 - When porting from spm-ts, change **only** the imports and the
   shell wrapper. Do not edit copy, structure, or styles unless the
   user explicitly asks.
+
+## Architectural debt — Sub-Accounts page (logged 2026-05-07)
+
+The Sub-Accounts page (`src/shells/ShellV1/locations/`) is **not**
+a verbatim port of upstream. We chose simplification for speed:
+
+- **What we did**: Wrote a simpler `Locations.vue` (~290 lines) that
+  uses real `@gohighlevel/ghl-ui` primitives + vendored `LocationCard97Plan.vue`
+  + `Metrics.vue`. Split UI into focused components (`FilterStrip.vue`,
+  `BulkActionsRow.vue`, modals) that don't exist in upstream.
+- **What we should've done**: Vendor upstream's `LocationList.vue`
+  (6,825 lines from `~/Desktop/Projects/upstream/ghl-revex-frontend/apps/locations/`)
+  byte-for-byte and stub only the network/store layer underneath it.
+- **Why it matters**: As a designer, the user wants to PR design
+  changes directly to upstream without dev help. With our current
+  simplified file, only small style/copy changes can be PR'd directly
+  — anything structural needs a dev to bridge our preview ↔ upstream.
+  A verbatim port makes `git diff ours upstream` produce a clean
+  patch the designer can paste directly into a PR.
+- **When to revisit**: Next session if the user wants direct
+  designer-PR independence. The pivot is ~1 day of focused vendoring:
+  copy `LocationList.vue` verbatim, build a unified `_stubs/` layer
+  that mirrors `@/store`, `@/service/*`, and `@/composables/*` exactly,
+  and discard our simplified `Locations.vue` + child components.
+
+For all NEW page ports starting from this date, prefer **verbatim
+vendoring** over simplification. If the upstream component is too
+large or has too many transitive deps, escalate to the user before
+writing a simpler version.
