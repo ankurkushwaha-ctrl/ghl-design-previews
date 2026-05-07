@@ -53,6 +53,11 @@ interface PreviewStoreState {
       pinnedLocations: string[];
     };
   };
+  // From spm-ts/src/store/notification.ts
+  // ListAccounts reads showNotification to conditionally add a CSS class.
+  notification: {
+    showNotification: boolean;
+  };
 }
 
 const state: PreviewStoreState = reactive({
@@ -75,6 +80,11 @@ const state: PreviewStoreState = reactive({
       profileColor: '#c4b5fd',
       pinnedLocations: [],
     },
+  },
+  // upstream: spm-ts/src/store/notification.ts → showNotification
+  // False so ListAccounts does not add the notification-banner-wrapper class.
+  notification: {
+    showNotification: false,
   },
 });
 
@@ -100,6 +110,25 @@ const getters = {
   // Permission gates default to true so any feature-flagged nav row renders.
   // upstream: spm-ts/src/store/permissions/* → hasPermission, hasFeature, etc.
   // Add specific keys here as they're discovered in vendored components.
+
+  // Feature flag getter used by ListAccounts and LocationListCard.
+  // Returns false for all flags — preview renders the legacy (non-revamp) UI.
+  // upstream: spm-ts/src/store/featureFlags.ts → featureFlags/getForCompany
+  'featureFlags/getForCompany': (_flagName: string) => false,
+
+  // SaaS plan state — both false so the preview shows a non-SaaS agency.
+  // upstream: spm-ts/src/store/company.ts → company/inSaasPlan, company/in297Plan
+  'company/inSaasPlan': false,
+  'company/in297Plan': false,
+
+  // Sidebar version used by ListAccounts to pick VirtualList variant.
+  // upstream: spm-ts/src/store/sidebar.ts → sidebarv2/getVersion
+  'sidebarv2/getVersion': 'v2',
+
+  // Location search used by ListAccounts search handler.
+  // Returns empty array in preview (search is non-functional by design).
+  // upstream: spm-ts/src/store/location.ts → locations/searchByName
+  'locations/searchByName': (_name: string) => [],
 };
 
 const store = {
@@ -120,7 +149,16 @@ export function useStore() {
   return store;
 }
 
+// Install method makes this a Vue plugin so `app.use(store)` registers
+// `$store` on globalProperties — required for Options API `this.$store`.
+const storePlugin = {
+  ...store,
+  install(app: { config: { globalProperties: Record<string, unknown> } }) {
+    app.config.globalProperties.$store = store;
+  },
+};
+
 // Some upstream files do `import store from '@/store'` (default) instead of
 // `import { useStore } from '@/store'` — we re-export the same instance as
 // default to keep both forms working.
-export default store;
+export default storePlugin;

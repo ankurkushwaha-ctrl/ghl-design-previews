@@ -16,7 +16,7 @@ export const previewRoutes: RouteRecordRaw[] = [
     component: () => import('@/pages/AddOnsPage.vue'),
     meta: {
       title: 'Add-Ons',
-      summary: 'Agency-side add-ons marketplace. Source-of-truth: spm-ts.',
+      summary: 'Add-Ons (Agency Marketplace)',
       shell: 'V1',
     },
   },
@@ -28,6 +28,16 @@ export const previewRoutes: RouteRecordRaw[] = [
       title: 'Page Tabs',
       summary: 'Phase 2 mockup migrated from SAAS/page-tabs.html. (Placeholder.)',
       shell: 'V2',
+    },
+  },
+  {
+    path: '/sub-accounts',
+    name: 'sub-accounts',
+    component: () => import('@/pages/SubAccountsPage.vue'),
+    meta: {
+      title: 'Sub-Accounts',
+      summary: 'Agency sub-accounts list. Source-of-truth: spm-ts ListAccounts.vue.',
+      shell: 'V1',
     },
   },
   {
@@ -52,5 +62,27 @@ export const router = createRouter({
       meta: { title: 'Previews' },
     },
     ...previewRoutes,
+    {
+      path: '/coming-soon',
+      name: 'coming-soon',
+      component: () => import('@/pages/ComingSoonPage.vue'),
+      meta: { title: 'Coming Soon' },
+    },
+    // Stub named routes referenced by vendored components (router-link :to="{ name: ... }").
+    // Vue Router 4 throws when router-link can't resolve a name — those throws were
+    // breaking the LocationListCard <h3><router-link>{{ name }}</router-link></h3> render.
+    // Each route maps to ComingSoonPage so previews stay inert without surfacing 404s.
+    { path: '/sub-account/:account_id', name: 'sub-account-detail', component: () => import('@/pages/ComingSoonPage.vue') },
+    { path: '/sub-account-search', name: 'sub-account-search', component: () => import('@/pages/ComingSoonPage.vue') },
+    { path: '/agency-labs', name: 'agency-labs', component: () => import('@/pages/ComingSoonPage.vue') },
+    { path: '/location-transfer', name: 'location-transfer-page', component: () => import('@/pages/ComingSoonPage.vue') },
+    { path: '/old-launchpad/:location_id', name: 'old-launchpad', component: () => import('@/pages/ComingSoonPage.vue') },
+    { path: '/old-dashboard/:location_id', name: 'old-dashboard', component: () => import('@/pages/ComingSoonPage.vue') },
+    { path: '/dashboard/:location_id', name: 'dashboard', component: () => import('@/pages/ComingSoonPage.vue') },
+    // Catch-all: any path without a matching route lands on coming-soon.
+    {
+      path: '/:pathMatch(.*)*',
+      component: () => import('@/pages/ComingSoonPage.vue'),
+    },
   ],
 });

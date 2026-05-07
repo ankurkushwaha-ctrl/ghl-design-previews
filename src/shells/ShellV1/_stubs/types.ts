@@ -54,6 +54,8 @@ export interface V2RouteConfig {
   linkId?: string;
   adminOnly?: boolean;
   id?: string;
+  /** Local preview route path. Added for preview routing — not in upstream. */
+  localRoute?: string;
 }
 
 export type SideBarItemConfig = V2RouteConfig;

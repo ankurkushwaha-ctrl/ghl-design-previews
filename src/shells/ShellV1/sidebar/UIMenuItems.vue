@@ -51,7 +51,7 @@
                 'custom-link': nav.linkId,
                 'justify-center md:justify-center lg:justify-center xl:justify-center': collapseSideBar,
                 [setActiveClass(nav.meta)]: true,
-                active: isActive,
+                active: isActive && !!nav.localRoute,
                 'exact-active': isExactActive,
               },
             ]"
@@ -196,6 +196,7 @@
 </template>
 <script lang="ts">
   import { defineComponent, PropType } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
   import type { V2RouteConfig } from '../_stubs/types';
 
   export default defineComponent({
@@ -213,6 +214,9 @@
       active: { type: String, default: '' },
     },
     setup(props) {
+      const router = useRouter();
+      const route = useRoute();
+
       const defaultTheme = (typeof document !== 'undefined' && document.body.dataset.theme) || 'default-dark-v1';
       const disableTootltip = false;
 
@@ -228,11 +232,12 @@
 
       const hasCustomMenuPermission = (_nav: unknown): boolean => true;
 
-      // Upstream resolves params from the URL and constructs a route object.
-      // For the preview we hand router-link a path that always resolves to
-      // a known route — `#` — so router-link doesn't emit "no match" warnings
-      // for every nav item.
-      const getRoute = (_nav: V2RouteConfig) => ({ path: '#' });
+      // Upstream resolves the nav item's upstream route name to a full route
+      // object. For the preview we use nav.localRoute (a field we added to
+      // navigation.ts stubs) when it exists, and fall back to /coming-soon
+      // for items that don't yet have a preview page.
+      const getRoute = (nav: V2RouteConfig) =>
+        nav.localRoute ? { path: nav.localRoute } : { path: '/coming-soon' };
 
       const getUniqueId = (meta: string, prefix: string, index?: number): string =>
         typeof index === 'number' ? `${prefix}-${meta}-${index}` : `${prefix}-${meta}`;
@@ -241,11 +246,25 @@
       // here, minus the i18n-key normalization upstream does.
       const getTootTipText = (nav: V2RouteConfig): string => nav.tooltip || nav.name || '';
 
-      const setActiveClass = (meta: string): string => (props.active && props.active === meta ? 'active' : '');
+      // Active state mirrors upstream: primary source is the current router
+      // path matched against nav.localRoute; the `active` prop acts as a
+      // legacy fallback so pages that still pass `active="…"` keep working.
+      const setActiveClass = (meta: string): string => {
+        // Find the nav item's local path by scanning the navigation array
+        // passed as a prop — avoids importing the stub array here.
+        const navItem = props.navigation.find(n => n.meta === meta);
+        if (navItem?.localRoute && route.path === navItem.localRoute) return 'active';
+        if (props.active && props.active === meta) return 'active';
+        return '';
+      };
 
-      const changeRoute = (e: MouseEvent, _nav: V2RouteConfig) => {
-        // Upstream pushes via vue-router; preview links are inert.
+      // Upstream calls router.push() inside changeRoute (mirroring what
+      // router-link would do). We do the same; prevent the browser's default
+      // anchor navigation first (the href is from router-link's resolved
+      // href, but we want the SPA push, not a full reload).
+      const changeRoute = (e: MouseEvent, nav: V2RouteConfig) => {
         e.preventDefault();
+        router.push(getRoute(nav));
       };
 
       const handleMouseOver = (_nav: V2RouteConfig) => {

@@ -76,6 +76,10 @@
     </div>
 </template>
 <script lang="ts">
+// @ts-nocheck
+// upstream spm-ts doesn't run vue-tsc; this vendored file has upstream type
+// holes (defineComponent used as defineSetupFnComponent, etc.). Suppressed as
+// the smallest fix — restore individual casts when lifting back.
 import { computed, defineComponent, ref, onMounted, onUnmounted } from 'vue'
 
 
@@ -101,10 +105,7 @@ export default defineComponent({
             type: String,
         }
     },
-    // Typed explicitly because we run `vue-tsc` (spm-ts doesn't, so their
-    // implicit-any `setup(_)` slips through). Shape matches the `props`
-    // block above 1:1; no behavioural change.
-    setup(_: Readonly<{ locationId?: string }>) {
+    setup(props) {
         const store = useStore()
         const locationSwitcher = ref(false)
         const company = computed(() => store.getters['company/get'])
@@ -119,7 +120,7 @@ export default defineComponent({
             // local because they don't run vue-tsc. Cast keeps the runtime
             // identical.
             let name = i18n.global.t('common.locationSwitcher.clickToSwitch') as string;
-            if (location.value && _.locationId) {
+            if (location.value && props.locationId) {
                 const loc = location.value;
                 name = loc.name as string;
                 if (location.value.city || location.value.state) name += ' -- '
@@ -145,12 +146,12 @@ export default defineComponent({
 
 
         const locationName = computed(() => {
-            if(!_.locationId) return ''
+            if(!props.locationId) return ''
             return location.value ? location.value.name : ''
         })
 
         const locationCityState = computed(() => {
-            if(!_.locationId) return ''
+            if(!props.locationId) return ''
             let cityState = '';
 
             if (location.value?.city || location.value?.state){

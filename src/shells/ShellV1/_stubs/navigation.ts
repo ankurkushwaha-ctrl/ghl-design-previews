@@ -114,6 +114,7 @@ export const agencyNavigation: V2RouteConfig[] = [
     icon: 'https://cdn.msgsndr.com/sidebar-v2/agency-user.svg',
     children: [],
     route: { name: 'subAccountRoutes.default', params: [] },
+    localRoute: '/sub-accounts',
   },
   {
     name: 'common.sidebar.accountSnapshots',
@@ -153,6 +154,7 @@ export const agencyNavigation: V2RouteConfig[] = [
     icon: 'https://cdn.msgsndr.com/sidebar-v2/agency-marketplace.svg',
     children: [],
     route: { name: 'marketplaceRoutes.default', params: [] },
+    localRoute: '/add-ons',
   },
   {
     name: 'common.sidebar.affiliatePortal',

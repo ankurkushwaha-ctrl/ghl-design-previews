@@ -17,6 +17,35 @@
  *   `'*.svg?url'` (Vite's built-in URL-suffix convention) which we shim
  *   below.
  */
+/*
+ * Type augmentation: expose $store on Options-API component instances.
+ *
+ * The existing ShellV1 shell components use Composition API (useStore() in
+ * setup). The vendored agency pages (ListAccounts, LocationListCard) come
+ * from spm-ts which uses Vuex Options API (this.$store). This augmentation
+ * bridges the gap so vue-tsc doesn't reject every this.$store access in those
+ * files.
+ *
+ * The actual store shape is returned by useStore() in _stubs/store.ts.
+ */
+import type { useStore as _useStore } from '@/shells/ShellV1/_stubs/store'
+import type { RouteLocationNormalizedLoaded, Router } from 'vue-router'
+type PreviewStore = ReturnType<typeof _useStore>
+
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+    $store: PreviewStore
+    // vue-router 4 augments these via its own types, but explicit declaration
+    // ensures vue-tsc picks them up in templates of vendored Options API components.
+    $route: RouteLocationNormalizedLoaded
+    $router: Router
+    // vue-i18n 11 augments $t via its own types, but explicit declaration
+    // ensures vue-tsc picks it up in templates of vendored components.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    $t: (key: string, ...args: any[]) => string
+  }
+}
+
 declare module '*.svg' {
   import type { DefineComponent } from 'vue';
   const component: DefineComponent<Record<string, never>, Record<string, never>, unknown>;

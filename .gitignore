@@ -10,3 +10,6 @@ dist-ssr
 .vercel
 scratch
 *.log
+
+# Private GCP Artifact Registry tokens — created by ar-login.sh.
+.npmrc

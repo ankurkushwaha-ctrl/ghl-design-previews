@@ -381,6 +381,20 @@
 /* ═══════════════════════════════════════════════════════════════════
    Base body styles (mirrors HR text defaults so pages feel "production")
    ═══════════════════════════════════════════════════════════════════ */
+/*
+ * Single-scroll-container model: the document is the only scroller. The
+ * shell uses position: sticky on the sidebar and topbar so they pin to the
+ * viewport while the document scrolls under them. For sticky to work the
+ * scroll happens on <html>/<body>; we explicitly opt OUT of any inherited
+ * `overflow: hidden` so the document is the scroller, not some ancestor.
+ */
+html, body {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;       /* still trap horizontal scroll */
+  overflow-y: auto;          /* document is the only scroller */
+}
+
 html { color-scheme: light; }
 body {
   margin: 0;
@@ -392,6 +406,16 @@ body {
   background: var(--gray-50);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * #app is the Vue root. With nothing constraining its height it can
+ * collapse to 0 in some layouts (especially when its only child uses
+ * flex). Force it to at least fill the viewport so the shell's
+ * `min-height: 100vh` reference resolves correctly.
+ */
+#app {
+  min-height: 100vh;
 }
 
 *, *::before, *::after { box-sizing: border-box; }

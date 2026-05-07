@@ -46,7 +46,11 @@ export class User {
   id?: string;
   type?: 'agency' | 'account';
   name?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
+  role?: string;
+  scopes?: string[];
   pinnedLocations?: string[];
   // Same reason as Location.permissions above — referenced by
   // QuickActions's permission gate, dead in our scope but typed for
@@ -55,5 +59,23 @@ export class User {
 
   constructor(data: Partial<User> = {}) {
     Object.assign(this, data);
+  }
+}
+
+// Mirrors a subset of spm-ts Company fields read by ListAccounts.
+// upstream: spm-ts/src/models/Company.ts
+export class Company {
+  id: string;
+  name?: string;
+
+  constructor(data: Partial<Company> = {}) {
+    this.id = data.id ?? '';
+    Object.assign(this, data);
+  }
+
+  // ListAccounts calls Company.getById(companyId) to fetch company data.
+  // In the preview we return a hardcoded company instance.
+  static async getById(_id: string): Promise<Company> {
+    return new Company({ id: _id || 'preview-company', name: 'Preview Agency' });
   }
 }
