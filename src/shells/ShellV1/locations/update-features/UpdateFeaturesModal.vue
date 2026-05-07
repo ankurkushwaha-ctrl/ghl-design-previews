@@ -481,4 +481,9 @@ function close() {
   gap: 8px;
   flex: 0 0 auto;
 }
+
+.uf-footer__actions :deep(.hl-btn) {
+  min-width: 120px;
+  justify-content: center;
+}
 </style>
