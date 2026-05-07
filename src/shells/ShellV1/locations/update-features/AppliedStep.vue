@@ -1,17 +1,9 @@
 <!--
   AppliedStep.vue
   ────────────────────────────────────────────────────────────────────────────
-  Center-stage success mark (~44px circle, success-tinted background).
-  Reinforces the patch contract in the summary copy:
-
-    Partial: "[X] feature changes across [Y] sub-accounts. The other [Z]
-              features kept their existing settings on each sub-account."
-    Full:    "All [Total] features were configured uniformly across [Y]
-              sub-accounts. [X] feature toggles changed."
-
-  A primary "Done" button returns to idle (modal dismissed).
-  Focus moves to the Done button on mount per brief's focus management
-  section.
+  Async-aware confirmation: the backend processes changes asynchronously,
+  so instead of "Changes applied" we show "Changes submitted" with an ETA.
+  Links to bulk action history for tracking.
 -->
 <script setup lang="ts">
 import { nextTick, onMounted, ref } from 'vue'
@@ -39,21 +31,6 @@ onMounted(async () => {
   const el = doneRef.value?.$el as HTMLElement | undefined
   el?.focus()
 })
-
-const bodyText = (() => {
-  if (props.isFullCoverage) {
-    return t('agency.bulkActions.updateFeatures.appliedBodyFull', {
-      total: props.totalFeatureCount,
-      x: props.totalChanges,
-      y: props.selectedCount,
-    })
-  }
-  return t('agency.bulkActions.updateFeatures.appliedBodyPartial', {
-    x: props.totalChanges,
-    y: props.selectedCount,
-    z: props.untouchedCount,
-  })
-})()
 </script>
 
 <template>
@@ -67,7 +44,16 @@ const bodyText = (() => {
       {{ t('agency.bulkActions.updateFeatures.appliedTitle') }}
     </h2>
 
-    <p class="applied-step__body">{{ bodyText }}</p>
+    <p class="applied-step__body">
+      {{ t('agency.bulkActions.updateFeatures.appliedAsyncBody', {
+        x: totalChanges,
+        y: selectedCount,
+      }) }}
+    </p>
+
+    <p class="applied-step__eta">
+      {{ t('agency.bulkActions.updateFeatures.appliedEta') }}
+    </p>
 
     <HLButton ref="doneRef" @click="emit('done')">
       {{ t('agency.bulkActions.updateFeatures.appliedDone') }}
@@ -112,4 +98,11 @@ const bodyText = (() => {
   max-width: 380px;
 }
 
+.applied-step__eta {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-500, #667085);
+  line-height: 18px;
+}
 </style>

@@ -96,7 +96,11 @@ const hasDetail = computed(() =>
 <template>
   <div
     class="recipe-row"
-    :class="{ 'recipe-row--noop': isNoOp }"
+    :class="{
+      'recipe-row--noop': isNoOp,
+      'recipe-row--enable': !isNoOp && entry.action === 'enable',
+      'recipe-row--disable': !isNoOp && entry.action === 'disable',
+    }"
   >
     <div class="recipe-row__info">
       <div class="recipe-row__name">{{ feature.name }}</div>
@@ -177,8 +181,18 @@ const hasDetail = computed(() =>
   border-top: 0.5px solid var(--gray-200, #eaecf0);
 }
 
+.recipe-row--enable {
+  border-left: 3px solid var(--success-500, #12b76a);
+}
+
+.recipe-row--disable {
+  border-left: 3px solid var(--warning-500, #f79009);
+}
+
 .recipe-row--noop {
   opacity: 0.55;
+  border-left: none;
+  background: transparent;
 }
 
 .recipe-row__info {

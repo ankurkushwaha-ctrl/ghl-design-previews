@@ -175,13 +175,13 @@ const messages = {
       bulkActions: {
         updateFeatures: {
           title: 'Update feature access',
-          subtitleLead: 'For {count} selected sub-accounts. ',
-          subtitleBoldClause: 'Only the features you select below will change',
-          subtitleTrail: ' — everything else stays as-is on each sub-account.',
-          subtitleNextStep: ' Choose features here, then set enable or disable on the next step.',
+          subtitleLead: 'For {count} sub-accounts. ',
+          subtitleBoldClause: 'Only selected features will change',
+          subtitleTrail: ' — everything else stays as-is.',
+          subtitleNextStep: '',
 
-          emptyState: 'No changes yet. Add a feature to enable or disable.',
-          emptyStateHint: 'Features you don\'t include will keep their current settings on each sub-account.',
+          emptyState: 'No changes yet. Add a feature to get started.',
+          emptyStateHint: 'Unselected features keep their current settings.',
           addFeature: '+ Add a feature',
 
           bulkAddEnableAll: '+ Enable all {count} features',
@@ -197,46 +197,45 @@ const messages = {
           pickerAddGroup: '+ Add group',
           pickerDone: 'Done',
 
-          rowImpactChange: 'Affects {x} of {total} sub-accounts ({y} already {state})',
-          rowImpactChangeNoParen: 'Affects {x} of {total} sub-accounts',
-          rowImpactNoOp: 'Already {state} across all {total} sub-accounts — no change',
+          rowImpactChange: '{x} of {total} affected ({y} already {state})',
+          rowImpactChangeNoParen: '{x} of {total} affected',
+          rowImpactNoOp: 'Already {state} on all {total} — no change',
           stateOn: 'enabled',
           stateOff: 'disabled',
-          removeRowAria: 'Remove {name} from changes',
-          chipAria: 'Click to flip enable / disable',
+          removeRowAria: 'Remove {name}',
+          chipAria: 'Toggle enable/disable',
 
           listHeaderCount: '{count} features in this list',
           flipAllEnable: 'Enable all',
           flipAllDisable: 'Disable all',
 
           untouchedPartial:
-            '{x} changes will apply across {y} sub-accounts. The other {z} features remain unchanged — each sub-account keeps its current settings.',
+            '{x} changes across {y} sub-accounts. {z} other features stay as-is.',
           untouchedFull:
-            'All {total} features are included — every sub-account will match this exact configuration. {x} changes across {y} sub-accounts.',
+            'All {total} features included — {x} changes across {y} sub-accounts.',
 
           footerFeatureCount: '{count} features',
           footerNoChanges: 'Select features to get started',
-          footerNoOp: 'All features already match — no changes needed',
+          footerNoOp: 'All features already match — nothing to change',
           footerReady: 'Ready to apply {count} changes',
 
-          confirmTitle: 'Apply these changes?',
+          confirmTitle: 'Apply changes?',
           confirmSubtitlePartial:
-            '{x} changes across {y} sub-accounts. {z} other features will not be touched.',
+            '{x} changes across {y} sub-accounts. {z} other features stay as-is.',
           confirmSubtitleFull:
-            'Bringing all {total} features to a uniform configuration across {y} sub-accounts. {x} feature toggles will change.',
+            'All {total} features across {y} sub-accounts. {x} toggles will change.',
           confirmRowSummary: '{x} of {total}',
           confirmRowBeforeAfter: '{before} → {after} of {total}',
           confirmBack: 'Back',
-          confirmApply: 'Confirm and apply',
+          confirmApply: 'Apply changes',
 
-          applyingTitle: 'Applying changes',
-          applyingBody: 'Updating {x} feature toggles across {y} sub-accounts.',
+          applyingTitle: 'Submitting changes',
+          applyingBody: '{x} updates across {y} sub-accounts.',
 
-          appliedTitle: 'Changes applied',
-          appliedBodyPartial:
-            '{x} feature changes across {y} sub-accounts. The other {z} features kept their existing settings on each sub-account.',
-          appliedBodyFull:
-            'All {total} features were configured uniformly across {y} sub-accounts. {x} feature toggles changed.',
+          appliedTitle: 'Changes submitted',
+          appliedAsyncBody:
+            '{x} updates queued across {y} sub-accounts.',
+          appliedEta: 'Changes take effect in 2–5 minutes.',
           appliedDone: 'Done',
 
           cancel: 'Cancel',

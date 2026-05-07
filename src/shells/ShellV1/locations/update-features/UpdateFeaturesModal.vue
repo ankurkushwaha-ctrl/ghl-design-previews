@@ -205,6 +205,17 @@ function onRemoveGroup(featureIds: string[]) {
   recipe.value = r
 }
 
+function onSetGroup(featureIds: string[], action: FeatureAction) {
+  let r = recipe.value
+  for (const id of featureIds) {
+    const idx = r.findIndex((e) => e.featureId === id)
+    if (idx !== -1 && r[idx].action !== action) {
+      r = flipEntry(r, id)
+    }
+  }
+  recipe.value = r
+}
+
 /* ──────────────────────────────────────────────────────────────────────
  * View-state transitions
  * ────────────────────────────────────────────────────────────────────── */
@@ -269,25 +280,6 @@ function close() {
           {{ t('agency.bulkActions.updateFeatures.subtitleNextStep') }}
         </div>
 
-        <div class="uf-modal__select-actions">
-          <button
-            type="button"
-            class="uf-modal__select-btn"
-            :disabled="recipe.length === TOTAL_FEATURE_COUNT"
-            @click="onSelectAll"
-          >
-            Select all
-          </button>
-          <button
-            type="button"
-            class="uf-modal__select-btn uf-modal__select-btn--remove"
-            :disabled="recipe.length === 0"
-            @click="onRemoveAll"
-          >
-            Remove all
-          </button>
-        </div>
-
         <FeaturePicker
           class="uf-modal__picker-full"
           :catalog="FEATURE_CATALOG"
@@ -299,6 +291,8 @@ function close() {
           @add-matching="onAddMatching"
           @add-group="onAddMatching"
           @remove-group="onRemoveGroup"
+          @select-all="onSelectAll"
+          @remove-all="onRemoveAll"
         />
       </div>
 
@@ -314,7 +308,7 @@ function close() {
             :group-for-feature="groupForFeature"
             @flip="onFlip"
             @remove="onRemove"
-            @remove-group="onRemoveGroup"
+            @set-group="onSetGroup"
             @set-all="onSetAll"
           />
 
@@ -443,50 +437,6 @@ function close() {
 .uf-modal__picker-full {
   flex: 1 1 auto !important;
   max-height: none !important;
-}
-
-/* Step 1: select all / remove all bar */
-.uf-modal__select-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  flex: 0 0 auto;
-  margin-bottom: 8px;
-}
-
-.uf-modal__select-btn {
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  color: var(--gray-700, #344054);
-  background: var(--base-white, #ffffff);
-  border: 1px solid var(--gray-300, #d0d5dd);
-  border-radius: 6px;
-  padding: 2px 8px;
-  cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease;
-}
-.uf-modal__select-btn:hover {
-  background: var(--gray-50, #f9fafb);
-  border-color: var(--gray-400, #98a2b3);
-}
-.uf-modal__select-btn--remove {
-  color: var(--gray-700, #344054);
-}
-.uf-modal__select-btn--remove:hover {
-  background: var(--gray-50, #f9fafb);
-  border-color: var(--gray-400, #98a2b3);
-}
-.uf-modal__select-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-  background: var(--base-white, #ffffff);
-  border-color: var(--gray-200, #eaecf0);
-}
-.uf-modal__select-btn:focus-visible {
-  outline: 2px solid var(--primary-500, #2970ff);
-  outline-offset: 2px;
 }
 
 /* Step 2: recipe fills the remaining space */

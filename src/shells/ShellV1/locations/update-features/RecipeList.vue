@@ -35,7 +35,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'flip', featureId: string): void
   (e: 'remove', featureId: string): void
-  (e: 'remove-group', featureIds: string[]): void
+  (e: 'set-group', featureIds: string[], action: FeatureAction): void
   (e: 'set-all', action: FeatureAction): void
 }>()
 
@@ -58,13 +58,12 @@ const rowsWithImpact = computed(() =>
 )
 
 /**
- * Show group headers when recipe has 5+ items spanning 2+ groups.
- * Below that threshold, grouping adds noise per NNg progressive disclosure.
+ * Always show group headers for consistency with Step 1's category
+ * hierarchy — users expect the same visual structure across both steps.
  */
 const showGroupHeaders = computed(() => {
-  if (props.recipe.length < 5) return false
   const groups = new Set(rowsWithImpact.value.map((r) => r.group))
-  return groups.size >= 2
+  return groups.size >= 1
 })
 
 /**
@@ -139,13 +138,22 @@ function featureIdsInGroup(groupName: string): string[] {
           :class="{ 'recipe-list__group-label--first': idx === 0 }"
         >
           <span>{{ item.group }}</span>
-          <button
-            type="button"
-            class="recipe-list__remove-group"
-            @click="emit('remove-group', featureIdsInGroup(item.group))"
-          >
-            Remove group
-          </button>
+          <div class="recipe-list__group-actions">
+            <button
+              type="button"
+              class="recipe-list__group-btn"
+              @click="emit('set-group', featureIdsInGroup(item.group), 'enable')"
+            >
+              Enable group
+            </button>
+            <button
+              type="button"
+              class="recipe-list__group-btn"
+              @click="emit('set-group', featureIdsInGroup(item.group), 'disable')"
+            >
+              Disable group
+            </button>
+          </div>
         </div>
         <RecipeRow
           v-else
@@ -262,12 +270,17 @@ function featureIdsInGroup(groupName: string): string[] {
   border-top: none;
 }
 
-.recipe-list__remove-group {
+.recipe-list__group-actions {
+  display: inline-flex;
+  gap: 6px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.recipe-list__group-btn {
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
-  text-transform: none;
-  letter-spacing: normal;
   color: var(--gray-700, #344054);
   background: var(--base-white, #ffffff);
   border: 1px solid var(--gray-300, #d0d5dd);
@@ -277,13 +290,12 @@ function featureIdsInGroup(groupName: string): string[] {
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 
-.recipe-list__remove-group:hover {
-  background: var(--error-50, #fef3f2);
-  border-color: var(--error-300, #fda29b);
-  color: var(--error-700, #b42318);
+.recipe-list__group-btn:hover {
+  background: var(--gray-50, #f9fafb);
+  border-color: var(--gray-400, #98a2b3);
 }
 
-.recipe-list__remove-group:focus-visible {
+.recipe-list__group-btn:focus-visible {
   outline: 2px solid var(--primary-500, #2970ff);
   outline-offset: 2px;
 }

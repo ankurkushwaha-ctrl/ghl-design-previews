@@ -37,6 +37,8 @@ const emit = defineEmits<{
   (e: 'add-matching', featureIds: string[]): void
   (e: 'add-group', featureIds: string[]): void
   (e: 'remove-group', featureIds: string[]): void
+  (e: 'select-all'): void
+  (e: 'remove-all'): void
 }>()
 
 const { t } = useI18n()
@@ -142,6 +144,34 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
 
 <template>
   <div class="picker">
+    <!-- Header strip (mirrors RecipeList header pattern) -->
+    <div class="picker__header">
+      <span class="picker__header-count">
+        {{ addedIds.size === 0
+          ? 'Select features to update'
+          : `${addedIds.size} ${addedIds.size === 1 ? 'feature' : 'features'} selected`
+        }}
+      </span>
+      <div class="picker__header-actions">
+        <button
+          type="button"
+          class="picker__header-btn"
+          :disabled="addedIds.size === totalFeatureCount"
+          @click="emit('select-all')"
+        >
+          Select all
+        </button>
+        <button
+          type="button"
+          class="picker__header-btn"
+          :disabled="addedIds.size === 0"
+          @click="emit('remove-all')"
+        >
+          Remove all
+        </button>
+      </div>
+    </div>
+
     <!-- Search row -->
     <div class="picker__search-row">
       <div class="picker__search-input">
@@ -239,18 +269,18 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
             >
               <span class="picker__leaf-name">{{ f.name }}</span>
               <span
-                v-if="!addedIds.has(f.id)"
                 class="picker__leaf-dot"
                 :class="{
-                  'picker__leaf-dot--on': currentOnCount(f.id) === selectedCount,
-                  'picker__leaf-dot--mixed': currentOnCount(f.id) > 0 && currentOnCount(f.id) < selectedCount,
-                  'picker__leaf-dot--off': currentOnCount(f.id) === 0,
+                  'picker__leaf-dot--hidden': addedIds.has(f.id),
+                  'picker__leaf-dot--on': !addedIds.has(f.id) && currentOnCount(f.id) === selectedCount,
+                  'picker__leaf-dot--mixed': !addedIds.has(f.id) && currentOnCount(f.id) > 0 && currentOnCount(f.id) < selectedCount,
+                  'picker__leaf-dot--off': !addedIds.has(f.id) && currentOnCount(f.id) === 0,
                 }"
-                :data-tip="currentOnCount(f.id) === selectedCount
+                :data-tip="addedIds.has(f.id) ? '' : (currentOnCount(f.id) === selectedCount
                   ? 'Enabled on all'
                   : currentOnCount(f.id) === 0
                     ? 'Disabled on all'
-                    : `${currentOnCount(f.id)}/${selectedCount} enabled`"
+                    : `${currentOnCount(f.id)}/${selectedCount} enabled`)"
               />
               <!-- Checkbox indicator -->
               <span class="picker__check" :class="{ 'picker__check--on': addedIds.has(f.id) }">
@@ -276,12 +306,64 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   flex: 0 1 280px;
 }
 
+/* ─── Header strip (matches RecipeList__header) ─────────────────────── */
+.picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--gray-50, #f9fafb);
+  border-bottom: 1px solid var(--gray-200, #eaecf0);
+}
+
+.picker__header-count {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-700, #344054);
+}
+
+.picker__header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.picker__header-btn {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--gray-700, #344054);
+  background: var(--base-white, #ffffff);
+  border: 1px solid var(--gray-300, #d0d5dd);
+  border-radius: 6px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.picker__header-btn:hover {
+  background: var(--gray-50, #f9fafb);
+  border-color: var(--gray-400, #98a2b3);
+}
+
+.picker__header-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: var(--base-white, #ffffff);
+  border-color: var(--gray-200, #eaecf0);
+}
+
+.picker__header-btn:focus-visible {
+  outline: 2px solid var(--primary-500, #2970ff);
+  outline-offset: 2px;
+}
+
 /* ─── Search row ─────────────────────────────────────────────────────── */
 .picker__search-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px 8px;
+  padding: 8px 16px;
 }
 
 .picker__search-input {
@@ -374,7 +456,7 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
 .picker__list {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 0 12px 8px;
+  padding: 0;
 }
 
 .picker__no-results {
@@ -384,13 +466,7 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   color: var(--gray-500, #667085);
 }
 
-.picker__group + .picker__group {
-  margin-top: 8px;
-}
-
 .picker__group {
-  border: 1px solid var(--gray-200, #eaecf0);
-  border-radius: 6px;
   overflow: hidden;
 }
 
@@ -398,15 +474,20 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 8px;
-  background: var(--gray-50, #f9fafb);
-  border-bottom: 0.5px solid var(--gray-100, #f2f4f7);
+  padding: 6px 16px;
+  background: var(--gray-100, #f2f4f7);
+  border-top: 1px solid var(--gray-200, #eaecf0);
+  border-bottom: 1px solid var(--gray-200, #eaecf0);
   cursor: pointer;
   transition: background 0.12s ease;
 }
 
+.picker__group:first-child .picker__group-header {
+  border-top: none;
+}
+
 .picker__group-header:hover {
-  background: var(--gray-100, #f2f4f7);
+  background: var(--gray-200, #eaecf0);
 }
 
 .picker__group-name {
@@ -421,13 +502,13 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
   border-radius: 4px;
   border: 1.5px solid var(--gray-300, #d0d5dd);
   background: var(--base-white, #ffffff);
-  font-size: 12px;
+  font-size: 11px;
   color: transparent;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -465,10 +546,10 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 8px 16px;
   background: transparent;
   border: none;
-  border-bottom: 0.5px solid var(--gray-100, #f2f4f7);
+  border-bottom: 0.5px solid var(--gray-200, #eaecf0);
   border-radius: 0;
   text-align: left;
   font-size: 13px;
@@ -537,6 +618,9 @@ function onToggleGroup(group: { features: typeof props.catalog[number]['features
 
 .picker__leaf-dot:hover::after {
   opacity: 1;
+}
+.picker__leaf-dot--hidden {
+  visibility: hidden;
 }
 .picker__leaf-dot--on {
   background: var(--success-500, #12b76a);
