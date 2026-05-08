@@ -175,9 +175,9 @@ const messages = {
       bulkActions: {
         updateFeatures: {
           title: 'Update feature access',
-          subtitleLead: 'For {count} sub-accounts. ',
-          subtitleBoldClause: 'Only selected features will change',
-          subtitleTrail: ' — everything else stays as-is.',
+          subtitleLead: 'Updating {count} sub-accounts. ',
+          subtitleBoldClause: 'Only the features you select will change.',
+          subtitleTrail: '',
           subtitleNextStep: '',
 
           emptyState: 'No changes yet. Add a feature to get started.',
@@ -210,7 +210,7 @@ const messages = {
           flipAllDisable: 'Disable all',
 
           untouchedPartial:
-            '{x} changes across {y} sub-accounts. {z} other features stay as-is.',
+            '{x} changes across {y} sub-accounts. {z} features unchanged.',
           untouchedFull:
             'All {total} features included — {x} changes across {y} sub-accounts.',
 
@@ -221,7 +221,7 @@ const messages = {
 
           confirmTitle: 'Apply changes?',
           confirmSubtitlePartial:
-            '{x} changes across {y} sub-accounts. {z} other features stay as-is.',
+            '{x} changes across {y} sub-accounts. {z} features unchanged.',
           confirmSubtitleFull:
             'All {total} features across {y} sub-accounts. {x} toggles will change.',
           confirmRowSummary: '{x} of {total}',
