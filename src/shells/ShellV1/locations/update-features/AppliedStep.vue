@@ -9,6 +9,7 @@
 import { nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { HLButton } from '@/components/highrise'
+import { ClockRewindIcon } from '@gohighlevel/ghl-icons/24/outline'
 
 defineProps<{
   totalChanges: number
@@ -79,7 +80,7 @@ onMounted(async () => {
         Go to sub-accounts
       </HLButton>
       <HLButton variant="secondary" @click="emit('go-to-history')">
-        <i class="fas fa-history" />
+        <ClockRewindIcon class="h-4 w-4" />
         View bulk action history
       </HLButton>
     </div>
