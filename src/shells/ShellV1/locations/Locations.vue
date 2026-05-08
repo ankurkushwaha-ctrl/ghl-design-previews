@@ -23,7 +23,7 @@
   visually-realistic but mock-only experience for stakeholder review.
 -->
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
@@ -47,7 +47,6 @@ import UpdateFeaturesModal from './update-features/UpdateFeaturesModal.vue'
 import SwitchAccountModal from './SwitchAccountModal.vue'
 import CreateSubAccountModal from './CreateSubAccountModal.vue'
 import ScheduledReportsModal from './ScheduledReportsModal.vue'
-import { useAdaptiveHeader } from '../use-adaptive-header'
 
 import { MOCK_LOCATIONS, MOCK_COMPANY, MOCK_EXTRAS } from './mock-locations'
 import type { MockLocation } from './mock-locations'
@@ -342,32 +341,6 @@ function onCreated(form: { name: string }) {
   toastSuccess(t('createdSuccess', { name: form.name || 'Sub-Account' }))
 }
 
-// ─── Adaptive header (TopBar mirrors title + CTA when page header scrolls out)
-// Pattern note: GitHub repo header / Linear issue header. The page owns the
-// IntersectionObserver target (headerEl) and the action handler; the TopBar
-// just renders. See ../use-adaptive-header.ts for the channel design.
-const adaptive = useAdaptiveHeader()
-const headerEl = ref<HTMLElement | null>(null)
-
-onMounted(() => {
-  if (!adaptive) return
-  adaptive.setConfig({
-    title: t('locations.subAccountsHeader'),
-    cta: {
-      label: t('createSubAccount'),
-      icon: UserPlus01Icon,
-      type: 'primary',
-      onClick: () => {
-        showCreateModal.value = true
-      },
-    },
-  })
-  adaptive.observe(headerEl.value)
-})
-
-onBeforeUnmount(() => {
-  adaptive?.reset()
-})
 </script>
 
 <template>
@@ -377,9 +350,7 @@ onBeforeUnmount(() => {
        (the document body has nothing to scroll). We use a plain class so
        PMD's selectors don't match. -->
   <div class="locations-preview">
-      <!-- ref="headerEl" is the IntersectionObserver target — when this row
-           leaves the viewport, the TopBar fades in its adaptive twin. -->
-      <div ref="headerEl">
+      <div>
         <UIHeader
           id="pg-agency-locations"
           :title="t('locations.subAccountsHeader')"

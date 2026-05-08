@@ -12,37 +12,6 @@
     >
       <NotificationBanner v-if="!isNonActiveLocation" />
       <div class="container-fluid" :class="{ 'hl_disable--action': disableAction }">
-        <!--
-          Adaptive header slot. When the page registers a config AND its own
-          <UIHeader> has scrolled out of view, this row fades in showing the
-          page's title + primary CTA. Pattern reference: GitHub repo header,
-          Linear issue header. The fade is CSS-driven so we don't pull in any
-          animation deps.
-        -->
-        <div
-          class="adaptive-header"
-          :class="{ 'adaptive-header--visible': adaptiveVisible }"
-          :aria-hidden="!adaptiveVisible"
-        >
-          <span class="adaptive-header__title">{{ adaptiveTitle }}</span>
-          <button
-            v-if="adaptiveCta"
-            type="button"
-            class="adaptive-header__cta"
-            :class="adaptiveCta.type === 'primary' ? 'adaptive-header__cta--primary' : 'adaptive-header__cta--default'"
-            :tabindex="adaptiveVisible ? 0 : -1"
-            @click="onAdaptiveCtaClick"
-          >
-            <component
-              v-if="adaptiveCta.icon"
-              :is="adaptiveCta.icon"
-              class="adaptive-header__cta-icon"
-              aria-hidden="true"
-            />
-            {{ adaptiveCta.label }}
-          </button>
-        </div>
-
         <div v-if="isUserSwitched" class="flex justify-center items-center m-0 w-full text-xs">
           <div class="px-4 py-1 font-medium bg-blue-100 rounded-lg">
             {{ $t('common.topBar.loggedInAs') }}
@@ -239,7 +208,6 @@ import { useStore } from '../_stubs/store';
 import { agencyNavigation } from '../_stubs/navigation';
 import type { V2RouteConfig } from '../_stubs/types';
 import UITopMenuItemsPreview from './UITopMenuItemsPreview.vue';
-import { useAdaptiveHeader } from '../use-adaptive-header';
 import {
   NotificationBanner,
   I18nFeedback,
@@ -280,20 +248,6 @@ export default defineComponent({
     const store = useStore();
     const isShowUserSwitcher = ref(false);
 
-    /*
-     * Adaptive header — see ../use-adaptive-header.ts for the channel
-     * design. ShellV1 always provides the channel, so injection succeeds
-     * even if the page never registers a config (we just stay invisible).
-     */
-    const adaptive = useAdaptiveHeader();
-    const adaptiveVisible = computed(
-      () => Boolean(adaptive?.active.value && adaptive?.config.value)
-    );
-    const adaptiveTitle = computed(() => adaptive?.config.value?.title ?? '');
-    const adaptiveCta = computed(() => adaptive?.config.value?.cta ?? null);
-    function onAdaptiveCtaClick() {
-      adaptive?.config.value?.cta?.onClick();
-    }
     const user = computed<PreviewUser | null>(() => {
       const u = (store.state as any)?.user?.user;
       if (!u) return null;
@@ -360,10 +314,6 @@ export default defineComponent({
       trackHelpIconClick: () => undefined,
       trackCopilotIconClick: () => undefined,
       handleWalletPillClick: () => undefined,
-      adaptiveVisible,
-      adaptiveTitle,
-      adaptiveCta,
-      onAdaptiveCtaClick,
     };
   },
 });
@@ -432,80 +382,6 @@ export default defineComponent({
      so we don't need justify-content here. */
   height: 52px;
   padding: 8px 24px;
-}
-
-/*
- * Adaptive header — fades in when the page header scrolls out of view.
- * Empty by default (zero-width, no padding) so it doesn't push the controls
- * around when inactive. CSS-driven fade keeps us off animation libs.
- */
-.adaptive-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-  pointer-events: none;
-  /* Reserve no width when invisible so the controls strip stays right-anchored
-     and the layout doesn't jump on first activation. */
-  max-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.adaptive-header--visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-  max-width: 70%;
-}
-
-.adaptive-header__title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--gray-900, #101828);
-  line-height: 1.25rem;
-}
-
-.adaptive-header__cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: background 0.12s ease, border-color 0.12s ease;
-}
-
-.adaptive-header__cta--primary {
-  background: var(--primary-600, #7f56d9);
-  color: #ffffff;
-  border-color: var(--primary-600, #7f56d9);
-}
-
-.adaptive-header__cta--primary:hover {
-  background: var(--primary-700, #6941c6);
-  border-color: var(--primary-700, #6941c6);
-}
-
-.adaptive-header__cta--default {
-  background: #ffffff;
-  color: var(--gray-700, #344054);
-  border-color: var(--gray-300, #d0d5dd);
-}
-
-.adaptive-header__cta--default:hover {
-  background: var(--gray-50, #f9fafb);
-}
-
-.adaptive-header__cta-icon {
-  width: 16px;
-  height: 16px;
 }
 
 /* Compact the topmenu-nav row beneath the controls strip — upstream uses

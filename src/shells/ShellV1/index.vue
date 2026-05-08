@@ -1,21 +1,12 @@
 <script lang="ts" setup>
 import SideBar from './sidebar/SideBar.vue';
 import TopBar from './topbar/TopBar.vue';
-import { provideAdaptiveHeader } from './use-adaptive-header';
 
 interface Props {
   active?: string;
 }
 
 withDefaults(defineProps<Props>(), { active: '' });
-
-/*
- * Open the adaptive-header channel here so any descendant — typically the
- * page in the default slot, but also TopBar — can read/write it. Page
- * components inject it via `useAdaptiveHeader()`. Pages that don't need it
- * just no-op; the TopBar then renders unmodified.
- */
-provideAdaptiveHeader();
 </script>
 
 <template>
