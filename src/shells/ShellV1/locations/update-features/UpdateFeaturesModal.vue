@@ -257,6 +257,11 @@ function onDone() {
   emit('applied')
 }
 
+function onGoToHistory() {
+  close()
+  emit('applied')
+}
+
 function close() {
   emit('update:show', false)
 }
@@ -339,6 +344,7 @@ function close() {
           :total-feature-count="TOTAL_FEATURE_COUNT"
           :is-full-coverage="appliedSnapshot.fullCoverage"
           @done="onDone"
+          @go-to-history="onGoToHistory"
         />
       </div>
     </div>
