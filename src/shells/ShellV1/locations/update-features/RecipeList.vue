@@ -93,6 +93,15 @@ function featureIdsInGroup(groupName: string): string[] {
     .filter((e) => props.groupForFeature.get(e.featureId) === groupName)
     .map((e) => e.featureId)
 }
+
+/** Pre-compute group sizes so the template can hide batch actions for small groups. */
+const groupSizes = computed(() => {
+  const sizes = new Map<string, number>()
+  for (const row of rowsWithImpact.value) {
+    sizes.set(row.group, (sizes.get(row.group) ?? 0) + 1)
+  }
+  return sizes
+})
 </script>
 
 <template>
@@ -138,7 +147,7 @@ function featureIdsInGroup(groupName: string): string[] {
           :class="{ 'recipe-list__group-label--first': idx === 0 }"
         >
           <span>{{ item.group }}</span>
-          <div class="recipe-list__group-actions">
+          <div v-if="(groupSizes.get(item.group) ?? 0) >= 3" class="recipe-list__group-actions">
             <button
               type="button"
               class="recipe-list__group-link"
