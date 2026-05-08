@@ -147,7 +147,7 @@ const groupSizes = computed(() => {
           :class="{ 'recipe-list__group-label--first': idx === 0 }"
         >
           <span>{{ item.group }}</span>
-          <div v-if="(groupSizes.get(item.group) ?? 0) >= 3" class="recipe-list__group-actions">
+          <div v-if="(groupSizes.get(item.group) ?? 0) > 3" class="recipe-list__group-actions">
             <button
               type="button"
               class="recipe-list__group-link"
