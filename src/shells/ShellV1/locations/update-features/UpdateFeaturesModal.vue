@@ -10,6 +10,7 @@
 -->
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { HLModal, HLButton, HLTag } from '@/components/highrise'
 
@@ -61,6 +62,7 @@ const emit = defineEmits<{
   (e: 'applied'): void
 }>()
 
+const router = useRouter()
 const { t } = useI18n()
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -260,6 +262,7 @@ function onDone() {
 function onGoToHistory() {
   close()
   emit('applied')
+  router.push('/bulk-action-history')
 }
 
 function close() {

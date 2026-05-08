@@ -35,8 +35,8 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   ChevronDownIcon,
-  ClockRewindIcon,
   Columns03Icon,
+  Download04Icon,
   FilterLinesIcon,
   LayoutAlt03Icon,
   SearchMdIcon,
@@ -58,7 +58,6 @@ import type {
   VisibleColumns,
 } from './types'
 import { buildDateShortcuts } from './date-shortcuts'
-import BulkActionHistoryPopover from './BulkActionHistoryPopover.vue'
 
 const props = defineProps<{
   dateRange: [number, number]
@@ -256,19 +255,18 @@ const viewToggleTooltip = computed(() =>
         {{ t('tooltipFunnel') }}
       </UITooltip>
 
-      <BulkActionHistoryPopover>
-        <UITooltip placement="bottom">
-          <template #trigger>
-            <UIButton
-              id="filters-history"
-              :aria-label="t('tooltipHistory')"
-            >
-              <ClockRewindIcon class="h-4 w-4" />
-            </UIButton>
-          </template>
-          {{ t('tooltipHistory') }}
-        </UITooltip>
-      </BulkActionHistoryPopover>
+      <!-- Export Report — matches upstream Download04Icon placement -->
+      <UITooltip placement="bottom">
+        <template #trigger>
+          <UIButton
+            id="filters-export"
+            :aria-label="t('tooltipExport')"
+          >
+            <Download04Icon class="h-4 w-4" />
+          </UIButton>
+        </template>
+        {{ t('tooltipExport') }}
+      </UITooltip>
 
       <UITooltip placement="bottom">
         <template #trigger>

@@ -212,3 +212,42 @@ All Update Features code lives in:
 ```
 src/shells/ShellV1/locations/update-features/
 ```
+
+---
+
+## Bulk Action History page
+
+A visual preview of the Bulk Action History page (`/bulk-action-history`) was added
+to complement the Update Features flow. The final confirmation screen offers a
+"View bulk action history" CTA that navigates directly to this page.
+
+**Files:**
+```
+src/pages/BulkActionHistoryPage.vue                  ← thin wrapper (ShellV1 + active="sub-accounts")
+src/shells/ShellV1/locations/bulk-history/
+  BulkActionHistoryPage.vue                          ← main table page (date, filter, pagination)
+  BulkActionDetailsModal.vue                         ← per-record detail modal
+  mock-data.ts                                       ← mock records + detail generator (discard in prod)
+```
+
+**Source-of-truth:** `ghl-revex-frontend/apps/locations/src/components/bulk-actions/BulkActionHistory.vue`
+
+**What to port:**
+- Replace `mock-data.ts` with real `SaasService.getBulkActionHistory()` calls
+- Wire `BulkActionDetailsModal` to `SaasService.getBulkActionDetails()`
+- Connect date/filter/pagination to actual API query params
+
+---
+
+## Sub-Accounts toolbar additions
+
+Two icons were added to the Sub-Accounts page toolbar to match upstream:
+
+| Icon | Location | Behavior |
+|------|----------|----------|
+| `ClockRewindIcon` | `BulkActionsRow.vue` (next to Bulk Actions dropdown) | Navigates to `/bulk-action-history` |
+| `Download04Icon` | `FilterStrip.vue` (between funnel and view toggle) | Export report (placeholder — wire to `showExportModal` in prod) |
+
+The previous duplicate history popover was removed from `FilterStrip.vue` — the
+popover still exists in `BulkActionHistoryPopover.vue` for reuse if needed, but
+the primary entry point is now the direct-nav icon in `BulkActionsRow`.
