@@ -11,5 +11,5 @@ dist-ssr
 scratch
 *.log
 
-# Private GCP Artifact Registry tokens — created by ar-login.sh.
-.npmrc
+# Local auth backup (hardcoded tokens for dev machine)
+.npmrc.local.bak
