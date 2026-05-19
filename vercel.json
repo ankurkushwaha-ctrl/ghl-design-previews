@@ -1,5 +1,5 @@
 {
-  "installCommand": "echo '//npm.pkg.github.com/:_authToken=${GH_PKG_TOKEN}' >> .npmrc && echo '@gohighlevel:registry=https://npm.pkg.github.com/' >> .npmrc && npm install",
+  "installCommand": "echo \"//npm.pkg.github.com/:_authToken=$GH_PKG_TOKEN\" >> .npmrc && echo \"@gohighlevel:registry=https://npm.pkg.github.com/\" >> .npmrc && npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
