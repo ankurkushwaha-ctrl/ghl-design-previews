@@ -14,3 +14,4 @@ export { default as HLTabs } from './HLTabs.vue';
 export { default as HLTabPane } from './HLTabPane.vue';
 export { default as HLButton } from './HLButton.vue';
 export { default as HLTag } from './HLTag.vue';
+export { default as HLModal } from './HLModal.vue';

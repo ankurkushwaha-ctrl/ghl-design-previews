@@ -23,7 +23,7 @@
   visually-realistic but mock-only experience for stakeholder review.
 -->
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
@@ -43,10 +43,10 @@ import FilterStrip from './FilterStrip.vue'
 import BulkActionsRow from './BulkActionsRow.vue'
 import AdvancedFiltersDrawer from './AdvancedFiltersDrawer.vue'
 import BulkActionConfirmModal from './BulkActionConfirmModal.vue'
+import UpdateFeaturesModal from './update-features/UpdateFeaturesModal.vue'
 import SwitchAccountModal from './SwitchAccountModal.vue'
 import CreateSubAccountModal from './CreateSubAccountModal.vue'
 import ScheduledReportsModal from './ScheduledReportsModal.vue'
-import { useAdaptiveHeader } from '../use-adaptive-header'
 
 import { MOCK_LOCATIONS, MOCK_COMPANY, MOCK_EXTRAS } from './mock-locations'
 import type { MockLocation } from './mock-locations'
@@ -101,6 +101,11 @@ interface PendingAction {
 }
 const showConfirmModal = ref(false)
 const pendingAction = ref<PendingAction | null>(null)
+
+// Update Features modal — opened by the 'update-features' bulk action key.
+// Separated from the generic confirm modal because this one has its own
+// multi-step flow (recipe → confirm → applying → applied). (2026-05-07)
+const showUpdateFeaturesModal = ref(false)
 
 // ─── Derived list ─────────────────────────────────────────────────────────
 function matchSearch(loc: MockLocation, q: string) {
@@ -251,16 +256,28 @@ const BULK_ACTION_LABELS: Record<string, string> = {
 
 function onBulkActionPick(key: string) {
   if (selectedIds.value.size === 0) return
+
+  // 'update-features' gets its own multi-step modal; the remaining 4
+  // keys keep the generic confirm-modal flow. (2026-05-07, update-features)
+  if (key === 'update-features') {
+    showUpdateFeaturesModal.value = true
+    return
+  }
+
   pendingAction.value = {
     action: BULK_ACTION_LABELS[key] ?? key,
     location: null,
     count: selectedIds.value.size,
-    // None of the 5 production bulk actions are destructive in the
-    // delete-and-lose-data sense; pause/SaaS/rebilling/calendars/features
-    // all carry their own confirm copy without the red treatment.
     destructive: false,
   }
   showConfirmModal.value = true
+}
+
+function onUpdateFeaturesApplied() {
+  toastSuccess(
+    t('bulkSuccess', { action: t('updateFeatures'), count: selectedIds.value.size }),
+  )
+  clearSelection()
 }
 
 // ─── Card-level actions ───────────────────────────────────────────────────
@@ -324,32 +341,6 @@ function onCreated(form: { name: string }) {
   toastSuccess(t('createdSuccess', { name: form.name || 'Sub-Account' }))
 }
 
-// ─── Adaptive header (TopBar mirrors title + CTA when page header scrolls out)
-// Pattern note: GitHub repo header / Linear issue header. The page owns the
-// IntersectionObserver target (headerEl) and the action handler; the TopBar
-// just renders. See ../use-adaptive-header.ts for the channel design.
-const adaptive = useAdaptiveHeader()
-const headerEl = ref<HTMLElement | null>(null)
-
-onMounted(() => {
-  if (!adaptive) return
-  adaptive.setConfig({
-    title: t('locations.subAccountsHeader'),
-    cta: {
-      label: t('createSubAccount'),
-      icon: UserPlus01Icon,
-      type: 'primary',
-      onClick: () => {
-        showCreateModal.value = true
-      },
-    },
-  })
-  adaptive.observe(headerEl.value)
-})
-
-onBeforeUnmount(() => {
-  adaptive?.reset()
-})
 </script>
 
 <template>
@@ -359,9 +350,7 @@ onBeforeUnmount(() => {
        (the document body has nothing to scroll). We use a plain class so
        PMD's selectors don't match. -->
   <div class="locations-preview">
-      <!-- ref="headerEl" is the IntersectionObserver target — when this row
-           leaves the viewport, the TopBar fades in its adaptive twin. -->
-      <div ref="headerEl">
+      <div>
         <UIHeader
           id="pg-agency-locations"
           :title="t('locations.subAccountsHeader')"
@@ -502,6 +491,12 @@ onBeforeUnmount(() => {
         :count="pendingAction.count"
         :destructive="pendingAction.destructive"
         @confirm="onConfirmAction"
+      />
+
+      <UpdateFeaturesModal
+        v-model:show="showUpdateFeaturesModal"
+        :selected-sub-account-ids="[...selectedIds]"
+        @applied="onUpdateFeaturesApplied"
       />
 
       <SwitchAccountModal

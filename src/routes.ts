@@ -40,6 +40,17 @@ export const previewRoutes: RouteRecordRaw[] = [
       shell: 'V1',
     },
   },
+  // 2026-05-08 — Bulk Action History (sub-accounts child page)
+  {
+    path: '/bulk-action-history',
+    name: 'bulk-action-history',
+    component: () => import('@/pages/BulkActionHistoryPage.vue'),
+    meta: {
+      title: 'Bulk Action History',
+      summary: 'Audit log of bulk actions. Source-of-truth: ghl-revex-frontend BulkActionHistory.vue.',
+      shell: 'V1',
+    },
+  },
   {
     path: '/shells/v1',
     name: 'shell-v1',

@@ -29,15 +29,18 @@
 -->
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
   ChevronDownIcon,
+  ClockRewindIcon,
 } from '@gohighlevel/ghl-icons/24/outline'
 import {
   UIButton,
   UICheckbox,
   UIDropdown,
   UISwitch,
+  UITooltip,
 } from '@gohighlevel/ghl-ui'
 
 const props = defineProps<{
@@ -53,7 +56,12 @@ const emit = defineEmits<{
   (e: 'pick-bulk-action', key: string): void
 }>()
 
+const router = useRouter()
 const { t } = useI18n()
+
+function onBulkActionHistory() {
+  router.push('/bulk-action-history')
+}
 
 const allSelected = computed(
   () => props.visibleCount > 0 && props.selectedCount === props.visibleCount
@@ -137,6 +145,19 @@ function onBulkSelect(key: string) {
         </label>
       </div>
 
+      <!-- Bulk Action History — direct nav (matches upstream LocationList.vue) -->
+      <UITooltip placement="top">
+        <template #trigger>
+          <button
+            class="bulk-actions-row__history-btn"
+            @click="onBulkActionHistory"
+          >
+            <ClockRewindIcon class="h-5 w-5" />
+          </button>
+        </template>
+        {{ t('bulkActionHistory') }}
+      </UITooltip>
+
       <UIDropdown
         id="bulk-actions-dropdown"
         :options="bulkOptions"
@@ -186,6 +207,24 @@ function onBulkSelect(key: string) {
 
 .bulk-actions-row__clear:hover {
   color: var(--primary-800, #53389e);
+}
+
+.bulk-actions-row__history-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--primary-600, #155eef);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.bulk-actions-row__history-btn:hover {
+  background: var(--primary-50, #eff4ff);
+  color: var(--primary-700, #004eeb);
 }
 
 /* Fade-in keeps the row from shifting controls when the selection pill

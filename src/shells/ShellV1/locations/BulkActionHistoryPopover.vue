@@ -11,10 +11,12 @@
   actions-row history button (item #11 in the design brief).
 -->
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { UIPopover, UIButton, UITag } from '@gohighlevel/ghl-ui'
 import { CheckCircleIcon } from '@gohighlevel/ghl-icons/24/outline'
 
+const router = useRouter()
 const { t } = useI18n()
 
 interface HistoryEntry {
@@ -93,7 +95,7 @@ const fakeHistory: HistoryEntry[] = [
         </div>
       </div>
       <div class="history-popover__footer">
-        <UIButton id="view-all-history" type="default" size="small">
+        <UIButton id="view-all-history" type="default" size="small" @click="router.push('/bulk-action-history')">
           {{ t('viewAllHistory') }}
         </UIButton>
       </div>

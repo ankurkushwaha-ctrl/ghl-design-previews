@@ -153,6 +153,96 @@ const messages = {
           title: 'Add Sub-Account',
         },
       },
+      /*
+       * Update Features bulk-action modal — Option A "recipe" design.
+       *
+       * Provenance: this surface does NOT exist in upstream
+       * (ghl-revex-frontend/apps/locations) yet — the bulk-actions
+       * dropdown there has no `update-features` entry. Keys live under
+       * `agency.bulkActions.updateFeatures.*` so a future port to
+       * upstream is byte-identical for translations.
+       *
+       * Copy is verbatim from the design brief's Copy Library. vue-i18n
+       * placeholders use `{count}/{x}/{y}/{z}/{total}` instead of the
+       * brief's `[N]/[X]/[Y]/[Z]/[Total]` bracket notation.
+       *
+       * The subtitle is split into two keys (`subtitleLead` +
+       * `subtitleBoldClause`) so the bold clause can be rendered with
+       * a real <strong> tag in the template — frontend.mdc forbids
+       * v-html without DOMPurify, and the repo has no <i18n-t>
+       * component precedent.
+       */
+      bulkActions: {
+        updateFeatures: {
+          title: 'Update feature access',
+          subtitleLead: 'Updating {count} sub-accounts. ',
+          subtitleBoldClause: 'Only the features you select will change.',
+          subtitleTrail: '',
+          subtitleNextStep: '',
+
+          emptyState: 'No changes yet. Add a feature to get started.',
+          emptyStateHint: 'Unselected features keep their current settings.',
+          addFeature: '+ Add a feature',
+
+          bulkAddEnableAll: '+ Enable all {count} features',
+          bulkAddDisableAll: '+ Disable all {count} features',
+          bulkAddEnableRemaining: '+ Enable remaining {count} features',
+          bulkAddDisableRemaining: '+ Disable remaining {count} features',
+          pickerDivider: 'or pick individually',
+          searchPlaceholder: 'Search features…',
+          addMatching: '+ Add {count} matching',
+          pickerNoResults: 'No features match "{query}".',
+          alreadyAdded: 'already added',
+          pickerCurrentState: '{count}/{total} on',
+          pickerAddGroup: '+ Add group',
+          pickerDone: 'Done',
+
+          rowImpactChange: '{x} of {total} affected ({y} already {state})',
+          rowImpactChangeNoParen: '{x} of {total} affected',
+          rowImpactNoOp: 'Already {state} on all {total} — no change',
+          stateOn: 'enabled',
+          stateOff: 'disabled',
+          removeRowAria: 'Remove {name}',
+          chipAria: 'Toggle enable/disable',
+
+          listHeaderCount: '{count} features in this list',
+          flipAllEnable: 'Enable all',
+          flipAllDisable: 'Disable all',
+
+          untouchedPartial:
+            '{x} changes across {y} sub-accounts. {z} features unchanged.',
+          untouchedFull:
+            'All {total} features included — {x} changes across {y} sub-accounts.',
+
+          footerFeatureCount: '{count} features',
+          footerNoChanges: 'Select features to get started',
+          footerNoOp: 'All features already match — nothing to change',
+          footerReady: 'Ready to apply {count} changes',
+
+          confirmTitle: 'Apply changes?',
+          confirmSubtitlePartial:
+            '{x} changes across {y} sub-accounts. {z} features unchanged.',
+          confirmSubtitleFull:
+            'All {total} features across {y} sub-accounts. {x} toggles will change.',
+          confirmRowSummary: '{x} of {total}',
+          confirmRowBeforeAfter: '{before} → {after} of {total}',
+          confirmBack: 'Back',
+          confirmApply: 'Apply changes',
+
+          applyingTitle: 'Submitting changes',
+          applyingBody: '{x} updates across {y} sub-accounts.',
+
+          appliedTitle: 'Changes submitted',
+          appliedAsyncBody:
+            '{x} updates queued across {y} sub-accounts.',
+          appliedEta: 'Changes take effect in 2–5 minutes.',
+          appliedDone: 'Done',
+
+          cancel: 'Cancel',
+          apply: 'Apply',
+          closeAria: 'Close',
+        },
+      },
       // [verified] spm-ts/src/locales/en.json:467–522 — searchLocation only.
       locationApiKeys: {
         searchLocation: 'Search location',
@@ -251,6 +341,7 @@ const messages = {
     zToA: 'Z → A',
     // [N10 audit fix] tooltips on icon-only buttons
     tooltipFunnel: 'Advanced filters',
+    tooltipExport: 'Export report',
     tooltipHistory: 'Bulk action history',
     tooltipViewCard: 'Switch to card view',
     tooltipViewTable: 'Switch to table view',
@@ -284,6 +375,21 @@ const messages = {
     successRate: '{rate}% success',
     timeAgoDays: '{n} days ago',
     timeAgoHours: '{n} hours ago',
+    // Bulk action history page — 2026-05-08
+    backToSubAccounts: 'Back to Sub-Accounts',
+    jobId: 'Job ID',
+    operation: 'Operation',
+    status: 'Status',
+    user: 'User',
+    details: 'Details',
+    showFullDetails: 'Show Full Details',
+    bulkActionDetails: 'Bulk Action Details',
+    locationId: 'Location ID',
+    locationName: 'Location Name',
+    errorDetails: 'Error Details',
+    totalSubAccounts: 'Total Sub-Accounts',
+    success: 'Success',
+    failed: 'Failed',
     // Columns dropdown
     showColumns: 'Show / hide columns',
     columnActiveUsers: 'Active Users',
