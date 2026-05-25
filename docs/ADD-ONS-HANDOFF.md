@@ -16,10 +16,32 @@ green stripe and **Manage** CTA.
 
 > **Copy source-of-truth (May 25, per Marketing):** card titles,
 > taglines, benefits, CTAs, prices, and section titles/blurbs come
-> from the **"Marketplace In-App Redesign"** Figma file (node
-> `216:1218`). Earlier prototype strings were invented and have been
-> replaced. Flag any future copy edits against that Figma file, not
-> this Vue component.
+> from the **"Marketplace In-App Redesign"** Figma file. The grid
+> screen (`216:1218`) was used for the first pass; per-product
+> taglines and benefit lists were then re-sourced from the
+> "Marketplace Landing - working" page (`93:907`, `96:246`) and the
+> "Marketplace subpages" page (`27:1491` certification, `14:153`
+> mobile, etc.) where canonical product-specific copy lives.
+> Earlier prototype strings were invented and have been replaced.
+> Flag any future copy edits against that Figma file, not this
+> Vue component.
+
+### Cards still on placeholder copy — Marketing to resolve
+
+The Figma file does not contain a unique product-specific string
+for the following card fields. The current text is placeholder
+copy that bleeds across multiple cards in Figma itself, and per
+the "Figma copy only" rule we left it in place rather than
+inventing or paraphrasing. Marketing needs to write canonical
+copy for these:
+
+| Card | Field | Current (placeholder bleed) | Why unresolved |
+| ---- | ----- | --------------------------- | -------------- |
+| `wl-portal` | `tagline` | "Customize the LeadConnector Zapier app with your brand." | Zapier copy duplicated on the Client Portal card in every Figma frame; no Client-Portal-specific tagline exists anywhere in the file |
+| `wl-portal` | `benefits` | 5 generic consulting bullets ("5 one-hour consulting sessions…" etc.) | No per-product benefit list exists for Client Portal in any Figma frame or subpage |
+| `wl-zapier` | `benefits` | 5 generic consulting bullets | The Zapier subpage (`25:728`) exists but its benefit list is bled from the mobile-app subpage; no Zapier-specific list in Figma |
+| `hipaa` | `benefits` | 5 generic consulting bullets | No HIPAA-specific benefit list exists anywhere in the file |
+| `advanced-setup` | `tagline` | "Get started with our affordable Starter plan, perfect for small businesses." | Off-topic but matches grid Figma; the dedicated subpage (`27:1873`) has a longer Advanced-Setup-specific paragraph, but it opens with a typo ("f you're ready") and is too long for a card. Left grid copy in place. |
 
 > **Changed May 25 per PM feedback:** the original design used a tabbed
 > layout. Tabs were removed because hiding Premium support (Expert
