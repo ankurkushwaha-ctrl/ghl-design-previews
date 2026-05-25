@@ -632,6 +632,12 @@
    * so the footer band can push to the bottom (margin-top: auto)
    * instead of sitting awkwardly right under short content. 84px
    * accounts for the topbar height in spm-ts.
+   *
+   * The header below is `position: sticky; top: 52px` so it pins to
+   * the topbar's bottom edge as the user scrolls. Without this, the
+   * H1 would transition through the topbar's vertical range and
+   * appear visually clipped mid-letter — a state that read as
+   * broken to design reviewers.
    */
   .add-ons-content {
     display: flex;
@@ -642,11 +648,33 @@
 
   /* ── Header ───────────────────────────────────────────────────────── */
   /*
-   * Header → Tabs group separator (Shopify Polaris ~32px,
-   * Atlassian ~24-32px). Wider gaps make tabs feel orphaned.
+   * Sticky pin below the fixed topbar (52px tall). The header stays
+   * anchored as a constant "Add-ons" wayfinding marker while section
+   * grids scroll underneath. Prevents the awkward mid-letter clipping
+   * state that occurred when the H1 transitioned through the topbar's
+   * vertical range during normal scrolling. Pattern matches Stripe
+   * pricing, Linear, and GitHub settings.
+   *
+   * Negative horizontal margin + matching horizontal padding extends
+   * the sticky surface edge-to-edge so the page background under the
+   * stuck header reads as gray-50 (matching the page), not as a thin
+   * floating band. Negative top margin counters the .add-ons-content
+   * padding-top so the header still sits at its original visual
+   * position at scroll 0 — only the sticky behavior is new.
+   *
+   * The constant subtle bottom border + faint shadow give a clear
+   * "this is a sticky header" affordance at every scroll position,
+   * including scroll 0 — it reads as intentional, not glitchy.
    */
   .add-ons-header {
-    margin-bottom: 32px;
+    position: sticky;
+    top: 52px;
+    z-index: 5;
+    background: var(--gray-50);
+    margin: -64px -16px 32px;
+    padding: 24px 16px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    box-shadow: 0 4px 8px -8px rgba(16, 24, 40, 0.08);
   }
 
   .add-ons-header__title {
@@ -679,6 +707,8 @@
     flex-direction: column;
     gap: 40px;
     margin-top: 8px;
+    position: relative;
+    z-index: 1;
   }
 
   .add-ons-section__header {
