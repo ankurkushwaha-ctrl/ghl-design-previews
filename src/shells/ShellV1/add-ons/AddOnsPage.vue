@@ -31,13 +31,6 @@
   // ─── Content model ───────────────────────────────────────────────────
   // Static for v1. Move to API (e.g. /agency/addons) when product is ready.
   //
-  // Tag types are intentionally ABOUT the tag's role, not the category:
-  //   highlight  → "Most popular" / "Hands-on"        — neutral/warm so it
-  //                doesn't fight the category icon color
-  //   fresh      → "New cohort"                       — green accent
-  //   success    → "BAA included"                     — green checkmark vibe
-  type TagType = 'highlight' | 'fresh' | 'success'
-
   // status drives card chrome:
   //   available → default purchase CTA
   //   active    → already in plan; CTA becomes "Manage", surface gets
@@ -50,7 +43,6 @@
     id: string
     icon: string
     iconKind: 'branding' | 'experts' | 'compliance'
-    tag?: { label: string; type: TagType; hint?: string }
     title: string
     tagline: string
     priceAmount: string
@@ -379,17 +371,7 @@
                 v-for="card in cat.cards"
                 :key="card.id"
                 class="add-on-card"
-                :class="{
-                  'add-on-card--featured':
-                    card.tag?.type === 'highlight' &&
-                    card.status !== 'active',
-                  'add-on-card--active': card.status === 'active',
-                }"
-                :aria-label="
-                  card.tag?.type === 'highlight'
-                    ? `Recommended: ${card.title}`
-                    : undefined
-                "
+                :class="{ 'add-on-card--active': card.status === 'active' }"
               >
                 <div class="add-on-card__top">
                   <div
@@ -400,9 +382,8 @@
                   </div>
 
                   <!--
-                    "Active" status takes precedence over marketing tags
-                    because it answers the buyer's first question:
-                    "do I already have this?"
+                    "In your plan" pill — only chrome that sits in the
+                    top-right slot now that marketing tags were retired.
                   -->
                   <span
                     v-if="card.status === 'active'"
@@ -410,40 +391,6 @@
                   >
                     <i class="fas fa-check" aria-hidden="true" />
                     In your plan
-                  </span>
-
-                  <!--
-                    Tags with hints render as focusable buttons with a
-                    proper tooltip (role="tooltip" + aria-describedby).
-                    Mouse hover and keyboard focus both reveal the hint.
-                  -->
-                  <button
-                    v-else-if="card.tag && card.tag.hint"
-                    type="button"
-                    class="add-on-card__tag add-on-card__tag--button"
-                    :class="`add-on-card__tag--${card.tag.type}`"
-                    :aria-describedby="`tag-hint-${card.id}`"
-                  >
-                    {{ card.tag.label }}
-                    <i
-                      class="fas fa-info-circle add-on-card__tag-hint"
-                      aria-hidden="true"
-                    />
-                    <span
-                      :id="`tag-hint-${card.id}`"
-                      role="tooltip"
-                      class="add-on-card__tag-tooltip"
-                    >
-                      {{ card.tag.hint }}
-                    </span>
-                  </button>
-
-                  <span
-                    v-else-if="card.tag"
-                    class="add-on-card__tag"
-                    :class="`add-on-card__tag--${card.tag.type}`"
-                  >
-                    {{ card.tag.label }}
                   </span>
                 </div>
 
@@ -521,9 +468,13 @@
 
                 <!--
                   CTA hierarchy:
-                    - active   = disabled "In plan" surface (manage)
-                    - primary  = filled dark, only on featured cards
-                    - default  = secondary (outlined). Most cards.
+                    - active   = "Manage" — secondary outlined; active
+                                 chrome is already carried by the card
+                                 surface (green stripe + tint + pill)
+                    - default  = secondary (outlined). Every other card.
+                  All CTAs share one visual treatment now that marketing
+                  tags (and therefore the "featured/primary" CTA variant)
+                  have been retired.
                 -->
                 <button
                   v-if="card.status === 'active'"
@@ -541,10 +492,6 @@
                   v-else
                   type="button"
                   class="add-on-card__cta"
-                  :class="{
-                    'add-on-card__cta--primary':
-                      card.tag?.type === 'highlight',
-                  }"
                   @click="handleCta(card)"
                 >
                   <span class="add-on-card__cta-label">{{ card.cta }}</span>
@@ -620,9 +567,10 @@
    *   gray-50…900   → page surface, borders, body text, headings
    *   primary-600   → primary CTAs, "Learn more" links
    *   blue-800      → primary CTA hover (HR convention: dark hover)
-   *   success-50…700 → "In your plan" state, BAA tag, check marks
-   *   warning-50…800 → featured card stripe + tint, popularity tags
-   *   orange-50…700  → expert services icon tile gradient
+   *   success-50…700 → "In your plan" state, benefit check marks,
+   *                     active-card stripe + tint, annual-plan pill bg
+   *   warning-200…700 → "One-time" cadence pill
+   *   orange-50…700   → expert services icon tile gradient
    *
    * Box-shadow rgba() values stay literal — HR doesn't expose RGB
    * channels for shadow tinting; this is the standard pattern.
@@ -728,21 +676,34 @@
   }
   .add-ons-grid--three     { grid-template-columns: repeat(1, 1fr); }
   .add-ons-grid--two       { grid-template-columns: repeat(1, 1fr); }
-  .add-ons-grid--spotlight { grid-template-columns: 1fr; max-width: 720px; }
+  /*
+   * Spotlight = single-card category (currently just Compliance).
+   * Previously stretched to 720px which was ~2× a normal card and
+   * broke the scan rhythm of the grids above. Now the card renders
+   * at the SAME width as one card from the multi-card row above,
+   * centered horizontally. Width-by-breakpoint matches the math of
+   * the three-grid (50% at md, ~33% at lg) so HIPAA reads as "one
+   * card from the same family", not "the lonely big card".
+   */
+  .add-ons-grid--spotlight { grid-template-columns: 1fr; }
+  .add-ons-grid--spotlight > .add-on-card { justify-self: center; width: 100%; }
 
   @media (min-width: 768px) {
     .add-ons-grid--two   { grid-template-columns: repeat(2, 1fr); }
     .add-ons-grid--three { grid-template-columns: repeat(2, 1fr); }
+    .add-ons-grid--spotlight > .add-on-card { width: calc(50% - 8px); }
   }
   @media (min-width: 1100px) {
     .add-ons-grid--three { grid-template-columns: repeat(3, 1fr); }
+    .add-ons-grid--spotlight > .add-on-card { width: calc((100% - 32px) / 3); }
   }
 
   /* ── Card ─────────────────────────────────────────────────────────── */
   /*
-   * overflow: hidden clips the featured-card accent stripe to the
-   * border-radius cleanly. box-shadow + translateY for hover are
-   * unaffected (shadows render outside the box and ignore overflow).
+   * overflow: hidden clips the active-card accent stripe (top edge,
+   * 3px gradient on --add-on-card--active) to the rounded corners
+   * cleanly. box-shadow + translateY for hover are unaffected —
+   * shadows render outside the box and ignore overflow.
    */
   .add-on-card {
     position: relative;
@@ -754,45 +715,14 @@
     overflow: hidden;
     padding: 24px;
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-    transition: box-shadow 0.2s ease, transform 0.2s ease,
-      border-color 0.2s ease;
+    transition: box-shadow 0.15s ease, transform 0.15s ease,
+      border-color 0.15s ease;
   }
   .add-on-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px -8px rgba(16, 24, 40, 0.1),
       0 4px 8px -4px rgba(16, 24, 40, 0.04);
     border-color: var(--gray-300);
-  }
-
-  /*
-   * Featured cards (Most popular / Hands-on) get a barely-there warm
-   * tint so the eye lands on them naturally — visual reinforcement of
-   * the textual "highlight" tag, not a replacement for it. Subtle
-   * accent line at the top edge adds a polished detail without
-   * shouting. (Linear / Notion feature-card pattern.)
-   */
-  .add-on-card--featured {
-    background:
-      linear-gradient(180deg, var(--warning-50) 0%, #ffffff 120px),
-      #ffffff;
-    border-color: var(--warning-200);
-  }
-  /*
-   * Accent stripe sits flush at the top of the card. The card's
-   * overflow: hidden + border-radius clips it cleanly to the rounded
-   * corners — no manual border-radius needed on the stripe itself.
-   */
-  .add-on-card--featured::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--warning-500) 0%, var(--warning-400) 100%);
-  }
-  .add-on-card--featured:hover {
-    border-color: var(--warning-400);
   }
 
   /*
@@ -875,102 +805,6 @@
     color: var(--success-700);
   }
 
-  /*
-   * Tag colors are intentionally NOT category-aligned. The icon owns
-   * the category color; the tag is a meta-signal (popularity, freshness,
-   * trust). Using a separate palette stops the tag and icon from
-   * fighting for the same eye (Gestalt — figure/ground).
-   */
-  .add-on-card__tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    height: 22px;
-    padding: 0 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-  }
-  /* Neutral warm — popularity/recommended, doesn't fight category color */
-  .add-on-card__tag--highlight {
-    background: var(--warning-100);
-    color: var(--warning-800);
-  }
-  /* Green — newness/recency */
-  .add-on-card__tag--fresh {
-    background: var(--success-50);
-    color: var(--success-700);
-  }
-  /* Green w/ outline — trust/inclusion ("BAA included") */
-  .add-on-card__tag--success {
-    background: var(--success-50);
-    color: var(--success-700);
-    border: 1px solid var(--success-200);
-  }
-  .add-on-card__tag-hint { font-size: 10px; opacity: 0.7; }
-
-  /*
-   * Tags with hints render as <button> for keyboard focusability.
-   * Reset the default button chrome so it looks identical to a span tag.
-   */
-  .add-on-card__tag--button {
-    appearance: none;
-    cursor: help;
-    position: relative;
-    font-family: inherit;
-  }
-  .add-on-card__tag--button:focus-visible {
-    outline: 2px solid var(--primary-600);
-    outline-offset: 2px;
-  }
-
-  /*
-   * Accessible tooltip — hidden by default, shown on hover or
-   * keyboard focus. role="tooltip" + aria-describedby on the
-   * trigger button means screen readers announce it on focus.
-   * Mouse + keyboard users both reach it.
-   */
-  .add-on-card__tag-tooltip {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    z-index: 10;
-    width: 240px;
-    padding: 10px 12px;
-    background: var(--gray-900);
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 1.4;
-    letter-spacing: 0;
-    text-transform: none;
-    border-radius: 8px;
-    box-shadow: 0 8px 16px -4px rgba(16, 24, 40, 0.16);
-    white-space: normal;
-    opacity: 0;
-    transform: translateY(-4px);
-    pointer-events: none;
-    transition: opacity 0.15s ease, transform 0.15s ease;
-  }
-  .add-on-card__tag-tooltip::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    right: 12px;
-    width: 10px;
-    height: 10px;
-    background: var(--gray-900);
-    transform: rotate(45deg);
-    border-radius: 2px;
-  }
-  .add-on-card__tag--button:hover .add-on-card__tag-tooltip,
-  .add-on-card__tag--button:focus-visible .add-on-card__tag-tooltip {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
   .add-on-card__title {
     margin: 0;
     font-size: 16px;
@@ -1023,10 +857,10 @@
 
   /*
    * Annual-plan pill — Figma uses a bright pure green (#37D334) with
-   * black text on a fully rounded pill. Closest semantic token in this
-   * file is --success-500 (#12b76a): same family the green stripe and
-   * benefit checks already use. White text per the latest Figma comp
-   * for AA contrast on the saturated green.
+   * black text. We map to a token-driven darker green (--success-700)
+   * so 11px/600 WHITE text passes WCAG 2.1 AA contrast (≈ 5.5:1).
+   * White on the lighter --success-500 (#12b76a) only hit ~2.5:1 and
+   * would have failed AA — corrected May 25.
    *
    * Positioning: lives inside .add-on-card__price (flex row) and
    * uses margin-left: auto to push to the far right — same trick
@@ -1041,7 +875,7 @@
     font-weight: 600;
     line-height: 1.4;
     color: #ffffff;
-    background: var(--success-500);
+    background: var(--success-700);
     border-radius: 999px;
     letter-spacing: 0.01em;
     white-space: nowrap;
@@ -1070,8 +904,15 @@
     color: var(--gray-700);
     line-height: 1.4;
   }
+  /*
+   * Checkmark color: --success-600 (#039855) instead of --success-500
+   * (#12b76a). The 600 step pops slightly more against pure white at
+   * 11px without changing the semantic — still green, still part of
+   * the success ramp. Small letterform / icon at this size benefits
+   * from the extra density.
+   */
   .add-on-card__check {
-    color: var(--success-500);
+    color: var(--success-600);
     font-size: 11px;
     margin-top: 4px;
     flex-shrink: 0;
@@ -1105,8 +946,8 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease,
-      transform 0.05s ease;
+    transition: background 0.15s ease, border-color 0.15s ease,
+      transform 0.1s ease;
   }
   .add-on-card__cta:hover {
     background: var(--gray-50);
@@ -1116,23 +957,6 @@
   .add-on-card__cta:focus-visible {
     outline: 2px solid var(--primary-600);
     outline-offset: 2px;
-  }
-
-  /*
-   * Primary CTA uses HighRise's --primary-600 — the brand blue.
-   * Black/navy isn't a brand color in spm-ts; the production
-   * .btn-primary class uses HighLevel blue too. This also matches
-   * the "Learn more" link color, so primary action + navigation
-   * share one brand voice.
-   */
-  .add-on-card__cta--primary {
-    background: var(--primary-600);
-    border-color: var(--primary-600);
-    color: #ffffff;
-  }
-  .add-on-card__cta--primary:hover {
-    background: var(--blue-800);
-    border-color: var(--blue-800);
   }
 
   /*
@@ -1149,7 +973,7 @@
     font-size: 11px;
     opacity: 0;
     transform: translateX(-4px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.15s ease, transform 0.15s ease;
   }
   .add-on-card__cta:hover .add-on-card__cta-arrow,
   .add-on-card__cta:focus-visible .add-on-card__cta-arrow {
@@ -1235,12 +1059,12 @@
     line-height: 1.5;
   }
   /*
-   * Quiet, outlined CTA — matches the secondary card CTA pattern.
-   * The band is a tertiary affordance, so its action should be the
-   * least loud thing on the page, not the loudest. Hierarchy is:
-   *   primary filled  → featured card CTAs
-   *   secondary outlined → default card CTAs + this band CTA
-   *   tertiary text  → "Compare add-ons" header link
+   * Quiet, outlined CTA — matches the card CTA pattern. The band is
+   * a tertiary affordance, so its action should be quiet, not loud.
+   * Hierarchy on the page is intentionally flat now that marketing
+   * tags were retired: every CTA shares one outlined treatment so no
+   * card visually outranks another. Active cards swap "Buy now" for
+   * "Manage" but keep the same chrome.
    */
   .add-ons-footer-band__cta {
     display: inline-flex;
@@ -1263,6 +1087,16 @@
     background: var(--gray-50);
     border-color: var(--gray-400);
     color: var(--gray-900);
+  }
+  /*
+   * Keyboard focus ring — matches the card CTA pattern so the page
+   * has one consistent focus treatment across all interactive
+   * elements. Without this, the `<a>` only got the browser default
+   * outline which was barely visible against the dashed border.
+   */
+  .add-ons-footer-band__cta:focus-visible {
+    outline: 2px solid var(--primary-600);
+    outline-offset: 2px;
   }
   .add-ons-footer-band__cta i {
     font-size: 11px;

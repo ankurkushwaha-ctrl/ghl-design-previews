@@ -307,20 +307,38 @@ Dev needs to complete these 5 tasks:
 
 | Decision                                           | Rationale                                                                                                                                                   |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Featured cards use amber stripe + warm tint        | Visual reinforcement of the "Most popular" / "Hands-on" tags — eye lands on recommended cards naturally without 7 identical loud CTAs                      |
 | Active cards use green stripe + "In your plan" pill | Answers the buyer's first question — *do I already have this?* — before they read the card                                                                  |
 | Manage CTA reuses the secondary outlined treatment | The active state is already communicated by surface + pill + stripe; coloring the CTA green too was redundant and broke button-color consistency           |
-| Compliance uses spotlight layout (max 720px)       | Single-card category — full-width grid would have one card stretching 1136px and looking lonely. 720px feels intentional.                                  |
+| Compliance uses spotlight layout (centered at grid-card width) | Single-card category. The card is now rendered at the SAME width as one card from a multi-card row above and centered in the row — at 3-col viewports it lines up with the middle column. Previous 720px (≈ 2× a normal card) broke the scan rhythm. |
 | HIPAA finepoint overrides "Cancel anytime"         | HIPAA is permanent once activated per the help article — generic finepoint would be a trust-breaker if a real buyer caught it                              |
-| Tag colors NOT category-aligned                    | Icon owns the category color; tag is meta-signal (popularity / freshness / trust). Separate palette stops them fighting for the eye (Gestalt figure-ground) |
-| BAA tag is a focusable button with tooltip         | A11y — keyboard users see the BAA hint on focus, not just hover. Uses `role="tooltip"` + `aria-describedby`.                                                |
+| Marketing tags + featured-card variant removed     | PM direction (May 25): no card carries a "Most popular" / "Hands-on" / "BAA included" tag. The featured filled-primary CTA variant and the warm amber stripe were tied to tags, so all of that template + CSS was dead and has been removed. CTAs are now uniformly secondary outlined. |
 | `prefers-reduced-motion` disables card-lift + arrow-slide | Standard a11y motion guard                                                                                                                          |
 | Footer band stacks below 640px                     | CTA was getting squeezed off on narrow viewports                                                                                                            |
 | Stacked sections instead of tabs (May 25)          | PM feedback — hiding Premium support / HIPAA behind a tab click reduced visibility. Visible H2 + blurb per section keeps the three-category structure on one scrollable page. |
 | Each `<section>` carries an `id="{slug}"`          | Lets the upstream "Compare add-ons" top-right link deep-link to a category (`/agency/add-ons#compliance`) when that link is wired                          |
 | Section titles kept as prototype originals         | Card-level copy comes from the Figma "Marketplace In-App Redesign" file (May 25 marketing direction), but section titles use the original prototype labels (White-label apps / Expert services / Compliance) instead of Figma's Custom Branding / Setup & Support / Medical Compliance. The originals organize the page better at-a-glance. |
-| "Learn more" link removed from cards               | Competed with the primary CTA for attention. `learnMoreUrl` is still on the data model so docs can be linked from a tooltip / modal / future Compare surface without a data migration. |
-| Annual-plan savings pill on `premium-support` + `certified-admin` | Figma (`216:1218` group 2130/2131 + the "🟢Marketplace Landing" canonical version) renders a fully-rounded green pill below the price on cards that offer an annual discount. New optional `annualPlan?: string` on the `Card` type, verbatim Figma strings ("Annual Plan: $5000 (Save 16%)" and "Annual Plan: $970 (Save 16%)"). Background uses `--success-500` (#12b76a) — closest token in the existing palette to Figma's #37D334. Text is white per the latest Figma comp (older "working" page version had black text — the current 🟢 version uses white for AA contrast against the saturated green). No other cards in the file carry this pill. |
+| "Learn more" link removed from cards               | Competed with the CTA for attention. `learnMoreUrl` is still on the data model so docs can be linked from a tooltip / modal / future Compare surface without a data migration. |
+| Annual-plan savings pill on `premium-support` + `certified-admin` | Figma (`216:1218` group 2130/2131 + the "🟢Marketplace Landing" canonical version) renders a fully-rounded green pill on cards that offer an annual discount. New optional `annualPlan?: string` on the `Card` type, verbatim Figma strings ("Annual Plan: $5000 (Save 16%)" and "Annual Plan: $970 (Save 16%)"). Background uses `--success-700` (#027a48) so 11px/600 white text passes WCAG 2.1 AA (≈ 5.5:1). The earlier `--success-500` background only hit ~2.5:1 and failed AA — corrected in the May 25 polish pass. No other cards in the file carry this pill. |
+
+---
+
+## Polish / delight pass (May 25)
+
+Heuristic audit + targeted fixes. Code only; no copy or content changes.
+
+- **HIPAA card width** — was 720px (~2× a normal card), now matches one grid-card width and centers in the row at every breakpoint (≥1100px aligns with the middle column of a 3-up grid). Pure CSS change; no data-model impact.
+- **WCAG fix: annual-plan pill** — bg `--success-500` → `--success-700`. White text now passes AA (≈ 5.5:1) instead of failing at ~2.5:1.
+- **Focus ring on footer-band CTA** — added `:focus-visible` rule matching the card CTA pattern. The `<a>` previously relied on the default UA outline, which was barely visible against the dashed border.
+- **Benefit checkmark pop** — color stepped from `--success-500` → `--success-600`. Slightly denser against pure white at 11px without changing the semantic.
+- **Transition timings standardized to 0.15s ease** — card hover, CTA background/border, and CTA-arrow now use the same 0.15s curve (was 0.2s). CTA press transform tightened to 0.1s.
+- **Dead code removed** — marketing tags were retired by PM, but the template still carried three dead `v-if` branches (`card.tag*`), an `aria-label` that never fired, the `add-on-card--featured` class binding + warm-amber stripe CSS, the `add-on-card__tag*` + tooltip CSS, the `add-on-card__cta--primary` filled-blue variant, and the `TagType` type + `tag?` field on `Card`. All gone — file is ~150 lines shorter and the runtime behavior is unchanged.
+- **Stale comments touched up** — token-map comment now reflects what each ramp actually drives; the "CTA hierarchy" comment describes the current flat hierarchy.
+
+### Flagged but NOT changed (designer call)
+
+- **Page-load entrance animation** — Stripe-style 30ms-stagger fade-in is a common pricing-page convention. Left out for now because the page is in front of stakeholders and any entrance motion is felt; happy to add behind `prefers-reduced-motion` if you want it.
+- **Annual-plan pill on `premium-support` while card is `active`** — the pill currently renders on a card the agency already owns. Reads slightly off (Manage CTA + savings pill). Options: hide annual pill when `status === 'active'`, or route it to a "switch to annual" upgrade flow. Out of scope for this pass.
+- **Type-scale jump H1 28px → H2 18px** — fine on the spec, but 18px H2s next to a 28px H1 feel quiet. Bumping H2 to 20px would be defensible; left as-is because the comment says it's deliberately matching HighRise convention.
 
 ---
 
