@@ -296,6 +296,8 @@ Dev needs to complete these 5 tasks:
 | Footer band stacks below 640px                     | CTA was getting squeezed off on narrow viewports                                                                                                            |
 | Stacked sections instead of tabs (May 25)          | PM feedback — hiding Premium support / HIPAA behind a tab click reduced visibility. Visible H2 + blurb per section keeps the three-category structure on one scrollable page. |
 | Each `<section>` carries an `id="{slug}"`          | Lets the upstream "Compare add-ons" top-right link deep-link to a category (`/agency/add-ons#compliance`) when that link is wired                          |
+| Section titles kept as prototype originals         | Card-level copy comes from the Figma "Marketplace In-App Redesign" file (May 25 marketing direction), but section titles use the original prototype labels (White-label apps / Expert services / Compliance) instead of Figma's Custom Branding / Setup & Support / Medical Compliance. The originals organize the page better at-a-glance. |
+| "Learn more" link removed from cards               | Competed with the primary CTA for attention. `learnMoreUrl` is still on the data model so docs can be linked from a tooltip / modal / future Compare surface without a data migration. |
 
 ---
 

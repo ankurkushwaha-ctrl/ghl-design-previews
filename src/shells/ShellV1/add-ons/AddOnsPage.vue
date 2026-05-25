@@ -89,10 +89,13 @@
   const sections: Section[] = [
     {
       id: 'branding',
-      title: 'Custom Branding',
-      // WHY for the whole category — one-liner, fits 800px at 14px
+      title: 'White-label apps',
+      // WHY for the whole category — one-liner, fits 800px at 14px.
+      // Section titles kept as the prototype originals (not Figma's
+      // "Custom Branding") because the user-facing category labels
+      // organize the page better at-a-glance.
       blurb:
-        'Customize more than just the main app with your branding.',
+        'Put your brand on every client touchpoint — apps, automations, and portals.',
       layout: 'three',
       cards: [
         {
@@ -162,9 +165,9 @@
     },
     {
       id: 'experts',
-      title: 'Setup & Support',
+      title: 'Expert services',
       blurb:
-        'Streamline your setup and skip the line when support is needed.',
+        'Bring HighLevel experts in to set you up, support your day-to-day, or train your team.',
       layout: 'three',
       cards: [
         {
@@ -237,9 +240,9 @@
     },
     {
       id: 'compliance',
-      title: 'Medical Compliance',
+      title: 'Compliance',
       blurb:
-        'Take your HighLevel skills to the next level.',
+        'Open up regulated markets — close healthcare deals you\'d lose today over compliance.',
       layout: 'spotlight',
       cards: [
         {
@@ -490,13 +493,16 @@
                   </li>
                 </ul>
 
-                <a
-                  :href="card.learnMoreUrl"
-                  class="add-on-card__learn-more"
-                >
-                  Learn more
-                  <i class="fas fa-arrow-right" aria-hidden="true" />
-                </a>
+                <!--
+                  "Learn more" link intentionally not rendered.
+                  Per design review (May 25): the CTA already invites
+                  the buyer to take the next step; an inline tertiary
+                  link competed with the primary CTA for attention and
+                  diluted the click target. `learnMoreUrl` is still on
+                  the data model so docs can be linked from a tooltip,
+                  modal, or future "Compare add-ons" surface without a
+                  data migration.
+                -->
 
                 <!--
                   CTA hierarchy:
@@ -1015,34 +1021,6 @@
     text-underline-offset: 2px;
   }
 
-  /*
-   * Tertiary "Learn more" — text-only with arrow nudge on hover.
-   * Sits between benefits and the CTA so buyers who want depth can
-   * read the docs without leaving the page through the primary CTA.
-   */
-  .add-on-card__learn-more {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--primary-600);
-    text-decoration: none;
-    align-self: flex-start;
-    transition: color 0.15s ease;
-  }
-  .add-on-card__learn-more i {
-    font-size: 10px;
-    transition: transform 0.15s ease;
-  }
-  .add-on-card__learn-more:hover { color: var(--blue-800); }
-  .add-on-card__learn-more:hover i { transform: translateX(2px); }
-  .add-on-card__learn-more:focus-visible {
-    outline: 2px solid var(--primary-600);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
   .add-on-card__benefit {
     display: flex;
     align-items: flex-start;
