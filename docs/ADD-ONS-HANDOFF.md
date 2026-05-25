@@ -8,12 +8,22 @@
 ## What this is
 
 A production-ready agency **Add-Ons** page that replaces the legacy
-`MarketplaceFrame.vue` iframe with a native Vue surface. Four category
-sections — Custom Branding, Setup & Support, Medical Compliance,
-Certified Admin — render inline on one scrollable page (seven cards
-total). Section titles + blurbs mirror the live GHL marketing preview
-(`Q3wpuESAo2QTQthwBZlZ`). Cards already in the agency's plan render
-in an "active" state with a green stripe and **Manage** CTA.
+`MarketplaceFrame.vue` iframe with a native Vue surface. Three tabs —
+**Setup & support** (default), **Custom branding**, and **HIPAA
+compliance** (sentence-case nav labels; HIPAA stays uppercase as an
+acronym) — group seven cards total. Certified Admin Program now
+lives inside the Setup & support tab as the third card (it was briefly
+its own section during a stacked-sections experiment, see below).
+Section H2 + blurb inside each pane mirror the live GHL marketing
+preview (`Q3wpuESAo2QTQthwBZlZ`) and are kept in Title Case per that
+upstream — they intentionally don't match the tab labels because the
+two surfaces follow different style rules (HighRise nav = sentence
+case; marketing H2s = Title Case). One additional split worth knowing:
+the third tab label reads **HIPAA compliance** but the H2 inside the
+pane still says **Medical Compliance** per upstream copy — PMM
+follow-up to decide whether to align the two. Cards already in the
+agency's plan render in an "active" state with a green stripe and
+**Manage** CTA.
 
 > **Copy source-of-truth (May 25, per Marketing):** card titles,
 > taglines, benefits, CTAs, prices, and section titles/blurbs come
@@ -68,12 +78,19 @@ copy for these:
 | `hipaa` | `benefits` | 5 generic consulting bullets | No HIPAA-specific benefit list exists anywhere in the file |
 | `advanced-setup` | `tagline` | "Get started with our affordable Starter plan, perfect for small businesses." | Off-topic but matches grid Figma; the dedicated subpage (`27:1873`) has a longer Advanced-Setup-specific paragraph, but it opens with a typo ("f you're ready") and is too long for a card. Left grid copy in place. |
 
-> **Changed May 25 per PM feedback:** the original design used a tabbed
-> layout. Tabs were removed because hiding Premium support (Expert
-> services) and HIPAA (Compliance) behind a click reduced their
-> visibility. All sections now render on one scroll.
+> **Changed May 25 (round 2) per stakeholder follow-up:** an earlier
+> May 25 pass removed tabs in favor of stacked sections so Premium
+> Support and HIPAA were visible without a click. Stakeholders walked
+> that back the same day — tabs return with three differences from
+> the original: (1) the third tab is renamed **HIPAA compliance**
+> (was "Medical Compliance"; tab labels are sentence case now,
+> HIPAA stays uppercase as an acronym; the H2 inside the pane still
+> mirrors upstream as "Medical Compliance" — PMM call), (2) **Setup
+> & support** is the default landing tab (was Custom Branding), and
+> (3) Certified Admin Program folds back inside Setup & support as
+> the third card rather than being its own section.
 
-The page lives as a single self-contained Vue file (~1,260 lines incl.
+The page lives as a single self-contained Vue file (~1,300 lines incl.
 content data + scoped CSS) — designed for a clean lift into
 `spm-ts/src/pmd/pages/agency/AddOnsPage.vue`. One file copies almost
 verbatim; the only changes on the way upstream are restoring the
@@ -89,11 +106,15 @@ src/shells/ShellV1/add-ons/
   AddOnsPage.vue                               ← real page (template + script + scoped styles)
 ```
 
-No state machine. No reactive state at all — the page is fully static.
+No state machine. The only reactive value is `selectedCategory`
+(`ref<'experts' | 'branding' | 'compliance'>`) — the active tab key.
 Card content is a static `Section[]` array at the top of
 `<script setup>` — easy to swap for an API response when product is
-ready. Each `Section` renders as a `<section id="{slug}">` so the
-upstream "Compare add-ons" deep-link can scroll to a category anchor.
+ready. Each `Section` renders inside an `<HLTabPane>` with an inner
+`<section id="{slug}">` so the upstream "Compare add-ons" deep-link
+can target a category anchor (deep-linking will also need to set
+`selectedCategory` to activate the matching tab — TODO when that
+link gets wired).
 
 ---
 
@@ -122,9 +143,18 @@ This is the entire page — single file lift.
 + </div>
 ```
 
-No HighRise imports to wire — the page no longer uses `HLTabs/HLTabPane`
-or any other HighRise component. Plain semantic `<section>` elements
-with scoped styles drive the layout.
+HighRise imports to wire: `HLTabs` and `HLTabPane` (already imported
+from `@/components/highrise` in this repo; upstream they come from
+`@platform-ui/highrise`). One `selectedCategory` ref drives the
+active pane via `v-model:value`. Tab labels live in a static
+`tabLabels: Record<Section['id'], string>` map at the top of
+`<script setup>` in **sentence case** ("Setup & support", "Custom
+branding", "HIPAA compliance" — HIPAA stays uppercase as an
+acronym) so the nav follows HighRise convention while the section
+H2s inside each pane keep Title Case from the live marketing
+preview. The compliance pane is the only place the two surfaces
+fork on wording entirely ("HIPAA compliance" tab vs "Medical
+Compliance" H2).
 
 The top-of-file comment in `src/shells/ShellV1/add-ons/AddOnsPage.vue`
 lists every preview-only deviation — that comment is your full porting
@@ -157,21 +187,21 @@ PR, but file a follow-up ticket.
       },
 
       "sections": {
+        "_note": "Cert Admin merged into experts.cards — no certification section key. tabLabel = nav button text (sentence case, HighRise nav convention; HIPAA stays uppercase as an acronym). title = H2 inside the pane (Title Case, verbatim from the live marketing preview). They intentionally don't match — different style rules. The compliance pane is the only place the two diverge on actual wording (HIPAA vs Medical).",
         "branding": {
+          "tabLabel": "Custom branding",
           "title": "Custom Branding",
           "blurb": "Customize more than just the main app with your branding."
         },
         "experts": {
+          "tabLabel": "Setup & support",
           "title": "Setup & Support",
           "blurb": "Streamline your setup and skip the line when support is needed."
         },
         "compliance": {
+          "tabLabel": "HIPAA compliance",
           "title": "Medical Compliance",
           "blurb": "Take your HighLevel skills to the next level."
-        },
-        "certification": {
-          "title": "Certified Admin",
-          "blurb": "Become certified and get hired to support other HighLevelers!"
         }
       },
 
@@ -351,6 +381,9 @@ Dev needs to complete these 5 tasks:
 | `--two` grid reuses the `--three` track at lg+      | At ≥1100px, Setup & Support cards were stretching to ~50% width (~510px) while the 3-up Custom Branding cards above sat at ~33% (~350px). Fixed by making `--two` render as `repeat(3, 1fr)` at lg+; two cards naturally occupy columns 1+2 with column 3 empty, matching the spotlight layout's "card from the same family" treatment. All four sections now share one card width across the page. |
 | "Learn more" link removed from cards               | Competed with the CTA for attention. `learnMoreUrl` is still on the data model so docs can be linked from a tooltip / modal / future Compare surface without a data migration. |
 | Annual-plan savings pill on `premium-support` + `certified-admin` | Figma (`216:1218` group 2130/2131 + the "🟢Marketplace Landing" canonical version) renders a fully-rounded green pill on cards that offer an annual discount. New optional `annualPlan?: string` on the `Card` type, verbatim Figma strings ("Annual Plan: $5000 (Save 16%)" and "Annual Plan: $970 (Save 16%)"). Background uses `--success-700` (#027a48) so 11px/600 white text passes WCAG 2.1 AA (≈ 5.5:1). The earlier `--success-500` background only hit ~2.5:1 and failed AA — corrected in the May 25 polish pass. No other cards in the file carry this pill. |
+| Tabs restored — stakeholder follow-up (May 25, supersedes the "stacked sections" row above) | After the morning's stacked-sections experiment, stakeholders walked it back the same day. Tabs return with three deliberate changes from the original tabbed layout: **(1)** the third tab is renamed from "Medical Compliance" to **"HIPAA compliance"** so buyers searching for that exact term land on the right pane; **(2)** the default landing tab is **Setup & support** instead of Custom Branding so the first thing a buyer sees is the card they're most likely to convert on (Premium Support is `active` in the demo); **(3)** Certified Admin Program folds back into Setup & support as the third card rather than being its own fourth section — PM wants it grouped with the other "talk to a human" purchases. Section H2 inside the compliance pane still reads "Medical Compliance" per upstream copy — flagged below as a PMM follow-up. |
+| Tab labels are sentence case; section H2s are Title Case | Tab labels follow HighRise nav convention (sentence case — "Setup & support", "Custom branding", "HIPAA compliance"; HIPAA stays uppercase as an acronym). Section H2s inside each pane stay Title Case per the live marketing preview. The two surfaces follow different style rules on purpose — don't reconcile them as a "consistency" fix. |
+| H2 inside compliance pane vs tab label split  | The tab label reads **HIPAA compliance** (a buyer-facing search term) while the H2 inside the pane mirrors the live marketing preview's **Medical Compliance**. This is an intentional split — PMM has to decide whether the upstream H2 should also rename or whether the tab label is the only user-facing terminology change. Flag if anyone asks "why do they say different things?" |
 
 ---
 
@@ -383,6 +416,8 @@ Heuristic audit + targeted fixes. Code only; no copy or content changes.
 3. **Pricing source.** Prices are static literals (`$297`, `$50`, `$1,000`, etc.). Should they come from the same endpoint as status, or from a separate catalog? Static is fine for v1 if pricing rarely changes.
 
 4. **"Compare add-ons" link.** Top-right of the page in the upstream design doesn't render in this preview — it's part of the topbar treatment. Decide where in the actual `spm-ts` topbar that link belongs (or skip for v1).
+
+5. **Compliance pane H2 wording — PMM follow-up.** The tab label reads **HIPAA compliance** (sentence case nav label) but the H2 inside the pane still says **Medical Compliance** (Title Case, mirrors the live marketing preview verbatim). Decide whether the H2 should also rename to "HIPAA Compliance" / "HIPAA compliance" for buyer-language consistency, or whether the broader "Medical Compliance" framing is intentional (in case more compliance products are added later — SOC 2, GDPR, etc.).
 
 ---
 

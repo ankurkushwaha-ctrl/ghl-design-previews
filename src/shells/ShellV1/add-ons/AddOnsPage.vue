@@ -8,13 +8,24 @@
     1. The shell chrome (<SideBarV2>, <TopBar>, <KickoffWidget>) is
        stripped — the parent <ShellV1> wraps this page externally,
        same pattern as src/pages/SubAccountsPage.vue → Locations.vue.
-    2. Tabs removed per PM feedback (May 25): all four categories
-       now render inline as stacked sections on a single scrollable
-       page so Premium support and HIPAA are visible without a click.
-       When porting upstream, drop HLTabs/HLTabPane and render one
-       <section> per category with its title + blurb visible.
-       Section titles + blurbs mirror the live GHL marketing preview
-       (Q3wpuESAo2QTQthwBZlZ) — keep them in sync with PMM.
+    2. Tabs restored (May 25 — stakeholder follow-up after the
+       brief stacked-sections experiment). The page renders three
+       categories behind <HLTabs>, with sentence-case nav labels:
+       "Setup & support" (default), "Custom branding", and "HIPAA
+       compliance" (HIPAA stays uppercase — acronym). The Title-
+       Case section H2s inside each pane intentionally don't match
+       the tab labels because they follow different style rules:
+       tab labels = HighRise nav sentence case; section H2s =
+       verbatim from the live GHL marketing preview. Certified
+       Admin Program lives as the third card inside Setup & Support
+       — it was briefly promoted to its own fourth section during
+       the stacked pass, but PM and the live marketing surface both
+       want it grouped under setup-related purchases. Section H2 +
+       blurb inside each pane still mirror the live GHL marketing
+       preview (Q3wpuESAo2QTQthwBZlZ) — keep them in sync with PMM.
+       Note: the H2 inside the compliance pane still reads "Medical
+       Compliance" while the tab label is "HIPAA compliance" — PMM
+       follow-up to decide whether to rename the H2 too.
     3. The outer `<section class="hl_wrapper">`'s `:class` binding
        on `$store.state.notification.showNotification` is dropped
        because no Vuex store exists in the preview repo. That binding
@@ -27,8 +38,13 @@
 -->
 
 <script lang="ts" setup>
-  // No reactive state — page is fully static. Categories render as
-  // stacked sections (no tab selection model). See top-of-file note #2.
+  import { ref } from 'vue'
+  import { HLTabs, HLTabPane } from '@/components/highrise'
+
+  // Single reactive value: which category tab is currently selected.
+  // Card content + section data are otherwise fully static. See the
+  // top-of-file note #2 for the three-tab structure and why Setup &
+  // Support is the default landing tab.
 
   // ─── Content model ───────────────────────────────────────────────────
   // Static for v1. Move to API (e.g. /agency/addons) when product is ready.
@@ -65,13 +81,39 @@
   }
 
   type Section = {
-    // Stable slug — also used as the section's DOM id so the
-    // footer "Compare add-ons" deep link can scroll to it.
-    id: 'branding' | 'experts' | 'compliance' | 'certification'
+    // Stable slug — also used as the <HLTabPane> name and as the
+    // inner section's DOM id so the upstream "Compare add-ons"
+    // deep link can target a category (deep-linking also needs to
+    // activate the matching tab — TODO when that link gets wired).
+    id: 'branding' | 'experts' | 'compliance'
     title: string
     blurb: string
     layout: 'three' | 'two' | 'spotlight'
     cards: Card[]
+  }
+
+  // Default tab on page load is Setup & Support. It carries the most
+  // cards (3) including Cert Admin, and Premium Support is the card
+  // buyers most often land here looking for.
+  const selectedCategory = ref<Section['id']>('experts')
+
+  // Tab labels are kept separate from section H2 titles for two
+  // reasons:
+  //   1. Sentence case — tab labels follow HighRise's nav convention
+  //      ("Setup & support", "Custom branding", "HIPAA compliance" —
+  //      HIPAA stays uppercase because it's an acronym), while the
+  //      section H2s inside the panes are Title Case per the live
+  //      marketing preview ("Setup & Support", "Custom Branding",
+  //      "Medical Compliance"). Don't reconcile them — the two
+  //      surfaces follow different style rules.
+  //   2. The compliance tab reads "HIPAA compliance" (buyer-facing
+  //      search term) while its inner H2 still mirrors the live
+  //      marketing preview's "Medical Compliance". PMM follow-up to
+  //      decide whether to align the two eventually.
+  const tabLabels: Record<Section['id'], string> = {
+    experts: 'Setup & support',
+    branding: 'Custom branding',
+    compliance: 'HIPAA compliance',
   }
 
   /*
@@ -85,6 +127,106 @@
    * "what's in the box?"
    */
   const sections: Section[] = [
+    {
+      id: 'experts',
+      title: 'Setup & Support',
+      // Section title + blurb pulled from the live GHL marketing
+      // preview (Q3wpuESAo2QTQthwBZlZ), May 25.
+      blurb:
+        'Streamline your setup and skip the line when support is needed.',
+      // 'three' to fit Advanced Setup, Premium Support, and Cert Admin
+      // on one row at lg+. Cert Admin briefly lived in its own fourth
+      // section during the May 25 stacked-sections pass, but when
+      // tabs were restored later that day PM wanted it grouped here
+      // with the other "talk to a human" purchases buyers reach for
+      // during setup.
+      layout: 'three',
+      cards: [
+        {
+          id: 'advanced-setup',
+          icon: 'tools',
+          iconKind: 'experts',
+          title: 'Advanced Account Setup',
+          tagline:
+            'Get started with our affordable Starter plan, perfect for small businesses.',
+          priceAmount: '$1,000',
+          pricePeriod: '',
+          cadence: 'One-time',
+          benefits: [
+            '5 one-hour consulting sessions with HighLevel experts',
+            'Dedicated HighLevel Agency Growth Advisor',
+            'Done-with-you CRM and dashboard setup',
+            'Live team teaching and software orientation',
+            'Personalized business process implementation',
+          ],
+          cta: 'Buy Now',
+          status: 'available',
+          learnMoreUrl: '/docs/add-ons/advanced-setup',
+        },
+        {
+          id: 'premium-support',
+          icon: 'headset',
+          iconKind: 'experts',
+          title: 'Premium Support',
+          tagline:
+            'Scale your support with a dedicated rep, faster response times, and more peace of mind.',
+          priceAmount: '$500',
+          pricePeriod: '/mo',
+          cadence: 'Subscription',
+          benefits: [
+            'Dedicated Technical Account Manager',
+            'Dedicated Private Slack Channel',
+            'End-to-end issue resolution',
+            'Expert guidance on platform best practices',
+            'Quarterly Business Reviews',
+          ],
+          cta: 'Buy Now',
+          // Demo: this card is already in the agency's plan to show the
+          // 'active' state. Remove this and set status: 'available' to
+          // see the default purchase chrome.
+          status: 'active',
+          learnMoreUrl: '/docs/add-ons/premium-support',
+          annualPlan: 'Annual Plan: $5000 (Save 16%)',
+        },
+        {
+          id: 'certified-admin',
+          icon: 'award',
+          // 'certification' icon kind = violet gradient. Even though
+          // Cert Admin sits inside Setup & Support, we kept the
+          // violet tile rather than reusing the orange 'experts'
+          // tile of its siblings — it's a different purchase shape
+          // (a credential you earn vs services you buy), and the
+          // violet reads as "credential / prestige" instead of
+          // collapsing into a uniform setup-services color block.
+          // See iconKind CSS below.
+          iconKind: 'certification',
+          title: 'Certified Admin Program',
+          // Grammar fix May 25: was "with flexible monthly." —
+          // truncated sentence (no noun after "monthly"). Added
+          // "billing" so the clause completes. Flag to PMM: the
+          // canonical Figma + live preview also carries the truncated
+          // version.
+          tagline:
+            'Get certified at your own pace with flexible monthly billing. Perfect for learning core HighLevel skills.',
+          priceAmount: '$97',
+          pricePeriod: '/mo',
+          cadence: 'Subscription',
+          benefits: [
+            'Get paid to support other HighLevelers',
+            'Validate your expertise with an official certification',
+            'Stand out as a trusted, certified professional',
+            'Earn additional skills badges to stand out',
+            // Grammar fix May 25: was "through with GHL credentials"
+            // (stacked prepositions). Dropped "through". Flag to PMM.
+            'Unlock career growth with GHL credentials',
+          ],
+          cta: 'Buy Now',
+          status: 'available',
+          learnMoreUrl: '/docs/add-ons/certification',
+          annualPlan: 'Annual Plan: $970 (Save 16%)',
+        },
+      ],
+    },
     {
       id: 'branding',
       title: 'Custom Branding',
@@ -159,71 +301,14 @@
       ],
     },
     {
-      id: 'experts',
-      title: 'Setup & Support',
-      // Section title + blurb pulled from the live GHL marketing
-      // preview (Q3wpuESAo2QTQthwBZlZ), May 25.
-      blurb:
-        'Streamline your setup and skip the line when support is needed.',
-      // 'two' renders 1-col mobile → 2-col md+ — Advanced Setup and
-      // Premium Support now sit on their own row together; Certified
-      // Admin moved to its own section below (per live preview).
-      layout: 'two',
-      cards: [
-        {
-          id: 'advanced-setup',
-          icon: 'tools',
-          iconKind: 'experts',
-          title: 'Advanced Account Setup',
-          tagline:
-            'Get started with our affordable Starter plan, perfect for small businesses.',
-          priceAmount: '$1,000',
-          pricePeriod: '',
-          cadence: 'One-time',
-          benefits: [
-            '5 one-hour consulting sessions with HighLevel experts',
-            'Dedicated HighLevel Agency Growth Advisor',
-            'Done-with-you CRM and dashboard setup',
-            'Live team teaching and software orientation',
-            'Personalized business process implementation',
-          ],
-          cta: 'Buy Now',
-          status: 'available',
-          learnMoreUrl: '/docs/add-ons/advanced-setup',
-        },
-        {
-          id: 'premium-support',
-          icon: 'headset',
-          iconKind: 'experts',
-          title: 'Premium Support',
-          tagline:
-            'Scale your support with a dedicated rep, faster response times, and more peace of mind.',
-          priceAmount: '$500',
-          pricePeriod: '/mo',
-          cadence: 'Subscription',
-          benefits: [
-            'Dedicated Technical Account Manager',
-            'Dedicated Private Slack Channel',
-            'End-to-end issue resolution',
-            'Expert guidance on platform best practices',
-            'Quarterly Business Reviews',
-          ],
-          cta: 'Buy Now',
-          // Demo: this card is already in the agency's plan to show the
-          // 'active' state. Remove this and set status: 'available' to
-          // see the default purchase chrome.
-          status: 'active',
-          learnMoreUrl: '/docs/add-ons/premium-support',
-          annualPlan: 'Annual Plan: $5000 (Save 16%)',
-        },
-      ],
-    },
-    {
       id: 'compliance',
       title: 'Medical Compliance',
       // Section title + blurb pulled from the live GHL marketing
       // preview (Q3wpuESAo2QTQthwBZlZ), May 25. The blurb reads
-      // generic on purpose — that's the upstream copy. Owner: PMM.
+      // generic on purpose — that's the upstream copy. The tab
+      // LABEL is "HIPAA Compliance" (buyer-facing); the H2 here
+      // still reads "Medical Compliance" per upstream. PMM follow-
+      // up to decide whether to align the two.
       blurb:
         'Take your HighLevel skills to the next level.',
       layout: 'spotlight',
@@ -252,54 +337,6 @@
           // bundles all sub-accounts on the agency plan, so this
           // finepoint clarifies what the $497/mo actually covers.
           finepoint: 'Price covers all sub-accounts',
-        },
-      ],
-    },
-    {
-      // Promoted to its own section May 25 to match the live GHL
-      // marketing preview (Q3wpuESAo2QTQthwBZlZ), which surfaces
-      // Certified Admin as a peer category, not an Expert Service.
-      id: 'certification',
-      title: 'Certified Admin',
-      blurb:
-        'Become certified and get hired to support other HighLevelers!',
-      layout: 'spotlight',
-      cards: [
-        {
-          id: 'certified-admin',
-          icon: 'award',
-          // 'certification' icon kind = violet gradient. Cert Admin
-          // moved to its own peer section May 25, so the orange
-          // 'experts' tile no longer made sense — it tied the card
-          // visually back to Setup & Support. Violet reads as
-          // "credential / prestige" without colliding with primary
-          // blue (branding), orange (experts), or success green
-          // (compliance). See iconKind CSS below.
-          iconKind: 'certification',
-          title: 'Certified Admin Program',
-          // Grammar fix May 25: was "with flexible monthly." —
-          // truncated sentence (no noun after "monthly"). Added
-          // "billing" so the clause completes. Flag to PMM: the
-          // canonical Figma + live preview also carries the truncated
-          // version.
-          tagline:
-            'Get certified at your own pace with flexible monthly billing. Perfect for learning core HighLevel skills.',
-          priceAmount: '$97',
-          pricePeriod: '/mo',
-          cadence: 'Subscription',
-          benefits: [
-            'Get paid to support other HighLevelers',
-            'Validate your expertise with an official certification',
-            'Stand out as a trusted, certified professional',
-            'Earn additional skills badges to stand out',
-            // Grammar fix May 25: was "through with GHL credentials"
-            // (stacked prepositions). Dropped "through". Flag to PMM.
-            'Unlock career growth with GHL credentials',
-          ],
-          cta: 'Buy Now',
-          status: 'available',
-          learnMoreUrl: '/docs/add-ons/certification',
-          annualPlan: 'Annual Plan: $970 (Save 16%)',
         },
       ],
     },
@@ -383,172 +420,186 @@
         </header>
 
         <!--
-          Tabs were removed (May 25, PM feedback): hiding Premium
-          support and HIPAA behind a click reduced their visibility.
-          Categories now render as stacked sections on one scroll —
-          each with a visible H2 title + blurb so the page still
-          reads as four deliberate groupings, not one flat list.
+          Tabs restored (May 25 — stakeholder follow-up). The
+          stacked-sections experiment earlier the same day did fix
+          the Premium Support / HIPAA "behind a click" visibility
+          gap, but stakeholders walked it back: tabs come back with
+          three differences from the original — Setup & support is
+          the default tab (was Custom Branding), the third tab is
+          renamed "HIPAA compliance" (tab label only; the H2 inside
+          still says "Medical Compliance" pending PMM), and Cert
+          Admin folds back inside Setup & support as the third card.
+          Tab labels follow HighRise nav sentence case; section H2s
+          inside each pane stay Title Case per the live marketing
+          preview.
         -->
         <div class="add-ons-sections">
-          <section
-            v-for="cat in sections"
-            :key="cat.id"
-            :id="cat.id"
-            class="add-ons-section"
-          >
-            <header class="add-ons-section__header">
-              <h2 class="add-ons-section__title">{{ cat.title }}</h2>
-              <p class="add-ons-section__blurb">{{ cat.blurb }}</p>
-            </header>
-
-            <div :class="gridClassesFor(cat.layout)">
-              <article
-                v-for="card in cat.cards"
-                :key="card.id"
-                class="add-on-card"
-                :class="{ 'add-on-card--active': card.status === 'active' }"
+          <HLTabs v-model:value="selectedCategory" type="line">
+            <HLTabPane
+              v-for="cat in sections"
+              :key="cat.id"
+              :name="cat.id"
+              :tab="tabLabels[cat.id]"
+            >
+              <section
+                :id="cat.id"
+                class="add-ons-section"
               >
-                <div class="add-on-card__top">
-                  <div
-                    class="add-on-card__icon"
-                    :class="`add-on-card__icon--${card.iconKind}`"
-                  >
-                    <i :class="`fas fa-${card.icon}`" aria-hidden="true" />
-                  </div>
+                <header class="add-ons-section__header">
+                  <h2 class="add-ons-section__title">{{ cat.title }}</h2>
+                  <p class="add-ons-section__blurb">{{ cat.blurb }}</p>
+                </header>
 
-                  <!--
-                    "In your plan" pill — only chrome that sits in the
-                    top-right slot now that marketing tags were retired.
-                  -->
-                  <span
-                    v-if="card.status === 'active'"
-                    class="add-on-card__status-pill"
+                <div :class="gridClassesFor(cat.layout)">
+                  <article
+                    v-for="card in cat.cards"
+                    :key="card.id"
+                    class="add-on-card"
+                    :class="{ 'add-on-card--active': card.status === 'active' }"
                   >
-                    <i class="fas fa-check" aria-hidden="true" />
-                    In your plan
-                  </span>
-                </div>
+                    <div class="add-on-card__top">
+                      <div
+                        class="add-on-card__icon"
+                        :class="`add-on-card__icon--${card.iconKind}`"
+                      >
+                        <i :class="`fas fa-${card.icon}`" aria-hidden="true" />
+                      </div>
 
-                <h3 class="add-on-card__title">{{ card.title }}</h3>
-                <p class="add-on-card__tagline">{{ card.tagline }}</p>
+                      <!--
+                        "In your plan" pill — only chrome that sits in the
+                        top-right slot now that marketing tags were retired.
+                      -->
+                      <span
+                        v-if="card.status === 'active'"
+                        class="add-on-card__status-pill"
+                      >
+                        <i class="fas fa-check" aria-hidden="true" />
+                        In your plan
+                      </span>
+                    </div>
 
-                <div class="add-on-card__price">
-                  <span class="add-on-card__price-amount">
-                    {{ card.priceAmount }}
-                  </span>
-                  <span
-                    v-if="card.pricePeriod"
-                    class="add-on-card__price-period"
-                  >
-                    {{ card.pricePeriod }}
-                  </span>
-                  <!--
-                    Only surface cadence when it carries information.
-                    "/mo" already signals subscription; showing
-                    "Subscription" on every card was visual noise.
-                  -->
-                  <span
-                    v-if="card.cadence === 'One-time'"
-                    class="add-on-card__price-cadence"
-                  >
-                    One-time
-                  </span>
-                  <!--
-                    Annual-plan savings pill, verbatim from Figma (Group
-                    2131 on node 216:1218 and equivalents). Sits inline
-                    on the right of the price row — same convention as
-                    the One-time cadence pill so the card price line
-                    reads consistently across all cards.
-                  -->
-                  <span
-                    v-if="card.annualPlan"
-                    class="add-on-card__annual-pill"
-                  >
-                    {{ card.annualPlan }}
-                  </span>
-                </div>
+                    <h3 class="add-on-card__title">{{ card.title }}</h3>
+                    <p class="add-on-card__tagline">{{ card.tagline }}</p>
 
-                <ul class="add-on-card__benefits">
-                  <li
-                    v-for="(benefit, i) in card.benefits"
-                    :key="i"
-                    class="add-on-card__benefit"
-                  >
-                    <i
-                      class="fas fa-check add-on-card__check"
-                      aria-hidden="true"
-                    />
+                    <div class="add-on-card__price">
+                      <span class="add-on-card__price-amount">
+                        {{ card.priceAmount }}
+                      </span>
+                      <span
+                        v-if="card.pricePeriod"
+                        class="add-on-card__price-period"
+                      >
+                        {{ card.pricePeriod }}
+                      </span>
+                      <!--
+                        Only surface cadence when it carries information.
+                        "/mo" already signals subscription; showing
+                        "Subscription" on every card was visual noise.
+                      -->
+                      <span
+                        v-if="card.cadence === 'One-time'"
+                        class="add-on-card__price-cadence"
+                      >
+                        One-time
+                      </span>
+                      <!--
+                        Annual-plan savings pill, verbatim from Figma (Group
+                        2131 on node 216:1218 and equivalents). Sits inline
+                        on the right of the price row — same convention as
+                        the One-time cadence pill so the card price line
+                        reads consistently across all cards.
+                      -->
+                      <span
+                        v-if="card.annualPlan"
+                        class="add-on-card__annual-pill"
+                      >
+                        {{ card.annualPlan }}
+                      </span>
+                    </div>
+
+                    <ul class="add-on-card__benefits">
+                      <li
+                        v-for="(benefit, i) in card.benefits"
+                        :key="i"
+                        class="add-on-card__benefit"
+                      >
+                        <i
+                          class="fas fa-check add-on-card__check"
+                          aria-hidden="true"
+                        />
+                        <!--
+                          Authored markup — safe for v-html. Used only when
+                          a benefit needs inline semantic markup like <abbr>.
+                        -->
+                        <span
+                          v-if="isHtmlBenefit(benefit)"
+                          v-html="benefit.html"
+                        />
+                        <span v-else>{{ benefitText(benefit) }}</span>
+                      </li>
+                    </ul>
+
                     <!--
-                      Authored markup — safe for v-html. Used only when
-                      a benefit needs inline semantic markup like <abbr>.
+                      "Learn more" link intentionally not rendered.
+                      Per design review (May 25): the CTA already invites
+                      the buyer to take the next step; an inline tertiary
+                      link competed with the primary CTA for attention and
+                      diluted the click target. `learnMoreUrl` is still on
+                      the data model so docs can be linked from a tooltip,
+                      modal, or future "Compare add-ons" surface without a
+                      data migration.
                     -->
-                    <span
-                      v-if="isHtmlBenefit(benefit)"
-                      v-html="benefit.html"
-                    />
-                    <span v-else>{{ benefitText(benefit) }}</span>
-                  </li>
-                </ul>
 
-                <!--
-                  "Learn more" link intentionally not rendered.
-                  Per design review (May 25): the CTA already invites
-                  the buyer to take the next step; an inline tertiary
-                  link competed with the primary CTA for attention and
-                  diluted the click target. `learnMoreUrl` is still on
-                  the data model so docs can be linked from a tooltip,
-                  modal, or future "Compare add-ons" surface without a
-                  data migration.
-                -->
+                    <!--
+                      CTA hierarchy:
+                        - active   = "Manage" — secondary outlined; active
+                                     chrome is already carried by the card
+                                     surface (green stripe + tint + pill)
+                        - default  = secondary (outlined). Every other card.
+                      All CTAs share one visual treatment now that marketing
+                      tags (and therefore the "featured/primary" CTA variant)
+                      have been retired.
+                    -->
+                    <button
+                      v-if="card.status === 'active'"
+                      type="button"
+                      class="add-on-card__cta add-on-card__cta--manage"
+                      @click="handleCta(card)"
+                    >
+                      <span class="add-on-card__cta-label">Manage</span>
+                      <i
+                        class="fas fa-arrow-right add-on-card__cta-arrow"
+                        aria-hidden="true"
+                      />
+                    </button>
+                    <button
+                      v-else
+                      type="button"
+                      class="add-on-card__cta"
+                      @click="handleCta(card)"
+                    >
+                      <span class="add-on-card__cta-label">{{ card.cta }}</span>
+                      <i
+                        class="fas fa-arrow-right add-on-card__cta-arrow"
+                        aria-hidden="true"
+                      />
+                    </button>
 
-                <!--
-                  CTA hierarchy:
-                    - active   = "Manage" — secondary outlined; active
-                                 chrome is already carried by the card
-                                 surface (green stripe + tint + pill)
-                    - default  = secondary (outlined). Every other card.
-                  All CTAs share one visual treatment now that marketing
-                  tags (and therefore the "featured/primary" CTA variant)
-                  have been retired.
-                -->
-                <button
-                  v-if="card.status === 'active'"
-                  type="button"
-                  class="add-on-card__cta add-on-card__cta--manage"
-                  @click="handleCta(card)"
-                >
-                  <span class="add-on-card__cta-label">Manage</span>
-                  <i
-                    class="fas fa-arrow-right add-on-card__cta-arrow"
-                    aria-hidden="true"
-                  />
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="add-on-card__cta"
-                  @click="handleCta(card)"
-                >
-                  <span class="add-on-card__cta-label">{{ card.cta }}</span>
-                  <i
-                    class="fas fa-arrow-right add-on-card__cta-arrow"
-                    aria-hidden="true"
-                  />
-                </button>
-
-                <!--
-                  Always rendered (no v-if) so the CTA bottom edge
-                  aligns across all cards in a row, regardless of
-                  status. Copy applies to both available and active
-                  subscriptions: "Cancel anytime" is true after
-                  purchase too.
-                -->
-                <p class="add-on-card__finepoint">
-                  {{ card.finepoint || 'Cancel anytime · No setup fees' }}
-                </p>
-              </article>
-            </div>
-          </section>
+                    <!--
+                      Always rendered (no v-if) so the CTA bottom edge
+                      aligns across all cards in a row, regardless of
+                      status. Copy applies to both available and active
+                      subscriptions: "Cancel anytime" is true after
+                      purchase too.
+                    -->
+                    <p class="add-on-card__finepoint">
+                      {{ card.finepoint || 'Cancel anytime · No setup fees' }}
+                    </p>
+                  </article>
+                </div>
+              </section>
+            </HLTabPane>
+          </HLTabs>
         </div>
 
         <!--
