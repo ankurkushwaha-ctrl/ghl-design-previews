@@ -44,7 +44,7 @@
   type Card = {
     id: string
     icon: string
-    iconKind: 'branding' | 'experts' | 'compliance'
+    iconKind: 'branding' | 'experts' | 'compliance' | 'certification'
     title: string
     tagline: string
     priceAmount: string
@@ -107,7 +107,7 @@
           cadence: 'Subscription',
           benefits: [
             'Customize your login screen and app layout',
-            'Choose your color pallet',
+            'Choose your color palette',
             'Rearrange or hide native modules',
             'Create custom modules from your URLs',
             'Create a mobile experience unique to your brand',
@@ -141,7 +141,7 @@
           iconKind: 'branding',
           title: 'White-Label Client Portal App',
           tagline:
-            'Customize the Client Portal App with your branding',
+            'Customize the Client Portal App with your branding.',
           priceAmount: '$50',
           pricePeriod: '/mo',
           cadence: 'Subscription',
@@ -268,10 +268,22 @@
         {
           id: 'certified-admin',
           icon: 'award',
-          iconKind: 'experts',
+          // 'certification' icon kind = violet gradient. Cert Admin
+          // moved to its own peer section May 25, so the orange
+          // 'experts' tile no longer made sense — it tied the card
+          // visually back to Setup & Support. Violet reads as
+          // "credential / prestige" without colliding with primary
+          // blue (branding), orange (experts), or success green
+          // (compliance). See iconKind CSS below.
+          iconKind: 'certification',
           title: 'Certified Admin Program',
+          // Grammar fix May 25: was "with flexible monthly." —
+          // truncated sentence (no noun after "monthly"). Added
+          // "billing" so the clause completes. Flag to PMM: the
+          // canonical Figma + live preview also carries the truncated
+          // version.
           tagline:
-            'Get certified at your own pace with flexible monthly. Perfect for learning core HighLevel skills.',
+            'Get certified at your own pace with flexible monthly billing. Perfect for learning core HighLevel skills.',
           priceAmount: '$97',
           pricePeriod: '/mo',
           cadence: 'Subscription',
@@ -280,7 +292,9 @@
             'Validate your expertise with an official certification',
             'Stand out as a trusted, certified professional',
             'Earn additional skills badges to stand out',
-            'Unlock career growth through with GHL credentials',
+            // Grammar fix May 25: was "through with GHL credentials"
+            // (stacked prepositions). Dropped "through". Flag to PMM.
+            'Unlock career growth with GHL credentials',
           ],
           cta: 'Buy Now',
           status: 'available',
@@ -586,12 +600,13 @@
    *
    * Token map (for human readers):
    *   gray-50…900   → page surface, borders, body text, headings
-   *   primary-600   → primary CTAs, "Learn more" links
+   *   primary-50…600 → branding icon tile + focus rings
    *   blue-800      → primary CTA hover (HR convention: dark hover)
    *   success-50…700 → "In your plan" state, benefit check marks,
    *                     active-card stripe + tint, annual-plan pill bg
    *   warning-200…700 → "One-time" cadence pill
-   *   orange-50…700   → expert services icon tile gradient
+   *   orange-50…700   → setup & support icon tile gradient
+   *   violet-50…700   → certified admin icon tile gradient
    *
    * Box-shadow rgba() values stay literal — HR doesn't expose RGB
    * channels for shadow tinting; this is the standard pattern.
@@ -835,6 +850,17 @@
   .add-on-card__icon--compliance {
     background: linear-gradient(135deg, var(--success-50) 0%, var(--success-200) 100%);
     color: var(--success-700);
+  }
+  /*
+   * Certified Admin tile — violet ramp. Distinct from the other three
+   * iconKinds (primary blue / orange / success green) and reads as
+   * "credential / prestige" rather than "training" (which orange would
+   * have implied). Added May 25 when Cert Admin was promoted to its
+   * own section.
+   */
+  .add-on-card__icon--certification {
+    background: linear-gradient(135deg, var(--violet-50) 0%, var(--violet-200) 100%);
+    color: var(--violet-700);
   }
 
   .add-on-card__title {

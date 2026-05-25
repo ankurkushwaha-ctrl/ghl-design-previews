@@ -27,6 +27,30 @@ in an "active" state with a green stripe and **Manage** CTA.
 > Flag any future copy edits against that Figma file, not this
 > Vue component.
 
+### Grammar fixes applied locally — flag to PMM
+
+A May 25 grammar pass on the live marketing preview surfaced
+four small bugs that exist in the canonical copy too. They've
+been corrected in this Vue page so the preview reads cleanly,
+but Marketing should mirror these fixes upstream in Figma + the
+live preview so we stay in sync.
+
+| Card | Field | Was (broken) | Now (corrected) |
+| ---- | ----- | ------------ | --------------- |
+| `wl-mobile` | benefit #2 | "Choose your color **pallet**" | "Choose your color **palette**" |
+| `wl-portal` | `tagline` | "Customize the Client Portal App with your branding" *(no terminal period)* | "…with your branding**.**" |
+| `certified-admin` | `tagline` | "Get certified at your own pace **with flexible monthly**. Perfect for…" *(truncated sentence — no noun after "monthly")* | "…with **flexible monthly billing**. Perfect for…" |
+| `certified-admin` | benefit #5 | "Unlock career growth **through with** GHL credentials" *(stacked prepositions)* | "Unlock career growth **with** GHL credentials" |
+
+### Style note — not changed (verbatim from live preview)
+
+The three Custom Branding card titles use three different
+spellings of the same compound: **Whitelabel** Mobile App,
+**White-Label** Zapier App, **White-Label** Client Portal App.
+This is inconsistent on GHL's marketing surface itself, so per
+the "live preview is canonical" rule we left it. PMM call to
+unify.
+
 ### Cards still on placeholder copy — Marketing to resolve
 
 The Figma file does not contain a unique product-specific string
@@ -323,6 +347,8 @@ Dev needs to complete these 5 tasks:
 | Each `<section>` carries an `id="{slug}"`          | Lets the upstream "Compare add-ons" top-right link deep-link to a category (`/agency/add-ons#compliance`) when that link is wired                          |
 | Section titles + blurbs match the live marketing preview | Final May 25 sync: section titles (Custom Branding / Setup & Support / Medical Compliance / Certified Admin) and one-line blurbs pulled verbatim from the live GHL preview at `https://app.gohighlevel.com/v2/preview/Q3wpuESAo2QTQthwBZlZ?notrack=true`. Treat that URL as the canonical source if PMM revises copy. |
 | Certified Admin promoted to its own section        | Was nested under Expert Services (now Setup & Support) in earlier passes. Live marketing preview surfaces it as a peer category alongside Compliance, so it now renders as its own 4th section using the same single-card `spotlight` layout as Medical Compliance. |
+| Certified Admin icon promoted to its own color kind | Was reusing the orange `experts` tile, which visually tied it back to Setup & Support after the section split — a gestalt similarity collision. Added a new `iconKind: 'certification'` mapped to a violet ramp (`--violet-50 → --violet-200` background, `--violet-700` icon). Reads as "credential / prestige" without colliding with branding (primary blue), setup & support (orange), or medical compliance (success green). |
+| `--two` grid reuses the `--three` track at lg+      | At ≥1100px, Setup & Support cards were stretching to ~50% width (~510px) while the 3-up Custom Branding cards above sat at ~33% (~350px). Fixed by making `--two` render as `repeat(3, 1fr)` at lg+; two cards naturally occupy columns 1+2 with column 3 empty, matching the spotlight layout's "card from the same family" treatment. All four sections now share one card width across the page. |
 | "Learn more" link removed from cards               | Competed with the CTA for attention. `learnMoreUrl` is still on the data model so docs can be linked from a tooltip / modal / future Compare surface without a data migration. |
 | Annual-plan savings pill on `premium-support` + `certified-admin` | Figma (`216:1218` group 2130/2131 + the "🟢Marketplace Landing" canonical version) renders a fully-rounded green pill on cards that offer an annual discount. New optional `annualPlan?: string` on the `Card` type, verbatim Figma strings ("Annual Plan: $5000 (Save 16%)" and "Annual Plan: $970 (Save 16%)"). Background uses `--success-700` (#027a48) so 11px/600 white text passes WCAG 2.1 AA (≈ 5.5:1). The earlier `--success-500` background only hit ~2.5:1 and failed AA — corrected in the May 25 polish pass. No other cards in the file carry this pill. |
 
