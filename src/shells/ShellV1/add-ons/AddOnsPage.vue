@@ -992,7 +992,7 @@
 
   .add-on-card__price {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     flex-wrap: wrap;
     gap: 6px;
     margin: 0 0 16px;
