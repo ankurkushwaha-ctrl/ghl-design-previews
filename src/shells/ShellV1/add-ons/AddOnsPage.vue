@@ -8,42 +8,31 @@
     1. The shell chrome (<SideBarV2>, <TopBar>, <KickoffWidget>) is
        stripped — the parent <ShellV1> wraps this page externally,
        same pattern as src/pages/SubAccountsPage.vue → Locations.vue.
-    2. The HighRise tab imports point at our preview-repo stubs
-       (src/components/highrise) instead of @platform-ui/highrise,
-       which isn't installed here. Stub is API-narrow but visually
-       faithful — see src/components/highrise/HLTabs.vue.
+    2. Tabs removed per PM feedback (May 25): all four categories
+       now render inline as stacked sections on a single scrollable
+       page so Premium support and HIPAA are visible without a click.
+       When porting upstream, drop HLTabs/HLTabPane and render one
+       <section> per category with its title + blurb visible.
+       Section titles + blurbs mirror the live GHL marketing preview
+       (Q3wpuESAo2QTQthwBZlZ) — keep them in sync with PMM.
     3. The outer `<section class="hl_wrapper">`'s `:class` binding
        on `$store.state.notification.showNotification` is dropped
        because no Vuex store exists in the preview repo. That binding
        only adds a CSS class for an unused notification banner — no
        visual change for the preview.
 
-  Everything else — copy, content data, template structure, scoped
-  styles — is byte-identical to upstream so a designer can `git diff`
-  this against the spm-ts file and produce a clean upstream PR.
+  Content data, copy, and per-card markup are still byte-identical to
+  upstream — only the outer category wrapper changed. Diff against the
+  spm-ts file to produce a clean upstream PR.
 -->
 
 <script lang="ts" setup>
-  import { ref } from 'vue'
-
-  // Preview-repo HighRise stubs.
-  // upstream: import { HLTabs, HLTabPane } from '@platform-ui/highrise'
-  import { HLTabs, HLTabPane } from '@/components/highrise'
-
-  // ─── Page state ──────────────────────────────────────────────────────
-  type CategoryId = 'branding' | 'experts' | 'compliance'
-  const selectedCategory = ref<CategoryId>('branding')
+  // No reactive state — page is fully static. Categories render as
+  // stacked sections (no tab selection model). See top-of-file note #2.
 
   // ─── Content model ───────────────────────────────────────────────────
   // Static for v1. Move to API (e.g. /agency/addons) when product is ready.
   //
-  // Tag types are intentionally ABOUT the tag's role, not the category:
-  //   highlight  → "Most popular" / "Hands-on"        — neutral/warm so it
-  //                doesn't fight the category icon color
-  //   fresh      → "New cohort"                       — green accent
-  //   success    → "BAA included"                     — green checkmark vibe
-  type TagType = 'highlight' | 'fresh' | 'success'
-
   // status drives card chrome:
   //   available → default purchase CTA
   //   active    → already in plan; CTA becomes "Manage", surface gets
@@ -55,8 +44,7 @@
   type Card = {
     id: string
     icon: string
-    iconKind: 'branding' | 'experts' | 'compliance'
-    tag?: { label: string; type: TagType; hint?: string }
+    iconKind: 'branding' | 'experts' | 'compliance' | 'certification'
     title: string
     tagline: string
     priceAmount: string
@@ -66,6 +54,10 @@
     cta: string
     status: Status
     learnMoreUrl: string
+    // Verbatim Figma pill string for cards that offer an annual-plan
+    // discount. e.g. "Annual Plan: $970 (Save 16%)". Renders as a
+    // small green pill below the price. Omit when Figma has no pill.
+    annualPlan?: string
     // Per-card fine print under the CTA. Defaults to "Cancel anytime
     // · No setup fees" when omitted. Override on cards where that
     // claim isn't true (e.g. HIPAA is permanent — see card data).
@@ -73,7 +65,9 @@
   }
 
   type Section = {
-    id: CategoryId
+    // Stable slug — also used as the section's DOM id so the
+    // footer "Compare add-ons" deep link can scroll to it.
+    id: 'branding' | 'experts' | 'compliance' | 'certification'
     title: string
     blurb: string
     layout: 'three' | 'two' | 'spotlight'
@@ -93,29 +87,32 @@
   const sections: Section[] = [
     {
       id: 'branding',
-      title: 'White-label apps',
-      // WHY for the whole category — one-liner, fits 800px at 14px
+      title: 'Custom Branding',
+      // WHY for the whole category — one-liner, fits 800px at 14px.
+      // Section title + blurb pulled from the live GHL marketing
+      // preview (Q3wpuESAo2QTQthwBZlZ), May 25.
       blurb:
-        'Put your brand on every client touchpoint — apps, automations, and portals.',
+        'Customize more than just the main app with your branding.',
       layout: 'three',
       cards: [
         {
           id: 'wl-mobile',
           icon: 'mobile-alt',
           iconKind: 'branding',
-          tag: { label: 'Most popular', type: 'highlight' },
-          title: 'White-label mobile app',
+          title: 'Whitelabel Mobile App',
           tagline:
-            'Ship your own iOS and Android app — your brand on every screen, every notification, every login.',
-          priceAmount: '$297',
+            'Customize the HighLevel mobile app with your brand for the Apple & Android app stores!',
+          priceAmount: '$497',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            'Publish under your name on App Store and Play',
-            'Your icon, splash, and brand colors every time',
-            'Push notifications from your domain — clients trust the source',
+            'Customize your login screen and app layout',
+            'Choose your color palette',
+            'Rearrange or hide native modules',
+            'Create custom modules from your URLs',
+            'Create a mobile experience unique to your brand',
           ],
-          cta: 'Add to plan',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/white-label-mobile',
         },
@@ -123,18 +120,18 @@
           id: 'wl-zapier',
           icon: 'bolt',
           iconKind: 'branding',
-          title: 'White-label Zapier',
+          title: 'White-Label Zapier App',
           tagline:
-            'Give clients 6,000+ integrations — embedded under your brand, inside the platform they already use.',
+            'Customize the LeadConnector Zapier app with your brand.',
           priceAmount: '$50',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            'Embed the Zap builder inside sub-accounts under your brand',
-            'Connect any tool clients ask for — no engineering needed',
-            'Roll-up analytics show which integrations clients use most',
+            'Go beyond "grey label"',
+            'Tell your clients to find your brand in Zapier',
+            'Build brand authority with your own branded Zaps',
           ],
-          cta: 'Add to plan',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/white-label-zapier',
         },
@@ -142,18 +139,20 @@
           id: 'wl-portal',
           icon: 'th-large',
           iconKind: 'branding',
-          title: 'Client portal',
+          title: 'White-Label Client Portal App',
           tagline:
-            'One branded login for invoices, support, and learning — fully themed to your agency.',
+            'Customize the Client Portal App with your branding.',
           priceAmount: '$50',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            'Single sign-on from your sub-account — no second password',
-            'Bring courses, communities, and conversations into one place',
-            'Theme everything to your brand without writing CSS',
+            'White-label the portal with your brand, logo & domain',
+            'Centralize reporting in one clean, client-facing hub',
+            'Justify premium pricing with a polished experience',
+            'Reduce support requests via self-service access',
+            'Build trust & retention via real-time transparency',
           ],
-          cta: 'Add to plan',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/client-portal',
         },
@@ -161,28 +160,34 @@
     },
     {
       id: 'experts',
-      title: 'Expert services',
+      title: 'Setup & Support',
+      // Section title + blurb pulled from the live GHL marketing
+      // preview (Q3wpuESAo2QTQthwBZlZ), May 25.
       blurb:
-        'Bring HighLevel experts in to set you up, support your day-to-day, or train your team.',
-      layout: 'three',
+        'Streamline your setup and skip the line when support is needed.',
+      // 'two' renders 1-col mobile → 2-col md+ — Advanced Setup and
+      // Premium Support now sit on their own row together; Certified
+      // Admin moved to its own section below (per live preview).
+      layout: 'two',
       cards: [
         {
           id: 'advanced-setup',
           icon: 'tools',
           iconKind: 'experts',
-          tag: { label: 'Hands-on', type: 'highlight' },
-          title: 'Advanced setup',
+          title: 'Advanced Account Setup',
           tagline:
-            'A specialist configures your platform end-to-end. Start selling next week — not next quarter.',
+            'Get started with our affordable Starter plan, perfect for small businesses.',
           priceAmount: '$1,000',
           pricePeriod: '',
           cadence: 'One-time',
           benefits: [
-            'Discovery call that maps your business, clients, and offers',
-            'Specialist sets up pipelines, automations, and snapshots end-to-end',
-            'Two weeks of follow-up so first-week issues don’t derail you',
+            '5 one-hour consulting sessions with HighLevel experts',
+            'Dedicated HighLevel Agency Growth Advisor',
+            'Done-with-you CRM and dashboard setup',
+            'Live team teaching and software orientation',
+            'Personalized business process implementation',
           ],
-          cta: 'Talk to a specialist',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/advanced-setup',
         },
@@ -190,91 +195,111 @@
           id: 'premium-support',
           icon: 'headset',
           iconKind: 'experts',
-          title: 'Premium support',
+          title: 'Premium Support',
           tagline:
-            'When something breaks at 11pm, get a human in minutes — not a ticket tomorrow.',
+            'Scale your support with a dedicated rep, faster response times, and more peace of mind.',
           priceAmount: '$500',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            '24/7 priority queue across email, chat, and phone',
-            'A named engineer who knows your account on escalations',
-            'Quarterly health review to catch problems before clients do',
+            'Dedicated Technical Account Manager',
+            'Dedicated Private Slack Channel',
+            'End-to-end issue resolution',
+            'Expert guidance on platform best practices',
+            'Quarterly Business Reviews',
           ],
-          cta: 'Add to plan',
+          cta: 'Buy Now',
           // Demo: this card is already in the agency's plan to show the
           // 'active' state. Remove this and set status: 'available' to
           // see the default purchase chrome.
           status: 'active',
           learnMoreUrl: '/docs/add-ons/premium-support',
-        },
-        {
-          id: 'certified-admin',
-          icon: 'award',
-          iconKind: 'experts',
-          // Cohort date: real urgency requires real dates. Update on
-          // each cohort's lifecycle from product ops.
-          tag: { label: 'Starts March 15', type: 'fresh' },
-          title: 'HighLevel certification',
-          tagline:
-            'Train your team to run HighLevel themselves — focus on growing the agency, not configuring it.',
-          priceAmount: '$97',
-          pricePeriod: '/mo',
-          cadence: 'Subscription',
-          benefits: [
-            'Six weeks of live sessions with HighLevel architects, kicking off March 15',
-            'Hands-on labs that mirror real client setups',
-            'A verified credential each admin can list on LinkedIn',
-          ],
-          cta: 'Enroll your team',
-          status: 'available',
-          learnMoreUrl: '/docs/add-ons/certification',
+          annualPlan: 'Annual Plan: $5000 (Save 16%)',
         },
       ],
     },
     {
       id: 'compliance',
-      title: 'Compliance',
+      title: 'Medical Compliance',
+      // Section title + blurb pulled from the live GHL marketing
+      // preview (Q3wpuESAo2QTQthwBZlZ), May 25. The blurb reads
+      // generic on purpose — that's the upstream copy. Owner: PMM.
       blurb:
-        'Open up regulated markets — close healthcare deals you’d lose today over compliance.',
+        'Take your HighLevel skills to the next level.',
       layout: 'spotlight',
       cards: [
         {
           id: 'hipaa',
           icon: 'shield-alt',
           iconKind: 'compliance',
-          tag: {
-            label: 'BAA included',
-            type: 'success',
-            hint: 'A Business Associate Agreement is required for HIPAA-covered entities. We sign it for all sub-accounts on this plan.',
-          },
-          title: 'HIPAA compliance',
+          title: 'HIPAA Compliance',
           tagline:
-            'Pitch clinics, dentists, and therapists with confidence — close healthcare deals you’d lose today over the BAA question.',
-          priceAmount: '$297',
+            'Protect sensitive client health data with enterprise-grade security.',
+          priceAmount: '$497',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            'Signed BAA covering every sub-account on this plan',
-            // PHI defined inline first time it appears — avoids a tooltip
-            // for an acronym most healthcare buyers know but others don't.
-            {
-              html: 'Automatic Protected Health Information (<abbr title="Protected Health Information">PHI</abbr>) tagging and complete audit trails',
-            },
-            'Region-locked storage and dedicated processing for sensitive data',
-            'Quarterly compliance reports your clients hand to their auditors',
+            'Stay compliant with HIPAA regulations',
+            'Build patient trust with a fully compliant platform',
+            'Serve healthcare clients confidently without risk',
+            'Charge more for premium compliance',
           ],
-          // Self-serve flow per help article: Settings → Compliance →
-          // Buy package → Sign BAA in modal → HIPAA auto-activates
-          // agency-wide. CTA is a verb-led action, not a sales handoff.
-          cta: 'Activate HIPAA compliance',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/hipaa',
-          // Override the default fine print: HIPAA "cannot be cancelled,
-          // refunded, removed, or downgraded once enabled" per the help
-          // article. The default "Cancel anytime" line would be a trust-
-          // breaker if a real buyer caught it.
-          finepoint: 'BAA included · Permanent once activated',
+          // Override the default fine print to match the live marketing
+          // page (preview URL Q3wpuESAo2QTQthwBZlZ). The pricing model
+          // bundles all sub-accounts on the agency plan, so this
+          // finepoint clarifies what the $497/mo actually covers.
+          finepoint: 'Price covers all sub-accounts',
+        },
+      ],
+    },
+    {
+      // Promoted to its own section May 25 to match the live GHL
+      // marketing preview (Q3wpuESAo2QTQthwBZlZ), which surfaces
+      // Certified Admin as a peer category, not an Expert Service.
+      id: 'certification',
+      title: 'Certified Admin',
+      blurb:
+        'Become certified and get hired to support other HighLevelers!',
+      layout: 'spotlight',
+      cards: [
+        {
+          id: 'certified-admin',
+          icon: 'award',
+          // 'certification' icon kind = violet gradient. Cert Admin
+          // moved to its own peer section May 25, so the orange
+          // 'experts' tile no longer made sense — it tied the card
+          // visually back to Setup & Support. Violet reads as
+          // "credential / prestige" without colliding with primary
+          // blue (branding), orange (experts), or success green
+          // (compliance). See iconKind CSS below.
+          iconKind: 'certification',
+          title: 'Certified Admin Program',
+          // Grammar fix May 25: was "with flexible monthly." —
+          // truncated sentence (no noun after "monthly"). Added
+          // "billing" so the clause completes. Flag to PMM: the
+          // canonical Figma + live preview also carries the truncated
+          // version.
+          tagline:
+            'Get certified at your own pace with flexible monthly billing. Perfect for learning core HighLevel skills.',
+          priceAmount: '$97',
+          pricePeriod: '/mo',
+          cadence: 'Subscription',
+          benefits: [
+            'Get paid to support other HighLevelers',
+            'Validate your expertise with an official certification',
+            'Stand out as a trusted, certified professional',
+            'Earn additional skills badges to stand out',
+            // Grammar fix May 25: was "through with GHL credentials"
+            // (stacked prepositions). Dropped "through". Flag to PMM.
+            'Unlock career growth with GHL credentials',
+          ],
+          cta: 'Buy Now',
+          status: 'available',
+          learnMoreUrl: '/docs/add-ons/certification',
+          annualPlan: 'Annual Plan: $970 (Save 16%)',
         },
       ],
     },
@@ -357,42 +382,31 @@
           </p>
         </header>
 
-        <HLTabs
-          v-model:value="selectedCategory"
-          type="line"
-          class="add-ons-tabs"
-        >
-          <HLTabPane
+        <!--
+          Tabs were removed (May 25, PM feedback): hiding Premium
+          support and HIPAA behind a click reduced their visibility.
+          Categories now render as stacked sections on one scroll —
+          each with a visible H2 title + blurb so the page still
+          reads as four deliberate groupings, not one flat list.
+        -->
+        <div class="add-ons-sections">
+          <section
             v-for="cat in sections"
             :key="cat.id"
-            :name="cat.id"
-            :tab="cat.title"
+            :id="cat.id"
+            class="add-ons-section"
           >
-            <!--
-              Visually-hidden H2 per category gives screen-reader and
-              SEO heading hierarchy (H1 → H2 → H3) without changing
-              the visual layout. The tab itself is already labeled.
-            -->
-            <h2 class="visually-hidden">{{ cat.title }}</h2>
-
-            <p class="add-ons-section__blurb">{{ cat.blurb }}</p>
+            <header class="add-ons-section__header">
+              <h2 class="add-ons-section__title">{{ cat.title }}</h2>
+              <p class="add-ons-section__blurb">{{ cat.blurb }}</p>
+            </header>
 
             <div :class="gridClassesFor(cat.layout)">
               <article
                 v-for="card in cat.cards"
                 :key="card.id"
                 class="add-on-card"
-                :class="{
-                  'add-on-card--featured':
-                    card.tag?.type === 'highlight' &&
-                    card.status !== 'active',
-                  'add-on-card--active': card.status === 'active',
-                }"
-                :aria-label="
-                  card.tag?.type === 'highlight'
-                    ? `Recommended: ${card.title}`
-                    : undefined
-                "
+                :class="{ 'add-on-card--active': card.status === 'active' }"
               >
                 <div class="add-on-card__top">
                   <div
@@ -403,9 +417,8 @@
                   </div>
 
                   <!--
-                    "Active" status takes precedence over marketing tags
-                    because it answers the buyer's first question:
-                    "do I already have this?"
+                    "In your plan" pill — only chrome that sits in the
+                    top-right slot now that marketing tags were retired.
                   -->
                   <span
                     v-if="card.status === 'active'"
@@ -413,40 +426,6 @@
                   >
                     <i class="fas fa-check" aria-hidden="true" />
                     In your plan
-                  </span>
-
-                  <!--
-                    Tags with hints render as focusable buttons with a
-                    proper tooltip (role="tooltip" + aria-describedby).
-                    Mouse hover and keyboard focus both reveal the hint.
-                  -->
-                  <button
-                    v-else-if="card.tag && card.tag.hint"
-                    type="button"
-                    class="add-on-card__tag add-on-card__tag--button"
-                    :class="`add-on-card__tag--${card.tag.type}`"
-                    :aria-describedby="`tag-hint-${card.id}`"
-                  >
-                    {{ card.tag.label }}
-                    <i
-                      class="fas fa-info-circle add-on-card__tag-hint"
-                      aria-hidden="true"
-                    />
-                    <span
-                      :id="`tag-hint-${card.id}`"
-                      role="tooltip"
-                      class="add-on-card__tag-tooltip"
-                    >
-                      {{ card.tag.hint }}
-                    </span>
-                  </button>
-
-                  <span
-                    v-else-if="card.tag"
-                    class="add-on-card__tag"
-                    :class="`add-on-card__tag--${card.tag.type}`"
-                  >
-                    {{ card.tag.label }}
                   </span>
                 </div>
 
@@ -474,6 +453,19 @@
                   >
                     One-time
                   </span>
+                  <!--
+                    Annual-plan savings pill, verbatim from Figma (Group
+                    2131 on node 216:1218 and equivalents). Sits inline
+                    on the right of the price row — same convention as
+                    the One-time cadence pill so the card price line
+                    reads consistently across all cards.
+                  -->
+                  <span
+                    v-if="card.annualPlan"
+                    class="add-on-card__annual-pill"
+                  >
+                    {{ card.annualPlan }}
+                  </span>
                 </div>
 
                 <ul class="add-on-card__benefits">
@@ -498,19 +490,26 @@
                   </li>
                 </ul>
 
-                <a
-                  :href="card.learnMoreUrl"
-                  class="add-on-card__learn-more"
-                >
-                  Learn more
-                  <i class="fas fa-arrow-right" aria-hidden="true" />
-                </a>
+                <!--
+                  "Learn more" link intentionally not rendered.
+                  Per design review (May 25): the CTA already invites
+                  the buyer to take the next step; an inline tertiary
+                  link competed with the primary CTA for attention and
+                  diluted the click target. `learnMoreUrl` is still on
+                  the data model so docs can be linked from a tooltip,
+                  modal, or future "Compare add-ons" surface without a
+                  data migration.
+                -->
 
                 <!--
                   CTA hierarchy:
-                    - active   = disabled "In plan" surface (manage)
-                    - primary  = filled dark, only on featured cards
-                    - default  = secondary (outlined). Most cards.
+                    - active   = "Manage" — secondary outlined; active
+                                 chrome is already carried by the card
+                                 surface (green stripe + tint + pill)
+                    - default  = secondary (outlined). Every other card.
+                  All CTAs share one visual treatment now that marketing
+                  tags (and therefore the "featured/primary" CTA variant)
+                  have been retired.
                 -->
                 <button
                   v-if="card.status === 'active'"
@@ -528,10 +527,6 @@
                   v-else
                   type="button"
                   class="add-on-card__cta"
-                  :class="{
-                    'add-on-card__cta--primary':
-                      card.tag?.type === 'highlight',
-                  }"
                   @click="handleCta(card)"
                 >
                   <span class="add-on-card__cta-label">{{ card.cta }}</span>
@@ -553,8 +548,8 @@
                 </p>
               </article>
             </div>
-          </HLTabPane>
-        </HLTabs>
+          </section>
+        </div>
 
         <!--
           Flex spacer: pushes the closing band to the bottom of the
@@ -605,11 +600,13 @@
    *
    * Token map (for human readers):
    *   gray-50…900   → page surface, borders, body text, headings
-   *   primary-600   → primary CTAs, "Learn more" links
+   *   primary-50…600 → branding icon tile + focus rings
    *   blue-800      → primary CTA hover (HR convention: dark hover)
-   *   success-50…700 → "In your plan" state, BAA tag, check marks
-   *   warning-50…800 → featured card stripe + tint, popularity tags
-   *   orange-50…700  → expert services icon tile gradient
+   *   success-50…700 → "In your plan" state, benefit check marks,
+   *                     active-card stripe + tint, annual-plan pill bg
+   *   warning-200…700 → "One-time" cadence pill
+   *   orange-50…700   → setup & support icon tile gradient
+   *   violet-50…700   → certified admin icon tile gradient
    *
    * Box-shadow rgba() values stay literal — HR doesn't expose RGB
    * channels for shadow tinting; this is the standard pattern.
@@ -635,24 +632,6 @@
     flex-direction: column;
     min-height: calc(100vh - 84px);
     padding: 32px 16px 48px;
-  }
-
-  /*
-   * Visually-hidden utility — content is invisible to sighted users
-   * but still announced by screen readers. Used for the per-tab H2
-   * headings to maintain document outline without changing visuals.
-   * Pattern: WebAIM standard.
-   */
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
   }
 
   /* ── Header ───────────────────────────────────────────────────────── */
@@ -681,18 +660,46 @@
     line-height: 1.5;
   }
 
-  /* ── Tabs ─────────────────────────────────────────────────────────── */
-  .add-ons-tabs { margin-top: 8px; }
+  /* ── Sections (stacked, no tabs) ──────────────────────────────────── */
+  /*
+   * Gap between category sections. ~40px is the Stripe / Linear
+   * pricing convention for "distinct group, same page" — large
+   * enough to read as a section break, small enough not to feel
+   * like a new page. Header → blurb → cards inside one section
+   * stay tight (8 / 16px) so the section reads as a unit.
+   */
+  .add-ons-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin-top: 8px;
+  }
+
+  .add-ons-section__header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+    max-width: 800px;
+  }
 
   /*
-   * Within the tabs group: tabs → blurb → cards are all the same
-   * "thing" the user is browsing for the selected category. They
-   * should sit tight together (HubSpot ~12-16px, Google Material
-   * ~16px). Looser gaps would visually orphan the blurb from both.
+   * Section title — slightly smaller and lighter than the H1 so
+   * the page header still anchors. 18px / 600 is the HighRise
+   * "section heading" size; matches Account → Sales Resources
+   * and Settings → Integrations.
    */
+  .add-ons-section__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+
   .add-ons-section__blurb {
-    margin: 16px 0 16px;
-    max-width: 800px;
+    margin: 0;
     font-size: 14px;
     color: var(--gray-600);
     line-height: 1.5;
@@ -705,21 +712,45 @@
   }
   .add-ons-grid--three     { grid-template-columns: repeat(1, 1fr); }
   .add-ons-grid--two       { grid-template-columns: repeat(1, 1fr); }
-  .add-ons-grid--spotlight { grid-template-columns: 1fr; max-width: 720px; }
+  /*
+   * Spotlight = single-card category (Medical Compliance and
+   * Certified Admin both use this layout). Previously stretched to
+   * 720px which was ~2× a normal card and broke the scan rhythm of
+   * the grids above. Now the card renders at the SAME width as one
+   * card from the multi-card row above, left-anchored. Width-by-
+   * breakpoint matches the math of the three-grid (50% at md, ~33%
+   * at lg) so the spotlight card reads as "one card from the same
+   * family", not "the lonely big card".
+   */
+  .add-ons-grid--spotlight { grid-template-columns: 1fr; }
+  .add-ons-grid--spotlight > .add-on-card { justify-self: start; width: 100%; }
 
   @media (min-width: 768px) {
     .add-ons-grid--two   { grid-template-columns: repeat(2, 1fr); }
     .add-ons-grid--three { grid-template-columns: repeat(2, 1fr); }
+    .add-ons-grid--spotlight > .add-on-card { width: calc(50% - 8px); }
   }
   @media (min-width: 1100px) {
     .add-ons-grid--three { grid-template-columns: repeat(3, 1fr); }
+    /*
+     * --two at lg+ reuses the SAME 3-column track as --three so its
+     * cards render at one grid-card width (~33% of the row, not 50%).
+     * Two cards naturally occupy columns 1+2 with column 3 left empty,
+     * matching the same "card from the same family" treatment as the
+     * spotlight layout below. Without this, Setup & Support cards
+     * visually swelled compared to the 3-up rows above and broke
+     * the page's scan rhythm.
+     */
+    .add-ons-grid--two       { grid-template-columns: repeat(3, 1fr); }
+    .add-ons-grid--spotlight > .add-on-card { width: calc((100% - 32px) / 3); }
   }
 
   /* ── Card ─────────────────────────────────────────────────────────── */
   /*
-   * overflow: hidden clips the featured-card accent stripe to the
-   * border-radius cleanly. box-shadow + translateY for hover are
-   * unaffected (shadows render outside the box and ignore overflow).
+   * overflow: hidden clips the active-card accent stripe (top edge,
+   * 3px gradient on --add-on-card--active) to the rounded corners
+   * cleanly. box-shadow + translateY for hover are unaffected —
+   * shadows render outside the box and ignore overflow.
    */
   .add-on-card {
     position: relative;
@@ -731,45 +762,14 @@
     overflow: hidden;
     padding: 24px;
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
-    transition: box-shadow 0.2s ease, transform 0.2s ease,
-      border-color 0.2s ease;
+    transition: box-shadow 0.15s ease, transform 0.15s ease,
+      border-color 0.15s ease;
   }
   .add-on-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px -8px rgba(16, 24, 40, 0.1),
       0 4px 8px -4px rgba(16, 24, 40, 0.04);
     border-color: var(--gray-300);
-  }
-
-  /*
-   * Featured cards (Most popular / Hands-on) get a barely-there warm
-   * tint so the eye lands on them naturally — visual reinforcement of
-   * the textual "highlight" tag, not a replacement for it. Subtle
-   * accent line at the top edge adds a polished detail without
-   * shouting. (Linear / Notion feature-card pattern.)
-   */
-  .add-on-card--featured {
-    background:
-      linear-gradient(180deg, var(--warning-50) 0%, #ffffff 120px),
-      #ffffff;
-    border-color: var(--warning-200);
-  }
-  /*
-   * Accent stripe sits flush at the top of the card. The card's
-   * overflow: hidden + border-radius clips it cleanly to the rounded
-   * corners — no manual border-radius needed on the stripe itself.
-   */
-  .add-on-card--featured::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--warning-500) 0%, var(--warning-400) 100%);
-  }
-  .add-on-card--featured:hover {
-    border-color: var(--warning-400);
   }
 
   /*
@@ -851,101 +851,16 @@
     background: linear-gradient(135deg, var(--success-50) 0%, var(--success-200) 100%);
     color: var(--success-700);
   }
-
   /*
-   * Tag colors are intentionally NOT category-aligned. The icon owns
-   * the category color; the tag is a meta-signal (popularity, freshness,
-   * trust). Using a separate palette stops the tag and icon from
-   * fighting for the same eye (Gestalt — figure/ground).
+   * Certified Admin tile — violet ramp. Distinct from the other three
+   * iconKinds (primary blue / orange / success green) and reads as
+   * "credential / prestige" rather than "training" (which orange would
+   * have implied). Added May 25 when Cert Admin was promoted to its
+   * own section.
    */
-  .add-on-card__tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    height: 22px;
-    padding: 0 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-  }
-  /* Neutral warm — popularity/recommended, doesn't fight category color */
-  .add-on-card__tag--highlight {
-    background: var(--warning-100);
-    color: var(--warning-800);
-  }
-  /* Green — newness/recency */
-  .add-on-card__tag--fresh {
-    background: var(--success-50);
-    color: var(--success-700);
-  }
-  /* Green w/ outline — trust/inclusion ("BAA included") */
-  .add-on-card__tag--success {
-    background: var(--success-50);
-    color: var(--success-700);
-    border: 1px solid var(--success-200);
-  }
-  .add-on-card__tag-hint { font-size: 10px; opacity: 0.7; }
-
-  /*
-   * Tags with hints render as <button> for keyboard focusability.
-   * Reset the default button chrome so it looks identical to a span tag.
-   */
-  .add-on-card__tag--button {
-    appearance: none;
-    cursor: help;
-    position: relative;
-    font-family: inherit;
-  }
-  .add-on-card__tag--button:focus-visible {
-    outline: 2px solid var(--primary-600);
-    outline-offset: 2px;
-  }
-
-  /*
-   * Accessible tooltip — hidden by default, shown on hover or
-   * keyboard focus. role="tooltip" + aria-describedby on the
-   * trigger button means screen readers announce it on focus.
-   * Mouse + keyboard users both reach it.
-   */
-  .add-on-card__tag-tooltip {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    z-index: 10;
-    width: 240px;
-    padding: 10px 12px;
-    background: var(--gray-900);
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 1.4;
-    letter-spacing: 0;
-    text-transform: none;
-    border-radius: 8px;
-    box-shadow: 0 8px 16px -4px rgba(16, 24, 40, 0.16);
-    white-space: normal;
-    opacity: 0;
-    transform: translateY(-4px);
-    pointer-events: none;
-    transition: opacity 0.15s ease, transform 0.15s ease;
-  }
-  .add-on-card__tag-tooltip::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    right: 12px;
-    width: 10px;
-    height: 10px;
-    background: var(--gray-900);
-    transform: rotate(45deg);
-    border-radius: 2px;
-  }
-  .add-on-card__tag--button:hover .add-on-card__tag-tooltip,
-  .add-on-card__tag--button:focus-visible .add-on-card__tag-tooltip {
-    opacity: 1;
-    transform: translateY(0);
+  .add-on-card__icon--certification {
+    background: linear-gradient(135deg, var(--violet-50) 0%, var(--violet-200) 100%);
+    color: var(--violet-700);
   }
 
   .add-on-card__title {
@@ -965,7 +880,7 @@
 
   .add-on-card__price {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     flex-wrap: wrap;
     gap: 6px;
     margin: 0 0 16px;
@@ -998,6 +913,32 @@
     letter-spacing: 0.01em;
   }
 
+  /*
+   * Annual-plan pill — Figma uses a bright pure green (#37D334) with
+   * black text. We map to a token-driven darker green (--success-700)
+   * so 11px/600 WHITE text passes WCAG 2.1 AA contrast (≈ 5.5:1).
+   * White on the lighter --success-500 (#12b76a) only hit ~2.5:1 and
+   * would have failed AA — corrected May 25.
+   *
+   * Positioning: lives inside .add-on-card__price (flex row) and
+   * uses margin-left: auto to push to the far right — same trick
+   * the One-time cadence pill uses. Cards never carry both pills
+   * (One-time products don't have annual plans), so they don't
+   * fight for the right slot.
+   */
+  .add-on-card__annual-pill {
+    margin-left: auto;
+    padding: 3px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #ffffff;
+    background: var(--success-700);
+    border-radius: 999px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
   .add-on-card__benefits {
     list-style: none;
     padding: 0;
@@ -1013,34 +954,6 @@
     text-underline-offset: 2px;
   }
 
-  /*
-   * Tertiary "Learn more" — text-only with arrow nudge on hover.
-   * Sits between benefits and the CTA so buyers who want depth can
-   * read the docs without leaving the page through the primary CTA.
-   */
-  .add-on-card__learn-more {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--primary-600);
-    text-decoration: none;
-    align-self: flex-start;
-    transition: color 0.15s ease;
-  }
-  .add-on-card__learn-more i {
-    font-size: 10px;
-    transition: transform 0.15s ease;
-  }
-  .add-on-card__learn-more:hover { color: var(--blue-800); }
-  .add-on-card__learn-more:hover i { transform: translateX(2px); }
-  .add-on-card__learn-more:focus-visible {
-    outline: 2px solid var(--primary-600);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
   .add-on-card__benefit {
     display: flex;
     align-items: flex-start;
@@ -1049,8 +962,15 @@
     color: var(--gray-700);
     line-height: 1.4;
   }
+  /*
+   * Checkmark color: --success-600 (#039855) instead of --success-500
+   * (#12b76a). The 600 step pops slightly more against pure white at
+   * 11px without changing the semantic — still green, still part of
+   * the success ramp. Small letterform / icon at this size benefits
+   * from the extra density.
+   */
   .add-on-card__check {
-    color: var(--success-500);
+    color: var(--success-600);
     font-size: 11px;
     margin-top: 4px;
     flex-shrink: 0;
@@ -1084,8 +1004,8 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease,
-      transform 0.05s ease;
+    transition: background 0.15s ease, border-color 0.15s ease,
+      transform 0.1s ease;
   }
   .add-on-card__cta:hover {
     background: var(--gray-50);
@@ -1095,23 +1015,6 @@
   .add-on-card__cta:focus-visible {
     outline: 2px solid var(--primary-600);
     outline-offset: 2px;
-  }
-
-  /*
-   * Primary CTA uses HighRise's --primary-600 — the brand blue.
-   * Black/navy isn't a brand color in spm-ts; the production
-   * .btn-primary class uses HighLevel blue too. This also matches
-   * the "Learn more" link color, so primary action + navigation
-   * share one brand voice.
-   */
-  .add-on-card__cta--primary {
-    background: var(--primary-600);
-    border-color: var(--primary-600);
-    color: #ffffff;
-  }
-  .add-on-card__cta--primary:hover {
-    background: var(--blue-800);
-    border-color: var(--blue-800);
   }
 
   /*
@@ -1128,7 +1031,7 @@
     font-size: 11px;
     opacity: 0;
     transform: translateX(-4px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.15s ease, transform 0.15s ease;
   }
   .add-on-card__cta:hover .add-on-card__cta-arrow,
   .add-on-card__cta:focus-visible .add-on-card__cta-arrow {
@@ -1214,12 +1117,12 @@
     line-height: 1.5;
   }
   /*
-   * Quiet, outlined CTA — matches the secondary card CTA pattern.
-   * The band is a tertiary affordance, so its action should be the
-   * least loud thing on the page, not the loudest. Hierarchy is:
-   *   primary filled  → featured card CTAs
-   *   secondary outlined → default card CTAs + this band CTA
-   *   tertiary text  → "Compare add-ons" header link
+   * Quiet, outlined CTA — matches the card CTA pattern. The band is
+   * a tertiary affordance, so its action should be quiet, not loud.
+   * Hierarchy on the page is intentionally flat now that marketing
+   * tags were retired: every CTA shares one outlined treatment so no
+   * card visually outranks another. Active cards swap "Buy now" for
+   * "Manage" but keep the same chrome.
    */
   .add-ons-footer-band__cta {
     display: inline-flex;
@@ -1242,6 +1145,16 @@
     background: var(--gray-50);
     border-color: var(--gray-400);
     color: var(--gray-900);
+  }
+  /*
+   * Keyboard focus ring — matches the card CTA pattern so the page
+   * has one consistent focus treatment across all interactive
+   * elements. Without this, the `<a>` only got the browser default
+   * outline which was barely visible against the dashed border.
+   */
+  .add-ons-footer-band__cta:focus-visible {
+    outline: 2px solid var(--primary-600);
+    outline-offset: 2px;
   }
   .add-ons-footer-band__cta i {
     font-size: 11px;
