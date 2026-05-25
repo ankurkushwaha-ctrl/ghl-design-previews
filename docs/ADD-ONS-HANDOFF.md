@@ -8,11 +8,12 @@
 ## What this is
 
 A production-ready agency **Add-Ons** page that replaces the legacy
-`MarketplaceFrame.vue` iframe with a native Vue surface. Three category
-sections — Custom Branding, Setup & Support, Medical Compliance —
-render inline on one scrollable page (seven cards total). Cards
-already in the agency's plan render in an "active" state with a
-green stripe and **Manage** CTA.
+`MarketplaceFrame.vue` iframe with a native Vue surface. Four category
+sections — Custom Branding, Setup & Support, Medical Compliance,
+Certified Admin — render inline on one scrollable page (seven cards
+total). Section titles + blurbs mirror the live GHL marketing preview
+(`Q3wpuESAo2QTQthwBZlZ`). Cards already in the agency's plan render
+in an "active" state with a green stripe and **Manage** CTA.
 
 > **Copy source-of-truth (May 25, per Marketing):** card titles,
 > taglines, benefits, CTAs, prices, and section titles/blurbs come
@@ -133,16 +134,20 @@ PR, but file a follow-up ticket.
 
       "sections": {
         "branding": {
-          "title": "White-label apps",
-          "blurb": "Put your brand on every client touchpoint — apps, automations, and portals."
+          "title": "Custom Branding",
+          "blurb": "Customize more than just the main app with your branding."
         },
         "experts": {
-          "title": "Expert services",
-          "blurb": "Bring HighLevel experts in to set you up, support your day-to-day, or train your team."
+          "title": "Setup & Support",
+          "blurb": "Streamline your setup and skip the line when support is needed."
         },
         "compliance": {
-          "title": "Compliance",
-          "blurb": "Open up regulated markets — close healthcare deals you'd lose today over compliance."
+          "title": "Medical Compliance",
+          "blurb": "Take your HighLevel skills to the next level."
+        },
+        "certification": {
+          "title": "Certified Admin",
+          "blurb": "Become certified and get hired to support other HighLevelers!"
         }
       },
 
@@ -314,9 +319,10 @@ Dev needs to complete these 5 tasks:
 | Marketing tags + featured-card variant removed     | PM direction (May 25): no card carries a "Most popular" / "Hands-on" / "BAA included" tag. The featured filled-primary CTA variant and the warm amber stripe were tied to tags, so all of that template + CSS was dead and has been removed. CTAs are now uniformly secondary outlined. |
 | `prefers-reduced-motion` disables card-lift + arrow-slide | Standard a11y motion guard                                                                                                                          |
 | Footer band stacks below 640px                     | CTA was getting squeezed off on narrow viewports                                                                                                            |
-| Stacked sections instead of tabs (May 25)          | PM feedback — hiding Premium support / HIPAA behind a tab click reduced visibility. Visible H2 + blurb per section keeps the three-category structure on one scrollable page. |
+| Stacked sections instead of tabs (May 25)          | PM feedback — hiding Premium support / HIPAA behind a tab click reduced visibility. Visible H2 + blurb per section keeps the four-category structure on one scrollable page. |
 | Each `<section>` carries an `id="{slug}"`          | Lets the upstream "Compare add-ons" top-right link deep-link to a category (`/agency/add-ons#compliance`) when that link is wired                          |
-| Section titles kept as prototype originals         | Card-level copy comes from the Figma "Marketplace In-App Redesign" file (May 25 marketing direction), but section titles use the original prototype labels (White-label apps / Expert services / Compliance) instead of Figma's Custom Branding / Setup & Support / Medical Compliance. The originals organize the page better at-a-glance. |
+| Section titles + blurbs match the live marketing preview | Final May 25 sync: section titles (Custom Branding / Setup & Support / Medical Compliance / Certified Admin) and one-line blurbs pulled verbatim from the live GHL preview at `https://app.gohighlevel.com/v2/preview/Q3wpuESAo2QTQthwBZlZ?notrack=true`. Treat that URL as the canonical source if PMM revises copy. |
+| Certified Admin promoted to its own section        | Was nested under Expert Services (now Setup & Support) in earlier passes. Live marketing preview surfaces it as a peer category alongside Compliance, so it now renders as its own 4th section using the same single-card `spotlight` layout as Medical Compliance. |
 | "Learn more" link removed from cards               | Competed with the CTA for attention. `learnMoreUrl` is still on the data model so docs can be linked from a tooltip / modal / future Compare surface without a data migration. |
 | Annual-plan savings pill on `premium-support` + `certified-admin` | Figma (`216:1218` group 2130/2131 + the "🟢Marketplace Landing" canonical version) renders a fully-rounded green pill on cards that offer an annual discount. New optional `annualPlan?: string` on the `Card` type, verbatim Figma strings ("Annual Plan: $5000 (Save 16%)" and "Annual Plan: $970 (Save 16%)"). Background uses `--success-700` (#027a48) so 11px/600 white text passes WCAG 2.1 AA (≈ 5.5:1). The earlier `--success-500` background only hit ~2.5:1 and failed AA — corrected in the May 25 polish pass. No other cards in the file carry this pill. |
 

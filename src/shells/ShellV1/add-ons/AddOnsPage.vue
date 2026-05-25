@@ -8,11 +8,13 @@
     1. The shell chrome (<SideBarV2>, <TopBar>, <KickoffWidget>) is
        stripped — the parent <ShellV1> wraps this page externally,
        same pattern as src/pages/SubAccountsPage.vue → Locations.vue.
-    2. Tabs removed per PM feedback (May 25): all three categories
+    2. Tabs removed per PM feedback (May 25): all four categories
        now render inline as stacked sections on a single scrollable
        page so Premium support and HIPAA are visible without a click.
        When porting upstream, drop HLTabs/HLTabPane and render one
        <section> per category with its title + blurb visible.
+       Section titles + blurbs mirror the live GHL marketing preview
+       (Q3wpuESAo2QTQthwBZlZ) — keep them in sync with PMM.
     3. The outer `<section class="hl_wrapper">`'s `:class` binding
        on `$store.state.notification.showNotification` is dropped
        because no Vuex store exists in the preview repo. That binding
@@ -65,7 +67,7 @@
   type Section = {
     // Stable slug — also used as the section's DOM id so the
     // footer "Compare add-ons" deep link can scroll to it.
-    id: 'branding' | 'experts' | 'compliance'
+    id: 'branding' | 'experts' | 'compliance' | 'certification'
     title: string
     blurb: string
     layout: 'three' | 'two' | 'spotlight'
@@ -85,13 +87,12 @@
   const sections: Section[] = [
     {
       id: 'branding',
-      title: 'White-label apps',
+      title: 'Custom Branding',
       // WHY for the whole category — one-liner, fits 800px at 14px.
-      // Section titles kept as the prototype originals (not Figma's
-      // "Custom Branding") because the user-facing category labels
-      // organize the page better at-a-glance.
+      // Section title + blurb pulled from the live GHL marketing
+      // preview (Q3wpuESAo2QTQthwBZlZ), May 25.
       blurb:
-        'Put your brand on every client touchpoint — apps, automations, and portals.',
+        'Customize more than just the main app with your branding.',
       layout: 'three',
       cards: [
         {
@@ -159,10 +160,15 @@
     },
     {
       id: 'experts',
-      title: 'Expert services',
+      title: 'Setup & Support',
+      // Section title + blurb pulled from the live GHL marketing
+      // preview (Q3wpuESAo2QTQthwBZlZ), May 25.
       blurb:
-        'Bring HighLevel experts in to set you up, support your day-to-day, or train your team.',
-      layout: 'three',
+        'Streamline your setup and skip the line when support is needed.',
+      // 'two' renders 1-col mobile → 2-col md+ — Advanced Setup and
+      // Premium Support now sit on their own row together; Certified
+      // Admin moved to its own section below (per live preview).
+      layout: 'two',
       cards: [
         {
           id: 'advanced-setup',
@@ -210,35 +216,16 @@
           learnMoreUrl: '/docs/add-ons/premium-support',
           annualPlan: 'Annual Plan: $5000 (Save 16%)',
         },
-        {
-          id: 'certified-admin',
-          icon: 'award',
-          iconKind: 'experts',
-          title: 'Certified Admin Program',
-          tagline:
-            'Get certified at your own pace with flexible monthly. Perfect for learning core HighLevel skills.',
-          priceAmount: '$97',
-          pricePeriod: '/mo',
-          cadence: 'Subscription',
-          benefits: [
-            'Get paid to support other HighLevelers',
-            'Validate your expertise with an official certification',
-            'Stand out as a trusted, certified professional',
-            'Earn additional skills badges to stand out',
-            'Unlock career growth through with GHL credentials',
-          ],
-          cta: 'Buy Now',
-          status: 'available',
-          learnMoreUrl: '/docs/add-ons/certification',
-          annualPlan: 'Annual Plan: $970 (Save 16%)',
-        },
       ],
     },
     {
       id: 'compliance',
-      title: 'Compliance',
+      title: 'Medical Compliance',
+      // Section title + blurb pulled from the live GHL marketing
+      // preview (Q3wpuESAo2QTQthwBZlZ), May 25. The blurb reads
+      // generic on purpose — that's the upstream copy. Owner: PMM.
       blurb:
-        'Open up regulated markets — close healthcare deals you\'d lose today over compliance.',
+        'Take your HighLevel skills to the next level.',
       layout: 'spotlight',
       cards: [
         {
@@ -265,6 +252,40 @@
           // bundles all sub-accounts on the agency plan, so this
           // finepoint clarifies what the $497/mo actually covers.
           finepoint: 'Price covers all sub-accounts',
+        },
+      ],
+    },
+    {
+      // Promoted to its own section May 25 to match the live GHL
+      // marketing preview (Q3wpuESAo2QTQthwBZlZ), which surfaces
+      // Certified Admin as a peer category, not an Expert Service.
+      id: 'certification',
+      title: 'Certified Admin',
+      blurb:
+        'Become certified and get hired to support other HighLevelers!',
+      layout: 'spotlight',
+      cards: [
+        {
+          id: 'certified-admin',
+          icon: 'award',
+          iconKind: 'experts',
+          title: 'Certified Admin Program',
+          tagline:
+            'Get certified at your own pace with flexible monthly. Perfect for learning core HighLevel skills.',
+          priceAmount: '$97',
+          pricePeriod: '/mo',
+          cadence: 'Subscription',
+          benefits: [
+            'Get paid to support other HighLevelers',
+            'Validate your expertise with an official certification',
+            'Stand out as a trusted, certified professional',
+            'Earn additional skills badges to stand out',
+            'Unlock career growth through with GHL credentials',
+          ],
+          cta: 'Buy Now',
+          status: 'available',
+          learnMoreUrl: '/docs/add-ons/certification',
+          annualPlan: 'Annual Plan: $970 (Save 16%)',
         },
       ],
     },
@@ -352,7 +373,7 @@
           support and HIPAA behind a click reduced their visibility.
           Categories now render as stacked sections on one scroll —
           each with a visible H2 title + blurb so the page still
-          reads as three deliberate groupings, not one flat list.
+          reads as four deliberate groupings, not one flat list.
         -->
         <div class="add-ons-sections">
           <section
@@ -677,13 +698,14 @@
   .add-ons-grid--three     { grid-template-columns: repeat(1, 1fr); }
   .add-ons-grid--two       { grid-template-columns: repeat(1, 1fr); }
   /*
-   * Spotlight = single-card category (currently just Compliance).
-   * Previously stretched to 720px which was ~2× a normal card and
-   * broke the scan rhythm of the grids above. Now the card renders
-   * at the SAME width as one card from the multi-card row above,
-   * centered horizontally. Width-by-breakpoint matches the math of
-   * the three-grid (50% at md, ~33% at lg) so HIPAA reads as "one
-   * card from the same family", not "the lonely big card".
+   * Spotlight = single-card category (Medical Compliance and
+   * Certified Admin both use this layout). Previously stretched to
+   * 720px which was ~2× a normal card and broke the scan rhythm of
+   * the grids above. Now the card renders at the SAME width as one
+   * card from the multi-card row above, left-anchored. Width-by-
+   * breakpoint matches the math of the three-grid (50% at md, ~33%
+   * at lg) so the spotlight card reads as "one card from the same
+   * family", not "the lonely big card".
    */
   .add-ons-grid--spotlight { grid-template-columns: 1fr; }
   .add-ons-grid--spotlight > .add-on-card { justify-self: start; width: 100%; }
