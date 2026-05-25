@@ -717,6 +717,16 @@
   }
   @media (min-width: 1100px) {
     .add-ons-grid--three { grid-template-columns: repeat(3, 1fr); }
+    /*
+     * --two at lg+ reuses the SAME 3-column track as --three so its
+     * cards render at one grid-card width (~33% of the row, not 50%).
+     * Two cards naturally occupy columns 1+2 with column 3 left empty,
+     * matching the same "card from the same family" treatment as the
+     * spotlight layout below. Without this, Setup & Support cards
+     * visually swelled compared to the 3-up rows above and broke
+     * the page's scan rhythm.
+     */
+    .add-ons-grid--two       { grid-template-columns: repeat(3, 1fr); }
     .add-ons-grid--spotlight > .add-on-card { width: calc((100% - 32px) / 3); }
   }
 
