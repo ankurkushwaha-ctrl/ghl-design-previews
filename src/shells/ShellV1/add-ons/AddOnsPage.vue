@@ -618,9 +618,15 @@
    *   .container-fluid    → 15px left/right gutter (Bootstrap)
    *   .add-ons-content    → adds top + sides + bottom (fills the tight
    *                         Bootstrap gutter on modern viewports)
-   * Net: ~57px top, ~31px sides. Top is intentionally heavier than
+   * Net: ~89px top, ~31px sides. Top is intentionally heavier than
    * sides because the topbar above visually competes for that space —
    * the page header needs to breathe past it.
+   *
+   * Topbar (fixed, 52px) leaves zero gap once content scrolls — we add
+   * 64px instead of 32px so the page H1 always has a confident visual
+   * separation from the chip cluster, and the scroll-under transition
+   * reads as "content disappearing behind topbar" rather than
+   * "content clipped at boundary".
    *
    * The page is a flex column with min-height pinned to the viewport
    * so the footer band can push to the bottom (margin-top: auto)
@@ -631,7 +637,7 @@
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 84px);
-    padding: 32px 16px 48px;
+    padding: 64px 16px 48px;
   }
 
   /* ── Header ───────────────────────────────────────────────────────── */

@@ -362,10 +362,16 @@ export default defineComponent({
  * wide on the left. In ShellV1 the header is a normal block flowing to the
  * right of the sidebar (which is itself sticky), so we override those rules
  * with !important to force a clean 100%-of-parent block.
+ *
+ * We also pin a 1px gray-200 bottom border + slightly stronger shadow so
+ * the boundary stays visible at retina densities — without it, content
+ * scrolling under the topbar reads as "clipped" instead of "covered"
+ * because the original 8%-opacity shadow disappears at high DPR.
  */
 .hl_header {
   background: #ffffff;
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  border-bottom: 1px solid var(--gray-200, #e5e7eb);
+  box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
   position: relative !important;
   top: 0 !important;
   left: 0 !important;
