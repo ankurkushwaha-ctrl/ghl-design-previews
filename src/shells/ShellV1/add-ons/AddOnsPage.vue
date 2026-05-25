@@ -60,6 +60,10 @@
     cta: string
     status: Status
     learnMoreUrl: string
+    // Verbatim Figma pill string for cards that offer an annual-plan
+    // discount. e.g. "Annual Plan: $970 (Save 16%)". Renders as a
+    // small green pill below the price. Omit when Figma has no pill.
+    annualPlan?: string
     // Per-card fine print under the CTA. Defaults to "Cancel anytime
     // · No setup fees" when omitted. Override on cards where that
     // claim isn't true (e.g. HIPAA is permanent — see card data).
@@ -214,6 +218,7 @@
           // see the default purchase chrome.
           status: 'active',
           learnMoreUrl: '/docs/add-ons/premium-support',
+          annualPlan: 'Annual Plan: $5000 (Save 16%)',
         },
         {
           id: 'certified-admin',
@@ -235,6 +240,7 @@
           cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/certification',
+          annualPlan: 'Annual Plan: $970 (Save 16%)',
         },
       ],
     },
@@ -470,6 +476,18 @@
                     One-time
                   </span>
                 </div>
+
+                <!--
+                  Annual-plan savings pill, verbatim from Figma (Group
+                  2131 on node 216:1218 and equivalents). Only rendered
+                  for cards Figma explicitly tags with an annual price.
+                -->
+                <p
+                  v-if="card.annualPlan"
+                  class="add-on-card__annual-pill"
+                >
+                  {{ card.annualPlan }}
+                </p>
 
                 <ul class="add-on-card__benefits">
                   <li
@@ -1003,6 +1021,28 @@
     background: var(--orange-50);
     color: var(--warning-700);
     border: 1px solid var(--warning-200);
+    letter-spacing: 0.01em;
+  }
+
+  /*
+   * Annual-plan pill — Figma uses a bright pure green (#37D334) with
+   * black text on a fully rounded pill. Closest semantic token in this
+   * file is --success-500 (#12b76a): same family the green stripe and
+   * benefit checks already use. White text per the latest Figma comp,
+   * which inverts the older flattened version's black text for AA
+   * contrast on the saturated green.
+   */
+  .add-on-card__annual-pill {
+    display: inline-block;
+    align-self: flex-start;
+    margin: -8px 0 16px;
+    padding: 3px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #ffffff;
+    background: var(--success-500);
+    border-radius: 999px;
     letter-spacing: 0.01em;
   }
 
