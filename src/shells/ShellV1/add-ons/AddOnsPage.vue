@@ -475,19 +475,20 @@
                   >
                     One-time
                   </span>
+                  <!--
+                    Annual-plan savings pill, verbatim from Figma (Group
+                    2131 on node 216:1218 and equivalents). Sits inline
+                    on the right of the price row — same convention as
+                    the One-time cadence pill so the card price line
+                    reads consistently across all cards.
+                  -->
+                  <span
+                    v-if="card.annualPlan"
+                    class="add-on-card__annual-pill"
+                  >
+                    {{ card.annualPlan }}
+                  </span>
                 </div>
-
-                <!--
-                  Annual-plan savings pill, verbatim from Figma (Group
-                  2131 on node 216:1218 and equivalents). Only rendered
-                  for cards Figma explicitly tags with an annual price.
-                -->
-                <p
-                  v-if="card.annualPlan"
-                  class="add-on-card__annual-pill"
-                >
-                  {{ card.annualPlan }}
-                </p>
 
                 <ul class="add-on-card__benefits">
                   <li
@@ -1028,14 +1029,17 @@
    * Annual-plan pill — Figma uses a bright pure green (#37D334) with
    * black text on a fully rounded pill. Closest semantic token in this
    * file is --success-500 (#12b76a): same family the green stripe and
-   * benefit checks already use. White text per the latest Figma comp,
-   * which inverts the older flattened version's black text for AA
-   * contrast on the saturated green.
+   * benefit checks already use. White text per the latest Figma comp
+   * for AA contrast on the saturated green.
+   *
+   * Positioning: lives inside .add-on-card__price (flex row) and
+   * uses margin-left: auto to push to the far right — same trick
+   * the One-time cadence pill uses. Cards never carry both pills
+   * (One-time products don't have annual plans), so they don't
+   * fight for the right slot.
    */
   .add-on-card__annual-pill {
-    display: inline-block;
-    align-self: flex-start;
-    margin: -8px 0 16px;
+    margin-left: auto;
     padding: 3px 12px;
     font-size: 11px;
     font-weight: 600;
@@ -1044,6 +1048,7 @@
     background: var(--success-500);
     border-radius: 999px;
     letter-spacing: 0.01em;
+    white-space: nowrap;
   }
 
   .add-on-card__benefits {
