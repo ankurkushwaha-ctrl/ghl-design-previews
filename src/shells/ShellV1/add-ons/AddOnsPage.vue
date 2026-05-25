@@ -89,29 +89,30 @@
   const sections: Section[] = [
     {
       id: 'branding',
-      title: 'White-label apps',
+      title: 'Custom Branding',
       // WHY for the whole category — one-liner, fits 800px at 14px
       blurb:
-        'Put your brand on every client touchpoint — apps, automations, and portals.',
+        'Customize more than just the main app with your branding.',
       layout: 'three',
       cards: [
         {
           id: 'wl-mobile',
           icon: 'mobile-alt',
           iconKind: 'branding',
-          tag: { label: 'Most popular', type: 'highlight' },
-          title: 'White-label mobile app',
+          title: 'Whitelabel Mobile App',
           tagline:
-            'Ship your own iOS and Android app — your brand on every screen, every notification, every login.',
-          priceAmount: '$297',
+            'Customize the HighLevel mobile app with your brand for the Apple & Android app stores!',
+          priceAmount: '$497',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            'Publish under your name on App Store and Play',
-            'Your icon, splash, and brand colors every time',
-            'Push notifications from your domain — clients trust the source',
+            '5 one-hour consulting sessions with HighLevel experts',
+            'Dedicated HighLevel Agency Growth Advisor',
+            'Done-with-you CRM and dashboard setup',
+            'Live team teaching and software orientation',
+            'Personalized business process implementation',
           ],
-          cta: 'Add to plan',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/white-label-mobile',
         },
@@ -119,18 +120,20 @@
           id: 'wl-zapier',
           icon: 'bolt',
           iconKind: 'branding',
-          title: 'White-label Zapier',
+          title: 'White-Label Zapier App',
           tagline:
-            'Give clients 6,000+ integrations — embedded under your brand, inside the platform they already use.',
+            'Customize the LeadConnector Zapier app with your brand.',
           priceAmount: '$50',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            'Embed the Zap builder inside sub-accounts under your brand',
-            'Connect any tool clients ask for — no engineering needed',
-            'Roll-up analytics show which integrations clients use most',
+            '5 one-hour consulting sessions with HighLevel experts',
+            'Dedicated HighLevel Agency Growth Advisor',
+            'Done-with-you CRM and dashboard setup',
+            'Live team teaching and software orientation',
+            'Personalized business process implementation',
           ],
-          cta: 'Add to plan',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/white-label-zapier',
         },
@@ -138,18 +141,20 @@
           id: 'wl-portal',
           icon: 'th-large',
           iconKind: 'branding',
-          title: 'Client portal',
+          title: 'White-Label Client Portal App',
           tagline:
-            'One branded login for invoices, support, and learning — fully themed to your agency.',
+            'Customize the LeadConnector Zapier app with your brand.',
           priceAmount: '$50',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            'Single sign-on from your sub-account — no second password',
-            'Bring courses, communities, and conversations into one place',
-            'Theme everything to your brand without writing CSS',
+            '5 one-hour consulting sessions with HighLevel experts',
+            'Dedicated HighLevel Agency Growth Advisor',
+            'Done-with-you CRM and dashboard setup',
+            'Live team teaching and software orientation',
+            'Personalized business process implementation',
           ],
-          cta: 'Add to plan',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/client-portal',
         },
@@ -157,28 +162,29 @@
     },
     {
       id: 'experts',
-      title: 'Expert services',
+      title: 'Setup & Support',
       blurb:
-        'Bring HighLevel experts in to set you up, support your day-to-day, or train your team.',
+        'Streamline your setup and skip the line when support is needed.',
       layout: 'three',
       cards: [
         {
           id: 'advanced-setup',
           icon: 'tools',
           iconKind: 'experts',
-          tag: { label: 'Hands-on', type: 'highlight' },
-          title: 'Advanced setup',
+          title: 'Advanced Account Setup',
           tagline:
-            'A specialist configures your platform end-to-end. Start selling next week — not next quarter.',
+            'Get started with our affordable Starter plan, perfect for small businesses.',
           priceAmount: '$1,000',
           pricePeriod: '',
           cadence: 'One-time',
           benefits: [
-            'Discovery call that maps your business, clients, and offers',
-            'Specialist sets up pipelines, automations, and snapshots end-to-end',
-            'Two weeks of follow-up so first-week issues don’t derail you',
+            '5 one-hour consulting sessions with HighLevel experts',
+            'Dedicated HighLevel Agency Growth Advisor',
+            'Done-with-you CRM and dashboard setup',
+            'Live team teaching and software orientation',
+            'Personalized business process implementation',
           ],
-          cta: 'Talk to a specialist',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/advanced-setup',
         },
@@ -186,18 +192,20 @@
           id: 'premium-support',
           icon: 'headset',
           iconKind: 'experts',
-          title: 'Premium support',
+          title: 'Premium Support',
           tagline:
-            'When something breaks at 11pm, get a human in minutes — not a ticket tomorrow.',
+            'Scale your support with a dedicated rep, faster response times, and more peace of mind.',
           priceAmount: '$500',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            '24/7 priority queue across email, chat, and phone',
-            'A named engineer who knows your account on escalations',
-            'Quarterly health review to catch problems before clients do',
+            '5 one-hour consulting sessions with HighLevel experts',
+            'Dedicated HighLevel Agency Growth Advisor',
+            'Done-with-you CRM and dashboard setup',
+            'Live team teaching and software orientation',
+            'Personalized business process implementation',
           ],
-          cta: 'Add to plan',
+          cta: 'Buy Now',
           // Demo: this card is already in the agency's plan to show the
           // 'active' state. Remove this and set status: 'available' to
           // see the default purchase chrome.
@@ -208,21 +216,20 @@
           id: 'certified-admin',
           icon: 'award',
           iconKind: 'experts',
-          // Cohort date: real urgency requires real dates. Update on
-          // each cohort's lifecycle from product ops.
-          tag: { label: 'Starts March 15', type: 'fresh' },
-          title: 'HighLevel certification',
+          title: 'Certified Admin Program',
           tagline:
-            'Train your team to run HighLevel themselves — focus on growing the agency, not configuring it.',
+            'Get certified at your own pace with flexible monthly. Perfect for learning core HighLevel skills.',
           priceAmount: '$97',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            'Six weeks of live sessions with HighLevel architects, kicking off March 15',
-            'Hands-on labs that mirror real client setups',
-            'A verified credential each admin can list on LinkedIn',
+            '5 one-hour consulting sessions with HighLevel experts',
+            'Dedicated HighLevel Agency Growth Advisor',
+            'Done-with-you CRM and dashboard setup',
+            'Live team teaching and software orientation',
+            'Personalized business process implementation',
           ],
-          cta: 'Enroll your team',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/certification',
         },
@@ -230,46 +237,36 @@
     },
     {
       id: 'compliance',
-      title: 'Compliance',
+      title: 'Medical Compliance',
       blurb:
-        'Open up regulated markets — close healthcare deals you’d lose today over compliance.',
+        'Take your HighLevel skills to the next level.',
       layout: 'spotlight',
       cards: [
         {
           id: 'hipaa',
           icon: 'shield-alt',
           iconKind: 'compliance',
-          tag: {
-            label: 'BAA included',
-            type: 'success',
-            hint: 'A Business Associate Agreement is required for HIPAA-covered entities. We sign it for all sub-accounts on this plan.',
-          },
-          title: 'HIPAA compliance',
+          title: 'HIPAA Compliance',
           tagline:
-            'Pitch clinics, dentists, and therapists with confidence — close healthcare deals you’d lose today over the BAA question.',
-          priceAmount: '$297',
+            'Get certified at your own pace with flexible monthly. Perfect for learning core HighLevel skills.',
+          priceAmount: '$97',
           pricePeriod: '/mo',
           cadence: 'Subscription',
           benefits: [
-            'Signed BAA covering every sub-account on this plan',
-            // PHI defined inline first time it appears — avoids a tooltip
-            // for an acronym most healthcare buyers know but others don't.
-            {
-              html: 'Automatic Protected Health Information (<abbr title="Protected Health Information">PHI</abbr>) tagging and complete audit trails',
-            },
-            'Region-locked storage and dedicated processing for sensitive data',
-            'Quarterly compliance reports your clients hand to their auditors',
+            '5 one-hour consulting sessions with HighLevel experts',
+            'Dedicated HighLevel Agency Growth Advisor',
+            'Done-with-you CRM and dashboard setup',
+            'Live team teaching and software orientation',
+            'Personalized business process implementation',
           ],
-          // Self-serve flow per help article: Settings → Compliance →
-          // Buy package → Sign BAA in modal → HIPAA auto-activates
-          // agency-wide. CTA is a verb-led action, not a sales handoff.
-          cta: 'Activate HIPAA compliance',
+          cta: 'Buy Now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/hipaa',
           // Override the default fine print: HIPAA "cannot be cancelled,
           // refunded, removed, or downgraded once enabled" per the help
-          // article. The default "Cancel anytime" line would be a trust-
-          // breaker if a real buyer caught it.
+          // article. Figma is silent on this finepoint; the override is
+          // kept because the default "Cancel anytime" line would be a
+          // factual error, not invented marketing copy.
           finepoint: 'BAA included · Permanent once activated',
         },
       ],

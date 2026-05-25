@@ -9,10 +9,17 @@
 
 A production-ready agency **Add-Ons** page that replaces the legacy
 `MarketplaceFrame.vue` iframe with a native Vue surface. Three category
-sections — White-label apps, Expert services, Compliance — render
-inline on one scrollable page (seven cards total). Featured cards get
-a primary CTA + accent stripe; cards already in the agency's plan
-render in an "active" state with a green stripe and **Manage** CTA.
+sections — Custom Branding, Setup & Support, Medical Compliance —
+render inline on one scrollable page (seven cards total). Cards
+already in the agency's plan render in an "active" state with a
+green stripe and **Manage** CTA.
+
+> **Copy source-of-truth (May 25, per Marketing):** card titles,
+> taglines, benefits, CTAs, prices, and section titles/blurbs come
+> from the **"Marketplace In-App Redesign"** Figma file (node
+> `216:1218`). Earlier prototype strings were invented and have been
+> replaced. Flag any future copy edits against that Figma file, not
+> this Vue component.
 
 > **Changed May 25 per PM feedback:** the original design used a tabbed
 > layout. Tabs were removed because hiding Premium support (Expert
