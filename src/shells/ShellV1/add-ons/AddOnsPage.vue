@@ -686,7 +686,7 @@
    * card from the same family", not "the lonely big card".
    */
   .add-ons-grid--spotlight { grid-template-columns: 1fr; }
-  .add-ons-grid--spotlight > .add-on-card { justify-self: center; width: 100%; }
+  .add-ons-grid--spotlight > .add-on-card { justify-self: start; width: 100%; }
 
   @media (min-width: 768px) {
     .add-ons-grid--two   { grid-template-columns: repeat(2, 1fr); }
