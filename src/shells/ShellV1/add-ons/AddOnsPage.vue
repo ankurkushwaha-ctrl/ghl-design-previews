@@ -8,31 +8,25 @@
     1. The shell chrome (<SideBarV2>, <TopBar>, <KickoffWidget>) is
        stripped — the parent <ShellV1> wraps this page externally,
        same pattern as src/pages/SubAccountsPage.vue → Locations.vue.
-    2. The HighRise tab imports point at our preview-repo stubs
-       (src/components/highrise) instead of @platform-ui/highrise,
-       which isn't installed here. Stub is API-narrow but visually
-       faithful — see src/components/highrise/HLTabs.vue.
+    2. Tabs removed per PM feedback (May 25): all three categories
+       now render inline as stacked sections on a single scrollable
+       page so Premium support and HIPAA are visible without a click.
+       When porting upstream, drop HLTabs/HLTabPane and render one
+       <section> per category with its title + blurb visible.
     3. The outer `<section class="hl_wrapper">`'s `:class` binding
        on `$store.state.notification.showNotification` is dropped
        because no Vuex store exists in the preview repo. That binding
        only adds a CSS class for an unused notification banner — no
        visual change for the preview.
 
-  Everything else — copy, content data, template structure, scoped
-  styles — is byte-identical to upstream so a designer can `git diff`
-  this against the spm-ts file and produce a clean upstream PR.
+  Content data, copy, and per-card markup are still byte-identical to
+  upstream — only the outer category wrapper changed. Diff against the
+  spm-ts file to produce a clean upstream PR.
 -->
 
 <script lang="ts" setup>
-  import { ref } from 'vue'
-
-  // Preview-repo HighRise stubs.
-  // upstream: import { HLTabs, HLTabPane } from '@platform-ui/highrise'
-  import { HLTabs, HLTabPane } from '@/components/highrise'
-
-  // ─── Page state ──────────────────────────────────────────────────────
-  type CategoryId = 'branding' | 'experts' | 'compliance'
-  const selectedCategory = ref<CategoryId>('branding')
+  // No reactive state — page is fully static. Categories render as
+  // stacked sections (no tab selection model). See top-of-file note #2.
 
   // ─── Content model ───────────────────────────────────────────────────
   // Static for v1. Move to API (e.g. /agency/addons) when product is ready.
@@ -73,7 +67,9 @@
   }
 
   type Section = {
-    id: CategoryId
+    // Stable slug — also used as the section's DOM id so the
+    // footer "Compare add-ons" deep link can scroll to it.
+    id: 'branding' | 'experts' | 'compliance'
     title: string
     blurb: string
     layout: 'three' | 'two' | 'spotlight'
@@ -357,25 +353,24 @@
           </p>
         </header>
 
-        <HLTabs
-          v-model:value="selectedCategory"
-          type="line"
-          class="add-ons-tabs"
-        >
-          <HLTabPane
+        <!--
+          Tabs were removed (May 25, PM feedback): hiding Premium
+          support and HIPAA behind a click reduced their visibility.
+          Categories now render as stacked sections on one scroll —
+          each with a visible H2 title + blurb so the page still
+          reads as three deliberate groupings, not one flat list.
+        -->
+        <div class="add-ons-sections">
+          <section
             v-for="cat in sections"
             :key="cat.id"
-            :name="cat.id"
-            :tab="cat.title"
+            :id="cat.id"
+            class="add-ons-section"
           >
-            <!--
-              Visually-hidden H2 per category gives screen-reader and
-              SEO heading hierarchy (H1 → H2 → H3) without changing
-              the visual layout. The tab itself is already labeled.
-            -->
-            <h2 class="visually-hidden">{{ cat.title }}</h2>
-
-            <p class="add-ons-section__blurb">{{ cat.blurb }}</p>
+            <header class="add-ons-section__header">
+              <h2 class="add-ons-section__title">{{ cat.title }}</h2>
+              <p class="add-ons-section__blurb">{{ cat.blurb }}</p>
+            </header>
 
             <div :class="gridClassesFor(cat.layout)">
               <article
@@ -553,8 +548,8 @@
                 </p>
               </article>
             </div>
-          </HLTabPane>
-        </HLTabs>
+          </section>
+        </div>
 
         <!--
           Flex spacer: pushes the closing band to the bottom of the
@@ -637,24 +632,6 @@
     padding: 32px 16px 48px;
   }
 
-  /*
-   * Visually-hidden utility — content is invisible to sighted users
-   * but still announced by screen readers. Used for the per-tab H2
-   * headings to maintain document outline without changing visuals.
-   * Pattern: WebAIM standard.
-   */
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
   /* ── Header ───────────────────────────────────────────────────────── */
   /*
    * Header → Tabs group separator (Shopify Polaris ~32px,
@@ -681,18 +658,46 @@
     line-height: 1.5;
   }
 
-  /* ── Tabs ─────────────────────────────────────────────────────────── */
-  .add-ons-tabs { margin-top: 8px; }
+  /* ── Sections (stacked, no tabs) ──────────────────────────────────── */
+  /*
+   * Gap between category sections. ~40px is the Stripe / Linear
+   * pricing convention for "distinct group, same page" — large
+   * enough to read as a section break, small enough not to feel
+   * like a new page. Header → blurb → cards inside one section
+   * stay tight (8 / 16px) so the section reads as a unit.
+   */
+  .add-ons-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin-top: 8px;
+  }
+
+  .add-ons-section__header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+    max-width: 800px;
+  }
 
   /*
-   * Within the tabs group: tabs → blurb → cards are all the same
-   * "thing" the user is browsing for the selected category. They
-   * should sit tight together (HubSpot ~12-16px, Google Material
-   * ~16px). Looser gaps would visually orphan the blurb from both.
+   * Section title — slightly smaller and lighter than the H1 so
+   * the page header still anchors. 18px / 600 is the HighRise
+   * "section heading" size; matches Account → Sales Resources
+   * and Settings → Integrations.
    */
+  .add-ons-section__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+
   .add-ons-section__blurb {
-    margin: 16px 0 16px;
-    max-width: 800px;
+    margin: 0;
     font-size: 14px;
     color: var(--gray-600);
     line-height: 1.5;

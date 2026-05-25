@@ -8,17 +8,22 @@
 ## What this is
 
 A production-ready agency **Add-Ons** page that replaces the legacy
-`MarketplaceFrame.vue` iframe with a native Vue surface. Three tabbed
-categories (White-label apps, Expert services, Compliance), nine cards
-total. Featured cards get a primary CTA + accent stripe; cards already
-in the agency's plan render in an "active" state with a green stripe
-and **Manage** CTA.
+`MarketplaceFrame.vue` iframe with a native Vue surface. Three category
+sections — White-label apps, Expert services, Compliance — render
+inline on one scrollable page (seven cards total). Featured cards get
+a primary CTA + accent stripe; cards already in the agency's plan
+render in an "active" state with a green stripe and **Manage** CTA.
 
-The page lives as a single self-contained Vue file (~1,250 lines incl.
+> **Changed May 25 per PM feedback:** the original design used a tabbed
+> layout. Tabs were removed because hiding Premium support (Expert
+> services) and HIPAA (Compliance) behind a click reduced their
+> visibility. All sections now render on one scroll.
+
+The page lives as a single self-contained Vue file (~1,260 lines incl.
 content data + scoped CSS) — designed for a clean lift into
 `spm-ts/src/pmd/pages/agency/AddOnsPage.vue`. One file copies almost
-verbatim; the only changes are import paths, the chrome wrapper, and
-i18n.
+verbatim; the only changes on the way upstream are restoring the
+shell chrome wrapper and moving copy into i18n keys.
 
 ---
 
@@ -30,29 +35,25 @@ src/shells/ShellV1/add-ons/
   AddOnsPage.vue                               ← real page (template + script + scoped styles)
 ```
 
-No state machine. The page has one local `selectedCategory` ref that
-drives the visible tab pane. Card content is a static `Section[]`
-array at the top of `<script setup>` — easy to swap for an API
-response when product is ready.
+No state machine. No reactive state at all — the page is fully static.
+Card content is a static `Section[]` array at the top of
+`<script setup>` — easy to swap for an API response when product is
+ready. Each `Section` renders as a `<section id="{slug}">` so the
+upstream "Compare add-ons" deep-link can scroll to a category anchor.
 
 ---
 
 ## File inventory
 
-### Copy verbatim with two import swaps
+### Copy verbatim, wrap with the upstream chrome
 
 This is the entire page — single file lift.
 
 | File                                    | Lines | Purpose                                                            |
 | --------------------------------------- | ----- | ------------------------------------------------------------------ |
-| `src/shells/ShellV1/add-ons/AddOnsPage.vue` | 1,253 | Full page — `Section[]` content data + template + scoped styles    |
+| `src/shells/ShellV1/add-ons/AddOnsPage.vue` | 1,258 | Full page — `Section[]` content data + template + scoped styles    |
 
 **What changes on the way upstream:**
-
-```diff
-- import { HLTabs, HLTabPane } from '@/components/highrise'
-+ import { HLTabs, HLTabPane } from '@platform-ui/highrise'
-```
 
 ```diff
 <!-- Restore the upstream chrome that this preview repo strips -->
@@ -61,15 +62,19 @@ This is the entire page — single file lift.
 +   <SideBarV2 />
 +   <TopBar />
 +   <section class="hl_wrapper">
-      … existing page body …
+     … existing page body …
 +   </section>
 +   <KickoffWidget />
 + </div>
 ```
 
-That's it for code-level diff. The top-of-file comment in
-`src/shells/ShellV1/add-ons/AddOnsPage.vue` lists every preview-only
-deviation — that comment is your full porting log.
+No HighRise imports to wire — the page no longer uses `HLTabs/HLTabPane`
+or any other HighRise component. Plain semantic `<section>` elements
+with scoped styles drive the layout.
+
+The top-of-file comment in `src/shells/ShellV1/add-ons/AddOnsPage.vue`
+lists every preview-only deviation — that comment is your full porting
+log.
 
 ### Discard
 
@@ -99,15 +104,15 @@ PR, but file a follow-up ticket.
 
       "sections": {
         "branding": {
-          "tab": "White-label apps",
+          "title": "White-label apps",
           "blurb": "Put your brand on every client touchpoint — apps, automations, and portals."
         },
         "experts": {
-          "tab": "Expert services",
+          "title": "Expert services",
           "blurb": "Bring HighLevel experts in to set you up, support your day-to-day, or train your team."
         },
         "compliance": {
-          "tab": "Compliance",
+          "title": "Compliance",
           "blurb": "Open up regulated markets — close healthcare deals you'd lose today over compliance."
         }
       },
@@ -259,10 +264,9 @@ const handleHelp = () => {
 
 ## Integration checklist
 
-Dev needs to complete these 6 tasks:
+Dev needs to complete these 5 tasks:
 
 - [ ] **Copy** `src/shells/ShellV1/add-ons/AddOnsPage.vue` from this repo into `spm-ts/src/pmd/pages/agency/AddOnsPage.vue`
-- [ ] **Swap imports** — `@/components/highrise` → `@platform-ui/highrise`
 - [ ] **Restore upstream chrome** — wrap the page body in the `<SideBarV2>/<TopBar>/<section>/<KickoffWidget>` structure copied from `MarketplaceFrame.vue` (see top-of-file comment in the source for the exact diff)
 - [ ] **Move strings to i18n** under `agency.addOns.*` (or apply the scoped ESLint disable as a temporary measure, with a follow-up ticket)
 - [ ] **Wire `handleCta`** per the routing table above (5 modals possible; most cards open `IframeFunnelPaymentModal`)
@@ -283,7 +287,8 @@ Dev needs to complete these 6 tasks:
 | BAA tag is a focusable button with tooltip         | A11y — keyboard users see the BAA hint on focus, not just hover. Uses `role="tooltip"` + `aria-describedby`.                                                |
 | `prefers-reduced-motion` disables card-lift + arrow-slide | Standard a11y motion guard                                                                                                                          |
 | Footer band stacks below 640px                     | CTA was getting squeezed off on narrow viewports                                                                                                            |
-| Visually-hidden `<h2>` per tab section             | Keeps document outline H1 → H2 → H3 for screen readers without changing visuals                                                                            |
+| Stacked sections instead of tabs (May 25)          | PM feedback — hiding Premium support / HIPAA behind a tab click reduced visibility. Visible H2 + blurb per section keeps the three-category structure on one scrollable page. |
+| Each `<section>` carries an `id="{slug}"`          | Lets the upstream "Compare add-ons" top-right link deep-link to a category (`/agency/add-ons#compliance`) when that link is wired                          |
 
 ---
 
