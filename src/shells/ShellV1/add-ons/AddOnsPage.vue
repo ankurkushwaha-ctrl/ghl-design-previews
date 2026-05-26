@@ -310,9 +310,18 @@
       // LABEL is "HIPAA Compliance" (buyer-facing); the H2 here
       // still reads "Medical Compliance" per upstream. PMM follow-
       // up to decide whether to align the two.
+      // PARKED — waiting on Chase for the final HIPAA tab subtitle
+      // copy. Don't change in code; sync follows after his sign-off.
       blurb:
         'Take your HighLevel skills to the next level.',
-      layout: 'spotlight',
+      // 'three' to anchor the lone HIPAA card in column 1 of a 3-up
+      // grid (matches Figma node 8017:36751, where the Cards Row is
+      // a flex container with a single 368px card flushed left). The
+      // earlier 'spotlight' value re-flowed the card to a separate
+      // single-column track and made it look "too special" — Figma
+      // intentionally keeps it as "one card from the same family,
+      // column 1 just happens to be empty for the other two slots".
+      layout: 'three',
       cards: [
         {
           id: 'hipaa',
