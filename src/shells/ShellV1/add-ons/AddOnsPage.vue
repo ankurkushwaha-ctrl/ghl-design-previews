@@ -676,27 +676,27 @@
    * Padding stack:
    *   .hl_wrapper--inner  → 25px top/bottom (global spm-ts convention)
    *   .container-fluid    → 15px left/right gutter (Bootstrap)
-   *   .add-ons-content    → adds top + sides + bottom (fills the tight
-   *                         Bootstrap gutter on modern viewports)
-   * Top padding intentionally small — the outer `.hl_wrapper--inner`
-   * already adds ~25px breathing room above. Stripe/Linear page-hero
-   * convention is ~24-32px total above the H1; 25 + 8 = 33px hits that.
-   * Net: ~33px top, ~31px sides.
+   *   .add-ons-content    → 24px all sides (Figma Content Area, every
+   *                         frame: p-[24px])
+   * Net (top): 25px (hl_wrapper--inner) + 24px (.add-ons-content) = 49px
+   *           above the H1. Sits right at the upper end of the Stripe /
+   *           Linear page-hero convention (24-32px contributed by the
+   *           page itself, plus the global wrapper's 25px).
+   * Net (sides): 15px (.container-fluid) + 24px (.add-ons-content) = 39px
+   *           from the viewport edge.
    *
-   * The page is a flex column with min-height pinned to the viewport
-   * so the footer band can push to the bottom (margin-top: auto)
-   * instead of sitting awkwardly right under short content. The 110px
-   * deduction = 52px topbar padding on .shell-v1__main + 25px top and
-   * 25px bottom padding from the shared .hl_wrapper--inner + an 8px
-   * buffer for scrollbar / sub-pixel rounding. Earlier 84px constant
-   * missed the .hl_wrapper--inner 50px and left ~18px of phantom
-   * vertical overflow (the page "danced" on scroll).
+   * The page is still a flex column with min-height pinned to the
+   * viewport so the footer band can push to the bottom (margin-top:
+   * auto) instead of sitting awkwardly right under short content.
+   * The 110px deduction = 52px topbar padding on .shell-v1__main +
+   * 25px top and 25px bottom padding from the shared .hl_wrapper--inner
+   * + an 8px buffer for scrollbar / sub-pixel rounding.
    */
   .add-ons-content {
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 110px);
-    padding: 8px 16px 48px;
+    padding: 24px;
   }
 
   /* ── Header ───────────────────────────────────────────────────────── */
@@ -756,9 +756,16 @@
   }
 
   /* ── Grid ─────────────────────────────────────────────────────────── */
+  /*
+   * 24px gap matches Figma Cards Row (gap-[24px] across every frame).
+   * Earlier 16px reflected the May 25 stacked-sections experiment
+   * which deliberately ran tighter; with tabs and 524px-locked card
+   * heights, 24px reads as one breath between cards instead of
+   * crowding their right-edge shadows together.
+   */
   .add-ons-grid {
     display: grid;
-    gap: 16px;
+    gap: 24px;
   }
   .add-ons-grid--three     { grid-template-columns: repeat(1, 1fr); }
   .add-ons-grid--two       { grid-template-columns: repeat(1, 1fr); }
