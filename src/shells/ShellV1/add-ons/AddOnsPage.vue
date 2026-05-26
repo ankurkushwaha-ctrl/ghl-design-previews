@@ -591,13 +591,19 @@
 
                     <!--
                       CTA hierarchy:
-                        - active   = "Manage" — secondary outlined; active
+                        - active   = "Manage" — outlined-primary; active
                                      chrome is already carried by the card
                                      surface (green stripe + tint + pill)
-                        - default  = secondary (outlined). Every other card.
-                      All CTAs share one visual treatment now that marketing
-                      tags (and therefore the "featured/primary" CTA variant)
-                      have been retired.
+                        - default  = outlined-primary (white surface, blue
+                                     border + blue text per Figma). Every
+                                     other card. All CTAs share one visual
+                                     treatment now that marketing tags (and
+                                     therefore the "featured/primary" CTA
+                                     variant) have been retired.
+                      Text-only — no trailing arrow icon (Figma button INSTANCE
+                      8017:38224 et al. ships label-only; the earlier hover-
+                      arrow microinteraction was a local addition and has
+                      been removed to match the design system spec).
                     -->
                     <button
                       v-if="card.status === 'active'"
@@ -606,10 +612,6 @@
                       @click="handleCta(card)"
                     >
                       <span class="add-on-card__cta-label">Manage</span>
-                      <i
-                        class="fas fa-arrow-right add-on-card__cta-arrow"
-                        aria-hidden="true"
-                      />
                     </button>
                     <button
                       v-else
@@ -618,10 +620,6 @@
                       @click="handleCta(card)"
                     >
                       <span class="add-on-card__cta-label">{{ card.cta }}</span>
-                      <i
-                        class="fas fa-arrow-right add-on-card__cta-arrow"
-                        aria-hidden="true"
-                      />
                     </button>
 
                     <!--
@@ -671,7 +669,6 @@
             @click.prevent="handleHelp"
           >
             Talk to our team
-            <i class="fas fa-arrow-right" aria-hidden="true" />
           </a>
         </aside>
         </div>
@@ -1138,38 +1135,51 @@
 
   /* ── CTA ──────────────────────────────────────────────────────────── */
   /*
-   * Default CTA = secondary (outlined). Quiet by default so the title,
-   * price, and benefits get the first read. The primary (filled) variant
-   * is reserved for cards product is recommending — buyers' eyes land
-   * on those cards naturally instead of fighting through 7 identical
-   * loud buttons. (Visual hierarchy through restraint.)
+   * Outlined-primary per Figma (button INSTANCE node 8017:38224 et al.):
+   *   surface  white
+   *   border   1px --primary-300 (#84adff)
+   *   text     --primary-700 (#004eeb)
+   *   font     Inter Semi Bold (600) / 14px / line-height 20px
+   *   radius   8px
+   *   shadow   0 1px 2px rgba(16,24,40,0.05) — kept as the existing card
+   *            shadow stack on this page already used the same xs ramp
+   * Same treatment for the active-state "Manage" CTA — the active card
+   * surface (green stripe + tint + "In your plan" pill) already carries
+   * the ownership signal, so the button stays consistent across states.
    *
-   * The arrow icon slides in on hover — small tactile microinteraction
-   * borrowed from Stripe / Linear. Signals "this leads somewhere"
-   * without being announced when the user hasn't expressed intent.
+   * No trailing arrow — Figma's button instance ships label-only and
+   * the earlier hover-arrow microinteraction was a local embellishment.
+   * Markup + transition removed to match spec.
    */
   .add-on-card__cta {
     appearance: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     width: 100%;
     height: 40px;
     padding: 0 16px;
-    border: 1px solid var(--gray-300);
+    border: 1px solid var(--primary-300);
     border-radius: 8px;
     background: #ffffff;
-    color: var(--gray-900);
+    color: var(--primary-700);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease,
       transform 0.1s ease;
   }
+  /*
+   * Hover: lightest on-brand step — --primary-50 surface tint behind
+   * the existing --primary-300 border keeps the button quiet but
+   * confirms the interaction. Border ticks one shade darker to
+   * --primary-400 so the tile reads as "lit, not just tinted".
+   * Figma does not ship a hover variant for this instance; values
+   * are chosen from the same primary ramp the design system uses.
+   */
   .add-on-card__cta:hover {
-    background: var(--gray-50);
-    border-color: var(--gray-400);
+    background: var(--primary-50);
+    border-color: var(--primary-400);
   }
   .add-on-card__cta:active { transform: translateY(1px); }
   .add-on-card__cta:focus-visible {
@@ -1178,26 +1188,13 @@
   }
 
   /*
-   * "Manage" CTA on active cards uses the SAME secondary outlined
-   * treatment as default purchase CTAs. The active state is already
-   * communicated by the card surface (green tint + top stripe + "In
-   * your plan" pill) — coloring the CTA green too was redundant
-   * signaling and broke button-color consistency across the page.
-   * Class kept so devs can swap behaviour later if needed.
+   * "Manage" CTA on active cards inherits the same outlined-primary
+   * treatment. The active state is already communicated by the card
+   * surface — recoloring the CTA was redundant signaling and broke
+   * button-color consistency across the page. Class kept so devs can
+   * swap behaviour later if needed.
    */
   .add-on-card__cta--manage { /* inherits .add-on-card__cta defaults */ }
-
-  .add-on-card__cta-arrow {
-    font-size: 11px;
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: opacity 0.15s ease, transform 0.15s ease;
-  }
-  .add-on-card__cta:hover .add-on-card__cta-arrow,
-  .add-on-card__cta:focus-visible .add-on-card__cta-arrow {
-    opacity: 1;
-    transform: translateX(0);
-  }
 
   /*
    * Pricing transparency — quietly answers "what am I committing to?"
@@ -1211,9 +1208,7 @@
     text-align: center;
     letter-spacing: 0.01em;
   }
-  /* Reduce-motion users still see the arrow appear, just no slide */
   @media (prefers-reduced-motion: reduce) {
-    .add-on-card__cta-arrow,
     .add-on-card,
     .add-on-card__cta {
       transition: none !important;
@@ -1277,23 +1272,26 @@
     line-height: 1.5;
   }
   /*
-   * Quiet, outlined CTA — matches the card CTA pattern. The band is
-   * a tertiary affordance, so its action should be quiet, not loud.
-   * Hierarchy on the page is intentionally flat now that marketing
-   * tags were retired: every CTA shares one outlined treatment so no
-   * card visually outranks another. Active cards swap "Buy now" for
-   * "Manage" but keep the same chrome.
+   * Outlined-gray per Figma (button INSTANCE node 8017:38131 et al.):
+   *   surface  white
+   *   border   1px --gray-300 (#d0d5dd)
+   *   text     --gray-600 (#475467) — distinct from the card CTA's
+   *            --primary-700 so the footer band reads as a quieter,
+   *            tertiary affordance separate from the purchase CTAs
+   *   font     Inter Semi Bold (600) / 14px / line-height 20px
+   *   radius   8px, shadow 0 1px 2px rgba(16,24,40,0.05)
+   * Text-only — no trailing arrow (Figma instance ships label-only).
    */
   .add-ons-footer-band__cta {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
     height: 40px;
     padding: 0 16px;
     border: 1px solid var(--gray-300);
     border-radius: 8px;
     background: #ffffff;
-    color: var(--gray-700);
+    color: var(--gray-600);
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
@@ -1301,10 +1299,16 @@
     transition: background 0.15s ease, border-color 0.15s ease,
       color 0.15s ease;
   }
+  /*
+   * Hover: same step idea as the card CTA — lightest gray surface
+   * tint behind the same gray-300 border, text shifts one step
+   * darker (gray-600 → gray-700) so the button reads as engaged
+   * without changing chroma. Figma does not ship a hover variant.
+   */
   .add-ons-footer-band__cta:hover {
     background: var(--gray-50);
     border-color: var(--gray-400);
-    color: var(--gray-900);
+    color: var(--gray-700);
   }
   /*
    * Keyboard focus ring — matches the card CTA pattern so the page
@@ -1315,12 +1319,5 @@
   .add-ons-footer-band__cta:focus-visible {
     outline: 2px solid var(--primary-600);
     outline-offset: 2px;
-  }
-  .add-ons-footer-band__cta i {
-    font-size: 11px;
-    transition: transform 0.15s ease;
-  }
-  .add-ons-footer-band__cta:hover i {
-    transform: translateX(2px);
   }
 </style>
