@@ -74,6 +74,14 @@
     // discount. e.g. "Annual Plan: $970 (Save 16%)". Renders as a
     // small green pill below the price. Omit when Figma has no pill.
     annualPlan?: string
+    // Verbatim Figma pill string for cards that ship with a healthcare
+    // / regulated-industry trust signal. Currently only HIPAA uses
+    // this ("BAA Included" — Business Associate Agreement, the top
+    // signal HIPAA buyers look for). Visually rendered with the
+    // HighRise success "Tag" treatment (success-50 bg / success-700
+    // text) — distinct from the annualPlan pill (success-700 bg /
+    // white text) so the two never read as the same affordance.
+    complianceBadge?: string
     // Per-card fine print under the CTA. Defaults to "Cancel anytime
     // · No setup fees" when omitted. Override on cards where that
     // claim isn't true (e.g. HIPAA is permanent — see card data).
@@ -342,6 +350,11 @@
           cta: 'Buy now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/hipaa',
+          // Verbatim Figma pill on node 8017:38338 (Tag Group). BAA =
+          // Business Associate Agreement. Healthcare buyers screen
+          // for this pill before they price; surfacing it inline on
+          // the card removes the "is BAA bundled?" follow-up question.
+          complianceBadge: 'BAA Included',
           // Override the default fine print to match the live marketing
           // page (preview URL Q3wpuESAo2QTQthwBZlZ). The pricing model
           // bundles all sub-accounts on the agency plan, so this
@@ -523,6 +536,20 @@
                         class="add-on-card__annual-pill"
                       >
                         {{ card.annualPlan }}
+                      </span>
+                      <!--
+                        Compliance / regulated-industry trust pill (currently
+                        only HIPAA's "BAA Included"). Same right-edge slot as
+                        the annualPlan pill — cards never carry both, since a
+                        compliance product is bundled-flat per Figma (no
+                        annual-plan discount on HIPAA), and an annual-plan
+                        product carries no compliance pill.
+                      -->
+                      <span
+                        v-if="card.complianceBadge"
+                        class="add-on-card__compliance-pill"
+                      >
+                        {{ card.complianceBadge }}
                       </span>
                     </div>
 
@@ -1020,6 +1047,37 @@
     background: var(--success-700);
     border-radius: 999px;
     letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
+  /*
+   * Compliance pill (HIPAA → "BAA Included"). Mirrors the HighRise
+   * "Tag / Success" treatment used in Figma node 8017:38338:
+   *   bg     #ecfdf3 → var(--success-50)
+   *   color  #027a48 → var(--success-700)
+   * Distinct from .add-on-card__annual-pill — the annual pill is
+   * sales/savings ($) with a high-contrast solid green; this is a
+   * trust signal and uses the lighter, label-style success surface
+   * the design system reserves for status / compliance tags. Both
+   * pills share the same right-aligned slot inside .add-on-card__price
+   * but never appear together on one card (annual = sales discount,
+   * compliance = regulatory trust — different product types).
+   *
+   * Figma sizing: h-[18px], px-[6px], rounded-[9px], 11px Medium.
+   */
+  .add-on-card__compliance-pill {
+    margin-left: auto;
+    height: 18px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--success-700);
+    background: var(--success-50);
+    border-radius: 9px;
+    letter-spacing: 0;
     white-space: nowrap;
   }
 
