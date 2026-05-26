@@ -792,11 +792,20 @@
    * 3px gradient on --add-on-card--active) to the rounded corners
    * cleanly. box-shadow + translateY for hover are unaffected —
    * shadows render outside the box and ignore overflow.
+   *
+   * min-height: 524px locks every card to the same Figma height
+   * regardless of bullet count. The `flex: 1` on .add-on-card__benefits
+   * already pushes the CTA to the bottom edge — that flex spacer is
+   * what keeps the CTA aligned across cards in a row. Using min-height
+   * (not strict height) keeps shorter content flush at reference width
+   * while letting longer content (localized strings, future additions)
+   * grow without clipping.
    */
   .add-on-card {
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 524px;
     background: #ffffff;
     border: 1px solid var(--gray-200);
     border-radius: 12px;
