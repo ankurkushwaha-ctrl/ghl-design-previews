@@ -1252,7 +1252,7 @@
       align-items: flex-start;
       gap: 16px;
     }
-    .add-ons-footer-band__cta {
+    a.add-ons-footer-band__cta {
       width: 100%;
       justify-content: center;
     }
@@ -1282,7 +1282,7 @@
    *   radius   8px, shadow 0 1px 2px rgba(16,24,40,0.05)
    * Text-only — no trailing arrow (Figma instance ships label-only).
    */
-  .add-ons-footer-band__cta {
+  a.add-ons-footer-band__cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1305,7 +1305,7 @@
    * darker (gray-600 → gray-700) so the button reads as engaged
    * without changing chroma. Figma does not ship a hover variant.
    */
-  .add-ons-footer-band__cta:hover {
+  a.add-ons-footer-band__cta:hover {
     background: var(--gray-50);
     border-color: var(--gray-400);
     color: var(--gray-700);
@@ -1316,7 +1316,7 @@
    * elements. Without this, the `<a>` only got the browser default
    * outline which was barely visible against the dashed border.
    */
-  .add-ons-footer-band__cta:focus-visible {
+  a.add-ons-footer-band__cta:focus-visible {
     outline: 2px solid var(--primary-600);
     outline-offset: 2px;
   }
