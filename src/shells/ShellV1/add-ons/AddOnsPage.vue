@@ -207,7 +207,7 @@
           // canonical Figma + live preview also carries the truncated
           // version.
           tagline:
-            'Get certified at your own pace with flexible monthly billing. Perfect for learning core HighLevel skills.',
+            'Are you a HighLevel expert? Get certified at your own pace with flexible monthly billing.',
           priceAmount: '$97',
           pricePeriod: '/mo',
           cadence: 'Subscription',
@@ -619,11 +619,11 @@
         <aside class="add-ons-footer-band">
           <div class="add-ons-footer-band__text">
             <h3 class="add-ons-footer-band__title">
-              Don’t see what you need?
+              Have questions about add-ons?
             </h3>
             <p class="add-ons-footer-band__copy">
-              Tell us what your agency is trying to do — we’ll
-              point you to the right add-on or build a custom plan.
+              Connect with the HighLevel team so we can answer
+              questions and help you find the add-on that’s right for you!
             </p>
           </div>
           <a
@@ -669,9 +669,10 @@
    *   .container-fluid    → 15px left/right gutter (Bootstrap)
    *   .add-ons-content    → adds top + sides + bottom (fills the tight
    *                         Bootstrap gutter on modern viewports)
-   * Net: ~57px top, ~31px sides. Top is intentionally heavier than
-   * sides because the topbar above visually competes for that space —
-   * the page header needs to breathe past it.
+   * Top padding intentionally small — the outer `.hl_wrapper--inner`
+   * already adds ~25px breathing room above. Stripe/Linear page-hero
+   * convention is ~24-32px total above the H1; 25 + 8 = 33px hits that.
+   * Net: ~33px top, ~31px sides.
    *
    * The page is a flex column with min-height pinned to the viewport
    * so the footer band can push to the bottom (margin-top: auto)
@@ -682,7 +683,7 @@
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 84px);
-    padding: 32px 16px 48px;
+    padding: 8px 16px 48px;
   }
 
   /* ── Header ───────────────────────────────────────────────────────── */
