@@ -129,7 +129,7 @@
   const sections: Section[] = [
     {
       id: 'experts',
-      title: 'Setup & Support',
+      title: 'Setup & support',
       // Section title + blurb pulled from the live GHL marketing
       // preview (Q3wpuESAo2QTQthwBZlZ), May 25.
       blurb:
@@ -146,7 +146,7 @@
           id: 'advanced-setup',
           icon: 'tools',
           iconKind: 'experts',
-          title: 'Advanced Account Setup',
+          title: 'Advanced account setup',
           tagline:
             'Get started with our affordable Starter plan, perfect for small businesses.',
           priceAmount: '$1,000',
@@ -159,7 +159,7 @@
             'Live team teaching and software orientation',
             'Personalized business process implementation',
           ],
-          cta: 'Buy Now',
+          cta: 'Buy now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/advanced-setup',
         },
@@ -167,7 +167,7 @@
           id: 'premium-support',
           icon: 'headset',
           iconKind: 'experts',
-          title: 'Premium Support',
+          title: 'Premium support',
           tagline:
             'Scale your support with a dedicated rep, faster response times, and more peace of mind.',
           priceAmount: '$500',
@@ -180,13 +180,13 @@
             'Expert guidance on platform best practices',
             'Quarterly Business Reviews',
           ],
-          cta: 'Buy Now',
+          cta: 'Buy now',
           // Demo: this card is already in the agency's plan to show the
           // 'active' state. Remove this and set status: 'available' to
           // see the default purchase chrome.
           status: 'active',
           learnMoreUrl: '/docs/add-ons/premium-support',
-          annualPlan: 'Annual Plan: $5000 (Save 16%)',
+          annualPlan: 'Annual plan: $5000 (save 16%)',
         },
         {
           id: 'certified-admin',
@@ -200,7 +200,7 @@
           // common region matters more than the credential/service
           // distinction, so the tiles unify on the experts ramp.
           iconKind: 'experts',
-          title: 'Certified Admin Program',
+          title: 'Certified admin program',
           // Grammar fix May 25: was "with flexible monthly." —
           // truncated sentence (no noun after "monthly"). Added
           // "billing" so the clause completes. Flag to PMM: the
@@ -220,16 +220,16 @@
             // (stacked prepositions). Dropped "through". Flag to PMM.
             'Unlock career growth with GHL credentials',
           ],
-          cta: 'Buy Now',
+          cta: 'Buy now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/certification',
-          annualPlan: 'Annual Plan: $970 (Save 16%)',
+          annualPlan: 'Annual plan: $970 (save 16%)',
         },
       ],
     },
     {
       id: 'branding',
-      title: 'Custom Branding',
+      title: 'Custom branding',
       // WHY for the whole category — one-liner, fits 800px at 14px.
       // Section title + blurb pulled from the live GHL marketing
       // preview (Q3wpuESAo2QTQthwBZlZ), May 25.
@@ -241,7 +241,7 @@
           id: 'wl-mobile',
           icon: 'mobile-alt',
           iconKind: 'branding',
-          title: 'Whitelabel Mobile App',
+          title: 'Whitelabel mobile app',
           tagline:
             'Customize the HighLevel mobile app with your brand for the Apple & Android app stores!',
           priceAmount: '$497',
@@ -254,7 +254,7 @@
             'Create custom modules from your URLs',
             'Create a mobile experience unique to your brand',
           ],
-          cta: 'Buy Now',
+          cta: 'Buy now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/white-label-mobile',
         },
@@ -262,7 +262,7 @@
           id: 'wl-zapier',
           icon: 'bolt',
           iconKind: 'branding',
-          title: 'White-Label Zapier App',
+          title: 'White-label Zapier app',
           tagline:
             'Customize the LeadConnector Zapier app with your brand.',
           priceAmount: '$50',
@@ -273,7 +273,7 @@
             'Tell your clients to find your brand in Zapier',
             'Build brand authority with your own branded Zaps',
           ],
-          cta: 'Buy Now',
+          cta: 'Buy now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/white-label-zapier',
         },
@@ -281,7 +281,7 @@
           id: 'wl-portal',
           icon: 'th-large',
           iconKind: 'branding',
-          title: 'White-Label Client Portal App',
+          title: 'White-label client portal app',
           tagline:
             'Customize the Client Portal App with your branding.',
           priceAmount: '$50',
@@ -294,7 +294,7 @@
             'Reduce support requests via self-service access',
             'Build trust & retention via real-time transparency',
           ],
-          cta: 'Buy Now',
+          cta: 'Buy now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/client-portal',
         },
@@ -302,7 +302,7 @@
     },
     {
       id: 'compliance',
-      title: 'Medical Compliance',
+      title: 'Medical compliance',
       // Section title + blurb pulled from the live GHL marketing
       // preview (Q3wpuESAo2QTQthwBZlZ), May 25. The blurb reads
       // generic on purpose — that's the upstream copy. The tab
@@ -317,7 +317,7 @@
           id: 'hipaa',
           icon: 'shield-alt',
           iconKind: 'compliance',
-          title: 'HIPAA Compliance',
+          title: 'HIPAA compliance',
           tagline:
             'Protect sensitive client health data with enterprise-grade security.',
           priceAmount: '$497',
@@ -329,7 +329,7 @@
             'Serve healthcare clients confidently without risk',
             'Charge more for premium compliance',
           ],
-          cta: 'Buy Now',
+          cta: 'Buy now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/hipaa',
           // Override the default fine print to match the live marketing
@@ -593,7 +593,7 @@
                       purchase too.
                     -->
                     <p class="add-on-card__finepoint">
-                      {{ card.finepoint || 'Cancel anytime · No setup fees' }}
+                      {{ card.finepoint || 'Cancel anytime · no setup fees' }}
                     </p>
                   </article>
                 </div>
