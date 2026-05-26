@@ -725,6 +725,35 @@
     line-height: 1.5;
   }
 
+  /* ── Tabs (HLTabs override) ──────────────────────────────────────────
+   * HLTabs ships with sensible defaults but our Figma reference uses
+   * a slightly different ramp (primary-700, not primary-600) and the
+   * standard gray-300 underline instead of gray-200. Overrides are
+   * scoped with :deep() because HLTabs is a child component with its
+   * own scoped styles. All values map to existing HighRise tokens —
+   * no design-system token changes.
+   *
+   *   Nav bottom border : gray-200 → gray-300              (Figma #d0d5dd)
+   *   Tab font size     : --hr-font-size-lg → 13px         (Figma 13px)
+   *   Inactive label    : gray-500 → gray-600              (Figma #475467)
+   *   Active label color: primary-600 → primary-700        (Figma #004eeb)
+   *   Active weight     : medium → 600 (Semi Bold)         (Figma Semi Bold)
+   *   Active underline  : 2px → 1.5px                      (Figma 1.5px)
+   */
+  .add-ons-sections :deep(.hl-tabs__nav) {
+    border-bottom-color: var(--gray-300);
+  }
+  .add-ons-sections :deep(.hl-tabs__tab) {
+    font-size: 13px;
+    color: var(--gray-600);
+  }
+  .add-ons-sections :deep(.hl-tabs__tab--active) {
+    color: var(--primary-700);
+    font-weight: 600;
+    border-bottom-width: 1.5px;
+    border-bottom-color: var(--primary-700);
+  }
+
   /* ── Sections (stacked, no tabs) ──────────────────────────────────── */
   /*
    * Gap between category sections. ~40px is the Stripe / Linear
