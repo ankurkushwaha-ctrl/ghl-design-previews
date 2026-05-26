@@ -60,7 +60,7 @@
   type Card = {
     id: string
     icon: string
-    iconKind: 'branding' | 'experts' | 'compliance'
+    iconKind: 'branding' | 'experts' | 'compliance' | 'certification'
     title: string
     tagline: string
     priceAmount: string
@@ -74,6 +74,14 @@
     // discount. e.g. "Annual Plan: $970 (Save 16%)". Renders as a
     // small green pill below the price. Omit when Figma has no pill.
     annualPlan?: string
+    // Verbatim Figma pill string for cards that ship with a healthcare
+    // / regulated-industry trust signal. Currently only HIPAA uses
+    // this ("BAA Included" — Business Associate Agreement, the top
+    // signal HIPAA buyers look for). Visually rendered with the
+    // HighRise success "Tag" treatment (success-50 bg / success-700
+    // text) — distinct from the annualPlan pill (success-700 bg /
+    // white text) so the two never read as the same affordance.
+    complianceBadge?: string
     // Per-card fine print under the CTA. Defaults to "Cancel anytime
     // · No setup fees" when omitted. Override on cards where that
     // claim isn't true (e.g. HIPAA is permanent — see card data).
@@ -192,15 +200,18 @@
         {
           id: 'certified-admin',
           icon: 'award',
-          // Matches the other two Setup & support cards on purpose
-          // (May 25 reversal). Cert Admin briefly used a violet
-          // 'certification' iconKind when it was its own section —
-          // the contrast read as "credential / prestige" against
-          // the orange experts tile. Now that all three setup
-          // purchases share a tab, Gestalt similarity inside the
-          // common region matters more than the credential/service
-          // distinction, so the tiles unify on the experts ramp.
-          iconKind: 'experts',
+          // Violet — restored to match Figma (LGXAERHnZGj65vx4urTTF5,
+          // Frame 01 Cert Admin card). Designer intent: violet =
+          // "self-paced certification / achievement," orange = "done-
+          // for-you service." Cert Admin is a credential program,
+          // not a service like Advanced Setup or Premium Support, so
+          // the icon ramp signals a different product type even
+          // though all three live under the Setup & Support tab.
+          // Gestalt-similarity argument that briefly unified them on
+          // orange (May 25) is intentionally overruled here — Figma
+          // is the source of truth and the credential/service split
+          // is the point.
+          iconKind: 'certification',
           title: 'Certified admin program',
           // Grammar fix May 25: was "with flexible monthly." —
           // truncated sentence (no noun after "monthly"). Added
@@ -310,9 +321,18 @@
       // LABEL is "HIPAA Compliance" (buyer-facing); the H2 here
       // still reads "Medical Compliance" per upstream. PMM follow-
       // up to decide whether to align the two.
+      // PARKED — waiting on Chase for the final HIPAA tab subtitle
+      // copy. Don't change in code; sync follows after his sign-off.
       blurb:
         'Take your HighLevel skills to the next level.',
-      layout: 'spotlight',
+      // 'three' to anchor the lone HIPAA card in column 1 of a 3-up
+      // grid (matches Figma node 8017:36751, where the Cards Row is
+      // a flex container with a single 368px card flushed left). The
+      // earlier 'spotlight' value re-flowed the card to a separate
+      // single-column track and made it look "too special" — Figma
+      // intentionally keeps it as "one card from the same family,
+      // column 1 just happens to be empty for the other two slots".
+      layout: 'three',
       cards: [
         {
           id: 'hipaa',
@@ -333,6 +353,11 @@
           cta: 'Buy now',
           status: 'available',
           learnMoreUrl: '/docs/add-ons/hipaa',
+          // Verbatim Figma pill on node 8017:38338 (Tag Group). BAA =
+          // Business Associate Agreement. Healthcare buyers screen
+          // for this pill before they price; surfacing it inline on
+          // the card removes the "is BAA bundled?" follow-up question.
+          complianceBadge: 'BAA Included',
           // Override the default fine print to match the live marketing
           // page (preview URL Q3wpuESAo2QTQthwBZlZ). The pricing model
           // bundles all sub-accounts on the agency plan, so this
@@ -515,6 +540,20 @@
                       >
                         {{ card.annualPlan }}
                       </span>
+                      <!--
+                        Compliance / regulated-industry trust pill (currently
+                        only HIPAA's "BAA Included"). Same right-edge slot as
+                        the annualPlan pill — cards never carry both, since a
+                        compliance product is bundled-flat per Figma (no
+                        annual-plan discount on HIPAA), and an annual-plan
+                        product carries no compliance pill.
+                      -->
+                      <span
+                        v-if="card.complianceBadge"
+                        class="add-on-card__compliance-pill"
+                      >
+                        {{ card.complianceBadge }}
+                      </span>
                     </div>
 
                     <ul class="add-on-card__benefits">
@@ -552,13 +591,19 @@
 
                     <!--
                       CTA hierarchy:
-                        - active   = "Manage" — secondary outlined; active
+                        - active   = "Manage" — outlined-primary; active
                                      chrome is already carried by the card
                                      surface (green stripe + tint + pill)
-                        - default  = secondary (outlined). Every other card.
-                      All CTAs share one visual treatment now that marketing
-                      tags (and therefore the "featured/primary" CTA variant)
-                      have been retired.
+                        - default  = outlined-primary (white surface, blue
+                                     border + blue text per Figma). Every
+                                     other card. All CTAs share one visual
+                                     treatment now that marketing tags (and
+                                     therefore the "featured/primary" CTA
+                                     variant) have been retired.
+                      Text-only — no trailing arrow icon (Figma button INSTANCE
+                      8017:38224 et al. ships label-only; the earlier hover-
+                      arrow microinteraction was a local addition and has
+                      been removed to match the design system spec).
                     -->
                     <button
                       v-if="card.status === 'active'"
@@ -567,10 +612,6 @@
                       @click="handleCta(card)"
                     >
                       <span class="add-on-card__cta-label">Manage</span>
-                      <i
-                        class="fas fa-arrow-right add-on-card__cta-arrow"
-                        aria-hidden="true"
-                      />
                     </button>
                     <button
                       v-else
@@ -579,10 +620,6 @@
                       @click="handleCta(card)"
                     >
                       <span class="add-on-card__cta-label">{{ card.cta }}</span>
-                      <i
-                        class="fas fa-arrow-right add-on-card__cta-arrow"
-                        aria-hidden="true"
-                      />
                     </button>
 
                     <!--
@@ -626,13 +663,18 @@
               questions and help you find the add-on that’s right for you!
             </p>
           </div>
+          <!--
+            `btn` class isn't styled here — it's solely to escape the legacy
+            `body[data-theme='default-dark-v1'] a:not(.btn)` rule in App.vue
+            that would otherwise paint this anchor cyan (#38a0db). Removing it
+            re-introduces the cascade override.
+          -->
           <a
             href="#"
-            class="add-ons-footer-band__cta"
+            class="add-ons-footer-band__cta btn"
             @click.prevent="handleHelp"
           >
             Talk to our team
-            <i class="fas fa-arrow-right" aria-hidden="true" />
           </a>
         </aside>
         </div>
@@ -657,7 +699,11 @@
    *                     active-card stripe + tint, annual-plan pill bg
    *   warning-200…700 → "One-time" cadence pill
    *   orange-50…700   → setup & support icon tile gradient
-   *                     (incl. certified admin — unified May 25)
+   *                     (advanced setup + premium support only —
+   *                      cert admin uses violet, see below)
+   *   violet-50…700   → certified admin icon tile gradient
+   *                     (signals "credential program", distinct
+   *                      from the orange "done-for-you service" tiles)
    *
    * Box-shadow rgba() values stay literal — HR doesn't expose RGB
    * channels for shadow tinting; this is the standard pattern.
@@ -667,27 +713,27 @@
    * Padding stack:
    *   .hl_wrapper--inner  → 25px top/bottom (global spm-ts convention)
    *   .container-fluid    → 15px left/right gutter (Bootstrap)
-   *   .add-ons-content    → adds top + sides + bottom (fills the tight
-   *                         Bootstrap gutter on modern viewports)
-   * Top padding intentionally small — the outer `.hl_wrapper--inner`
-   * already adds ~25px breathing room above. Stripe/Linear page-hero
-   * convention is ~24-32px total above the H1; 25 + 8 = 33px hits that.
-   * Net: ~33px top, ~31px sides.
+   *   .add-ons-content    → 24px all sides (Figma Content Area, every
+   *                         frame: p-[24px])
+   * Net (top): 25px (hl_wrapper--inner) + 24px (.add-ons-content) = 49px
+   *           above the H1. Sits right at the upper end of the Stripe /
+   *           Linear page-hero convention (24-32px contributed by the
+   *           page itself, plus the global wrapper's 25px).
+   * Net (sides): 15px (.container-fluid) + 24px (.add-ons-content) = 39px
+   *           from the viewport edge.
    *
-   * The page is a flex column with min-height pinned to the viewport
-   * so the footer band can push to the bottom (margin-top: auto)
-   * instead of sitting awkwardly right under short content. The 110px
-   * deduction = 52px topbar padding on .shell-v1__main + 25px top and
-   * 25px bottom padding from the shared .hl_wrapper--inner + an 8px
-   * buffer for scrollbar / sub-pixel rounding. Earlier 84px constant
-   * missed the .hl_wrapper--inner 50px and left ~18px of phantom
-   * vertical overflow (the page "danced" on scroll).
+   * The page is still a flex column with min-height pinned to the
+   * viewport so the footer band can push to the bottom (margin-top:
+   * auto) instead of sitting awkwardly right under short content.
+   * The 110px deduction = 52px topbar padding on .shell-v1__main +
+   * 25px top and 25px bottom padding from the shared .hl_wrapper--inner
+   * + an 8px buffer for scrollbar / sub-pixel rounding.
    */
   .add-ons-content {
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 110px);
-    padding: 8px 16px 48px;
+    padding: 24px;
   }
 
   /* ── Header ───────────────────────────────────────────────────────── */
@@ -714,6 +760,35 @@
     font-size: 14px;
     color: var(--gray-600);
     line-height: 1.5;
+  }
+
+  /* ── Tabs (HLTabs override) ──────────────────────────────────────────
+   * HLTabs ships with sensible defaults but our Figma reference uses
+   * a slightly different ramp (primary-700, not primary-600) and the
+   * standard gray-300 underline instead of gray-200. Overrides are
+   * scoped with :deep() because HLTabs is a child component with its
+   * own scoped styles. All values map to existing HighRise tokens —
+   * no design-system token changes.
+   *
+   *   Nav bottom border : gray-200 → gray-300              (Figma #d0d5dd)
+   *   Tab font size     : --hr-font-size-lg → 13px         (Figma 13px)
+   *   Inactive label    : gray-500 → gray-600              (Figma #475467)
+   *   Active label color: primary-600 → primary-700        (Figma #004eeb)
+   *   Active weight     : medium → 600 (Semi Bold)         (Figma Semi Bold)
+   *   Active underline  : 2px → 1.5px                      (Figma 1.5px)
+   */
+  .add-ons-sections :deep(.hl-tabs__nav) {
+    border-bottom-color: var(--gray-300);
+  }
+  .add-ons-sections :deep(.hl-tabs__tab) {
+    font-size: 13px;
+    color: var(--gray-600);
+  }
+  .add-ons-sections :deep(.hl-tabs__tab--active) {
+    color: var(--primary-700);
+    font-weight: 600;
+    border-bottom-width: 1.5px;
+    border-bottom-color: var(--primary-700);
   }
 
   /* ── Sections (stacked, no tabs) ──────────────────────────────────── */
@@ -747,9 +822,16 @@
   }
 
   /* ── Grid ─────────────────────────────────────────────────────────── */
+  /*
+   * 24px gap matches Figma Cards Row (gap-[24px] across every frame).
+   * Earlier 16px reflected the May 25 stacked-sections experiment
+   * which deliberately ran tighter; with tabs and 524px-locked card
+   * heights, 24px reads as one breath between cards instead of
+   * crowding their right-edge shadows together.
+   */
   .add-ons-grid {
     display: grid;
-    gap: 16px;
+    gap: 24px;
   }
   .add-ons-grid--three     { grid-template-columns: repeat(1, 1fr); }
   .add-ons-grid--two       { grid-template-columns: repeat(1, 1fr); }
@@ -792,11 +874,20 @@
    * 3px gradient on --add-on-card--active) to the rounded corners
    * cleanly. box-shadow + translateY for hover are unaffected —
    * shadows render outside the box and ignore overflow.
+   *
+   * min-height: 524px locks every card to the same Figma height
+   * regardless of bullet count. The `flex: 1` on .add-on-card__benefits
+   * already pushes the CTA to the bottom edge — that flex spacer is
+   * what keeps the CTA aligned across cards in a row. Using min-height
+   * (not strict height) keeps shorter content flush at reference width
+   * while letting longer content (localized strings, future additions)
+   * grow without clipping.
    */
   .add-on-card {
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 524px;
     background: #ffffff;
     border: 1px solid var(--gray-200);
     border-radius: 12px;
@@ -892,6 +983,17 @@
     background: linear-gradient(135deg, var(--success-50) 0%, var(--success-200) 100%);
     color: var(--success-700);
   }
+  /*
+   * Cert Admin — violet ramp signals "self-paced certification" and
+   * sets the credential program apart from the two done-for-you
+   * service tiles (Advanced Setup, Premium Support) that share the
+   * tab. Same gradient pattern + light/dark token pair as the other
+   * three iconKind ramps so the rendering stays predictable.
+   */
+  .add-on-card__icon--certification {
+    background: linear-gradient(135deg, var(--violet-50) 0%, var(--violet-200) 100%);
+    color: var(--violet-700);
+  }
 
   .add-on-card__title {
     margin: 0;
@@ -969,6 +1071,37 @@
     white-space: nowrap;
   }
 
+  /*
+   * Compliance pill (HIPAA → "BAA Included"). Mirrors the HighRise
+   * "Tag / Success" treatment used in Figma node 8017:38338:
+   *   bg     #ecfdf3 → var(--success-50)
+   *   color  #027a48 → var(--success-700)
+   * Distinct from .add-on-card__annual-pill — the annual pill is
+   * sales/savings ($) with a high-contrast solid green; this is a
+   * trust signal and uses the lighter, label-style success surface
+   * the design system reserves for status / compliance tags. Both
+   * pills share the same right-aligned slot inside .add-on-card__price
+   * but never appear together on one card (annual = sales discount,
+   * compliance = regulatory trust — different product types).
+   *
+   * Figma sizing: h-[18px], px-[6px], rounded-[9px], 11px Medium.
+   */
+  .add-on-card__compliance-pill {
+    margin-left: auto;
+    height: 18px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--success-700);
+    background: var(--success-50);
+    border-radius: 9px;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
   .add-on-card__benefits {
     list-style: none;
     padding: 0;
@@ -1008,38 +1141,51 @@
 
   /* ── CTA ──────────────────────────────────────────────────────────── */
   /*
-   * Default CTA = secondary (outlined). Quiet by default so the title,
-   * price, and benefits get the first read. The primary (filled) variant
-   * is reserved for cards product is recommending — buyers' eyes land
-   * on those cards naturally instead of fighting through 7 identical
-   * loud buttons. (Visual hierarchy through restraint.)
+   * Outlined-primary per Figma (button INSTANCE node 8017:38224 et al.):
+   *   surface  white
+   *   border   1px --primary-300 (#84adff)
+   *   text     --primary-700 (#004eeb)
+   *   font     Inter Semi Bold (600) / 14px / line-height 20px
+   *   radius   8px
+   *   shadow   0 1px 2px rgba(16,24,40,0.05) — kept as the existing card
+   *            shadow stack on this page already used the same xs ramp
+   * Same treatment for the active-state "Manage" CTA — the active card
+   * surface (green stripe + tint + "In your plan" pill) already carries
+   * the ownership signal, so the button stays consistent across states.
    *
-   * The arrow icon slides in on hover — small tactile microinteraction
-   * borrowed from Stripe / Linear. Signals "this leads somewhere"
-   * without being announced when the user hasn't expressed intent.
+   * No trailing arrow — Figma's button instance ships label-only and
+   * the earlier hover-arrow microinteraction was a local embellishment.
+   * Markup + transition removed to match spec.
    */
   .add-on-card__cta {
     appearance: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     width: 100%;
     height: 40px;
     padding: 0 16px;
-    border: 1px solid var(--gray-300);
+    border: 1px solid var(--primary-300);
     border-radius: 8px;
     background: #ffffff;
-    color: var(--gray-900);
+    color: var(--primary-700);
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease,
       transform 0.1s ease;
   }
+  /*
+   * Hover: lightest on-brand step — --primary-50 surface tint behind
+   * the existing --primary-300 border keeps the button quiet but
+   * confirms the interaction. Border ticks one shade darker to
+   * --primary-400 so the tile reads as "lit, not just tinted".
+   * Figma does not ship a hover variant for this instance; values
+   * are chosen from the same primary ramp the design system uses.
+   */
   .add-on-card__cta:hover {
-    background: var(--gray-50);
-    border-color: var(--gray-400);
+    background: var(--primary-50);
+    border-color: var(--primary-400);
   }
   .add-on-card__cta:active { transform: translateY(1px); }
   .add-on-card__cta:focus-visible {
@@ -1048,26 +1194,13 @@
   }
 
   /*
-   * "Manage" CTA on active cards uses the SAME secondary outlined
-   * treatment as default purchase CTAs. The active state is already
-   * communicated by the card surface (green tint + top stripe + "In
-   * your plan" pill) — coloring the CTA green too was redundant
-   * signaling and broke button-color consistency across the page.
-   * Class kept so devs can swap behaviour later if needed.
+   * "Manage" CTA on active cards inherits the same outlined-primary
+   * treatment. The active state is already communicated by the card
+   * surface — recoloring the CTA was redundant signaling and broke
+   * button-color consistency across the page. Class kept so devs can
+   * swap behaviour later if needed.
    */
   .add-on-card__cta--manage { /* inherits .add-on-card__cta defaults */ }
-
-  .add-on-card__cta-arrow {
-    font-size: 11px;
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: opacity 0.15s ease, transform 0.15s ease;
-  }
-  .add-on-card__cta:hover .add-on-card__cta-arrow,
-  .add-on-card__cta:focus-visible .add-on-card__cta-arrow {
-    opacity: 1;
-    transform: translateX(0);
-  }
 
   /*
    * Pricing transparency — quietly answers "what am I committing to?"
@@ -1081,9 +1214,7 @@
     text-align: center;
     letter-spacing: 0.01em;
   }
-  /* Reduce-motion users still see the arrow appear, just no slide */
   @media (prefers-reduced-motion: reduce) {
-    .add-on-card__cta-arrow,
     .add-on-card,
     .add-on-card__cta {
       transition: none !important;
@@ -1127,7 +1258,7 @@
       align-items: flex-start;
       gap: 16px;
     }
-    .add-ons-footer-band__cta {
+    a.add-ons-footer-band__cta {
       width: 100%;
       justify-content: center;
     }
@@ -1147,23 +1278,26 @@
     line-height: 1.5;
   }
   /*
-   * Quiet, outlined CTA — matches the card CTA pattern. The band is
-   * a tertiary affordance, so its action should be quiet, not loud.
-   * Hierarchy on the page is intentionally flat now that marketing
-   * tags were retired: every CTA shares one outlined treatment so no
-   * card visually outranks another. Active cards swap "Buy now" for
-   * "Manage" but keep the same chrome.
+   * Outlined-gray per Figma (button INSTANCE node 8017:38131 et al.):
+   *   surface  white
+   *   border   1px --gray-300 (#d0d5dd)
+   *   text     --gray-600 (#475467) — distinct from the card CTA's
+   *            --primary-700 so the footer band reads as a quieter,
+   *            tertiary affordance separate from the purchase CTAs
+   *   font     Inter Semi Bold (600) / 14px / line-height 20px
+   *   radius   8px, shadow 0 1px 2px rgba(16,24,40,0.05)
+   * Text-only — no trailing arrow (Figma instance ships label-only).
    */
-  .add-ons-footer-band__cta {
+  a.add-ons-footer-band__cta {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
     height: 40px;
     padding: 0 16px;
     border: 1px solid var(--gray-300);
     border-radius: 8px;
     background: #ffffff;
-    color: var(--gray-700);
+    color: var(--gray-600);
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
@@ -1171,10 +1305,16 @@
     transition: background 0.15s ease, border-color 0.15s ease,
       color 0.15s ease;
   }
-  .add-ons-footer-band__cta:hover {
+  /*
+   * Hover: same step idea as the card CTA — lightest gray surface
+   * tint behind the same gray-300 border, text shifts one step
+   * darker (gray-600 → gray-700) so the button reads as engaged
+   * without changing chroma. Figma does not ship a hover variant.
+   */
+  a.add-ons-footer-band__cta:hover {
     background: var(--gray-50);
     border-color: var(--gray-400);
-    color: var(--gray-900);
+    color: var(--gray-700);
   }
   /*
    * Keyboard focus ring — matches the card CTA pattern so the page
@@ -1182,15 +1322,8 @@
    * elements. Without this, the `<a>` only got the browser default
    * outline which was barely visible against the dashed border.
    */
-  .add-ons-footer-band__cta:focus-visible {
+  a.add-ons-footer-band__cta:focus-visible {
     outline: 2px solid var(--primary-600);
     outline-offset: 2px;
-  }
-  .add-ons-footer-band__cta i {
-    font-size: 11px;
-    transition: transform 0.15s ease;
-  }
-  .add-ons-footer-band__cta:hover i {
-    transform: translateX(2px);
   }
 </style>
