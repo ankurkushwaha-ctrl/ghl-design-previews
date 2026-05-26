@@ -663,9 +663,15 @@
               questions and help you find the add-on that’s right for you!
             </p>
           </div>
+          <!--
+            `btn` class isn't styled here — it's solely to escape the legacy
+            `body[data-theme='default-dark-v1'] a:not(.btn)` rule in App.vue
+            that would otherwise paint this anchor cyan (#38a0db). Removing it
+            re-introduces the cascade override.
+          -->
           <a
             href="#"
-            class="add-ons-footer-band__cta"
+            class="add-ons-footer-band__cta btn"
             @click.prevent="handleHelp"
           >
             Talk to our team
