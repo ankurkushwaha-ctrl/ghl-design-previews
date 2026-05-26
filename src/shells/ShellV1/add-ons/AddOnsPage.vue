@@ -676,13 +676,17 @@
    *
    * The page is a flex column with min-height pinned to the viewport
    * so the footer band can push to the bottom (margin-top: auto)
-   * instead of sitting awkwardly right under short content. 84px
-   * accounts for the topbar height in spm-ts.
+   * instead of sitting awkwardly right under short content. The 110px
+   * deduction = 52px topbar padding on .shell-v1__main + 25px top and
+   * 25px bottom padding from the shared .hl_wrapper--inner + an 8px
+   * buffer for scrollbar / sub-pixel rounding. Earlier 84px constant
+   * missed the .hl_wrapper--inner 50px and left ~18px of phantom
+   * vertical overflow (the page "danced" on scroll).
    */
   .add-ons-content {
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - 84px);
+    min-height: calc(100vh - 110px);
     padding: 8px 16px 48px;
   }
 
