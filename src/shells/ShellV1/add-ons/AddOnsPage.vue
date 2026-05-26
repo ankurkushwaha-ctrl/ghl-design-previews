@@ -181,10 +181,11 @@
             'Quarterly Business Reviews',
           ],
           cta: 'Buy now',
-          // Demo: this card is already in the agency's plan to show the
-          // 'active' state. Remove this and set status: 'available' to
-          // see the default purchase chrome.
-          status: 'active',
+          // All cards are in the default 'available' state. To demo the
+          // 'active' state on any card, set status: 'active' — that
+          // switches CTA to 'Manage', adds the 'In your plan' pill, and
+          // applies the green border treatment.
+          status: 'available',
           learnMoreUrl: '/docs/add-ons/premium-support',
           annualPlan: 'Annual plan: $5000 (save 16%)',
         },

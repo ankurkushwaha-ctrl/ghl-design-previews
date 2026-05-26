@@ -420,6 +420,7 @@ Three small adjustments after a Chase (PMM) Slack review. No structural or compo
 - **Out of scope this round.** Not the sentence-case sweep (handled separately in PR #6). CTA copy ("Buy now", "Add to plan", "Talk to a specialist"), all other card titles + taglines + benefits, all section H2s, tab labels, topbar, sidebar, shell, and HighRise stubs were not touched. The baseline tag `add-ons-baseline-2026-05-25` is untouched.
 - **Page phantom scroll fix (May 26).** Corrected `.add-ons-content` `min-height` calc from `100vh - 84px` to `100vh - 110px` so the natural page height equals viewport height (not viewport + 18px). The old constant missed the `.hl_wrapper--inner` 50px of top + bottom padding. New deduction = 52px topbar padding on `.shell-v1__main` + 25px wrapper-top + 25px wrapper-bottom + 8px buffer for scrollbar / sub-pixel rounding. User had reported the page "dancing up and down on scroll" — phantom 18px overflow confirmed and now gone.
 - Removed section H2 inside each tab pane (line ~449 of AddOnsPage.vue). The tab label already conveys the section name; the H2 was visual duplication. The blurb still renders as a one-line intro under the tab strip.
+- Premium support card flipped from `status: 'active'` → `status: 'available'` per stakeholder (Chase) feedback: CTA now reads 'Buy now' (matches other cards), 'In your plan' pill removed, green border treatment removed. No card on the page currently demos the `'active'` state — to demo it again, flip any card's `status` field.
 
 ---
 
