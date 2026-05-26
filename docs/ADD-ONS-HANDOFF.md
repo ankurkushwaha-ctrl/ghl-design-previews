@@ -294,8 +294,8 @@ PR, but file a follow-up ticket.
       },
 
       "footerBand": {
-        "title": "Don't see what you need?",
-        "copy": "Tell us what your agency is trying to do — we'll point you to the right add-on or build a custom plan.",
+        "title": "Have questions about add-ons?",
+        "copy": "Connect with the HighLevel team so we can answer questions and help you find the add-on that's right for you!",
         "cta": "Talk to our team"
       }
     }
@@ -407,6 +407,17 @@ Heuristic audit + targeted fixes. Code only; no copy or content changes.
 - **Page-load entrance animation** — Stripe-style 30ms-stagger fade-in is a common pricing-page convention. Left out for now because the page is in front of stakeholders and any entrance motion is felt; happy to add behind `prefers-reduced-motion` if you want it.
 - **Annual-plan pill on `premium-support` while card is `active`** — the pill currently renders on a card the agency already owns. Reads slightly off (Manage CTA + savings pill). Options: hide annual pill when `status === 'active'`, or route it to a "switch to annual" upgrade flow. Out of scope for this pass.
 - **Type-scale jump H1 28px → H2 18px** — fine on the spec, but 18px H2s next to a 28px H1 feel quiet. Bumping H2 to 20px would be defensible; left as-is because the comment says it's deliberately matching HighRise convention.
+
+---
+
+## Polish round 2 (May 26) — stakeholder pass
+
+Three small adjustments after a Chase (PMM) Slack review. No structural or component changes; copy + one CSS value only.
+
+- **Spacing — page content top padding reduced 32px → 8px.** The outer `.hl_wrapper--inner` already adds ~25px above. The earlier 32px stacked on that produced ~57px of dead space above the H1, which is well past the Stripe/Linear page-hero convention of ~24-32px total. Final visual gap above H1 ≈ 33px (25 + 8). The comment block above `.add-ons-content` was updated to describe the new stack accurately.
+- **Cert Admin tagline rewritten.** Was: *"Get certified at your own pace with flexible monthly billing. Perfect for learning core HighLevel skills."* Now: *"Are you a HighLevel expert? Get certified at your own pace with flexible monthly billing."* Reframes the value prop with a hook question per Chase's Slack feedback. No other fields on the card changed (title, benefits, price, annual plan, CTA, status all untouched). Note: the May 25 grammar-fix table above still applies — Marketing should mirror this newer copy upstream in Figma too.
+- **Footer band title + body rewritten.** Title: *"Don't see what you need?"* → *"Have questions about add-ons?"*. Body: *"Tell us what your agency is trying to do — we'll point you to the right add-on or build a custom plan."* → *"Connect with the HighLevel team so we can answer questions and help you find the add-on that's right for you!"*. The CTA ("Talk to our team") and the arrow icon are unchanged. Designer normalized Chase's draft "Add Ons" → "add-ons" and "add on" → "add-on" to match the page H1 ("Add-ons") and the existing hyphenation convention used everywhere else on the page. **PMM flag:** if Chase prefers his literal Title Case ("Have questions about Add Ons?" / "find the add on"), revert the normalization. The `footerBand` i18n example block above (`agency.addOns.footerBand.title` and `.copy`) was also refreshed to match.
+- **Out of scope this round.** Not the sentence-case sweep (handled separately in PR #6). CTA copy ("Buy now", "Add to plan", "Talk to a specialist"), all other card titles + taglines + benefits, all section H2s, tab labels, topbar, sidebar, shell, and HighRise stubs were not touched. The baseline tag `add-ons-baseline-2026-05-25` is untouched.
 
 ---
 
