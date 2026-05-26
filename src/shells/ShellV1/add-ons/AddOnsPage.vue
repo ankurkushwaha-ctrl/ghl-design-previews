@@ -60,7 +60,7 @@
   type Card = {
     id: string
     icon: string
-    iconKind: 'branding' | 'experts' | 'compliance'
+    iconKind: 'branding' | 'experts' | 'compliance' | 'certification'
     title: string
     tagline: string
     priceAmount: string
@@ -200,15 +200,18 @@
         {
           id: 'certified-admin',
           icon: 'award',
-          // Matches the other two Setup & support cards on purpose
-          // (May 25 reversal). Cert Admin briefly used a violet
-          // 'certification' iconKind when it was its own section —
-          // the contrast read as "credential / prestige" against
-          // the orange experts tile. Now that all three setup
-          // purchases share a tab, Gestalt similarity inside the
-          // common region matters more than the credential/service
-          // distinction, so the tiles unify on the experts ramp.
-          iconKind: 'experts',
+          // Violet — restored to match Figma (LGXAERHnZGj65vx4urTTF5,
+          // Frame 01 Cert Admin card). Designer intent: violet =
+          // "self-paced certification / achievement," orange = "done-
+          // for-you service." Cert Admin is a credential program,
+          // not a service like Advanced Setup or Premium Support, so
+          // the icon ramp signals a different product type even
+          // though all three live under the Setup & Support tab.
+          // Gestalt-similarity argument that briefly unified them on
+          // orange (May 25) is intentionally overruled here — Figma
+          // is the source of truth and the credential/service split
+          // is the point.
+          iconKind: 'certification',
           title: 'Certified admin program',
           // Grammar fix May 25: was "with flexible monthly." —
           // truncated sentence (no noun after "monthly"). Added
@@ -693,7 +696,11 @@
    *                     active-card stripe + tint, annual-plan pill bg
    *   warning-200…700 → "One-time" cadence pill
    *   orange-50…700   → setup & support icon tile gradient
-   *                     (incl. certified admin — unified May 25)
+   *                     (advanced setup + premium support only —
+   *                      cert admin uses violet, see below)
+   *   violet-50…700   → certified admin icon tile gradient
+   *                     (signals "credential program", distinct
+   *                      from the orange "done-for-you service" tiles)
    *
    * Box-shadow rgba() values stay literal — HR doesn't expose RGB
    * channels for shadow tinting; this is the standard pattern.
@@ -972,6 +979,17 @@
   .add-on-card__icon--compliance {
     background: linear-gradient(135deg, var(--success-50) 0%, var(--success-200) 100%);
     color: var(--success-700);
+  }
+  /*
+   * Cert Admin — violet ramp signals "self-paced certification" and
+   * sets the credential program apart from the two done-for-you
+   * service tiles (Advanced Setup, Premium Support) that share the
+   * tab. Same gradient pattern + light/dark token pair as the other
+   * three iconKind ramps so the rendering stays predictable.
+   */
+  .add-on-card__icon--certification {
+    background: linear-gradient(135deg, var(--violet-50) 0%, var(--violet-200) 100%);
+    color: var(--violet-700);
   }
 
   .add-on-card__title {
