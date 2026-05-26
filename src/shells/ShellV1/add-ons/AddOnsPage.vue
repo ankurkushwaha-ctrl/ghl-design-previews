@@ -426,12 +426,12 @@
           gap, but stakeholders walked it back: tabs come back with
           three differences from the original — Setup & support is
           the default tab (was Custom Branding), the third tab is
-          renamed "HIPAA compliance" (tab label only; the H2 inside
-          still says "Medical Compliance" pending PMM), and Cert
+          renamed "HIPAA compliance" (tab label only), and Cert
           Admin folds back inside Setup & support as the third card.
-          Tab labels follow HighRise nav sentence case; section H2s
-          inside each pane stay Title Case per the live marketing
-          preview.
+          Tab labels follow HighRise nav sentence case. Each pane
+          renders a blurb + cards (H2 removed May 26 — tab label
+          already conveys the section name, so the H2 was visual
+          duplication).
         -->
         <div class="add-ons-sections">
           <HLTabs v-model:value="selectedCategory" type="line">
@@ -446,7 +446,6 @@
                 class="add-ons-section"
               >
                 <header class="add-ons-section__header">
-                  <h2 class="add-ons-section__title">{{ cat.title }}</h2>
                   <p class="add-ons-section__blurb">{{ cat.blurb }}</p>
                 </header>
 
@@ -737,21 +736,6 @@
     gap: 4px;
     margin-bottom: 16px;
     max-width: 800px;
-  }
-
-  /*
-   * Section title — slightly smaller and lighter than the H1 so
-   * the page header still anchors. 18px / 600 is the HighRise
-   * "section heading" size; matches Account → Sales Resources
-   * and Settings → Integrations.
-   */
-  .add-ons-section__title {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--gray-900);
-    line-height: 1.4;
-    letter-spacing: -0.005em;
   }
 
   .add-ons-section__blurb {
